@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LapkaBackend.API", "LapkaBackend.API\LapkaBackend.API.csproj", "{0C12249B-0B4C-464B-969C-B73C0E560F56}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LapkaBackend.Application", "LapkaBackend.Application\LapkaBackend.Application.csproj", "{25506A5A-E659-4809-B68C-E826DDE3B762}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LapkaBackend.Domain", "LapkaBackend.Domain\LapkaBackend.Domain.csproj", "{FA76A563-2678-4183-8232-CB0D9C96ED7C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LapkaBackend.Infrastructure", "LapkaBackend.Infrastructure\LapkaBackend.Infrastructure.csproj", "{FAF080B9-D6E4-4F6E-BE3B-078A18EEFEF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0C12249B-0B4C-464B-969C-B73C0E560F56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C12249B-0B4C-464B-969C-B73C0E560F56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C12249B-0B4C-464B-969C-B73C0E560F56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C12249B-0B4C-464B-969C-B73C0E560F56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25506A5A-E659-4809-B68C-E826DDE3B762}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25506A5A-E659-4809-B68C-E826DDE3B762}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25506A5A-E659-4809-B68C-E826DDE3B762}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25506A5A-E659-4809-B68C-E826DDE3B762}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA76A563-2678-4183-8232-CB0D9C96ED7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA76A563-2678-4183-8232-CB0D9C96ED7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA76A563-2678-4183-8232-CB0D9C96ED7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA76A563-2678-4183-8232-CB0D9C96ED7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAF080B9-D6E4-4F6E-BE3B-078A18EEFEF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAF080B9-D6E4-4F6E-BE3B-078A18EEFEF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAF080B9-D6E4-4F6E-BE3B-078A18EEFEF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAF080B9-D6E4-4F6E-BE3B-078A18EEFEF9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

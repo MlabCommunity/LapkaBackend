@@ -39,7 +39,6 @@
 /LapkaBackend.Infrastructure/obj/LapkaBackend.Infrastructure.csproj.nuget.g.targets
 /LapkaBackend.Infrastructure/obj/Debug/net7.0/LapkaBackend.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
 /LapkaBackend.Infrastructure/obj/Debug/net7.0/LapkaBackend.Infrastructure.GlobalUsings.g.cs
-/LapkaBackend.sln
 /LapkaBackend.API/obj/project.assets.json
 /LapkaBackend.Application/obj/project.assets.json
 /LapkaBackend.Domain/obj/project.assets.json
