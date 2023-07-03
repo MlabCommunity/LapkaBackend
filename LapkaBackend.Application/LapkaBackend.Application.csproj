@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\LapkaBackend.Domain\LapkaBackend.Domain.csproj" />
+    </ItemGroup>
+
 </Project>
