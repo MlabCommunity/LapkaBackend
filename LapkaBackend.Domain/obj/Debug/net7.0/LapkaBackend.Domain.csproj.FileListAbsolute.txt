@@ -1,0 +1,12 @@
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\bin\Debug\net7.0\LapkaBackend.Domain.deps.json
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\bin\Debug\net7.0\LapkaBackend.Domain.dll
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\bin\Debug\net7.0\LapkaBackend.Domain.pdb
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\LapkaBackend.Domain.csproj.AssemblyReference.cache
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\LapkaBackend.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\LapkaBackend.Domain.AssemblyInfoInputs.cache
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\LapkaBackend.Domain.AssemblyInfo.cs
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\LapkaBackend.Domain.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\LapkaBackend.Domain.dll
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\refint\LapkaBackend.Domain.dll
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\LapkaBackend.Domain.pdb
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\ref\LapkaBackend.Domain.dll

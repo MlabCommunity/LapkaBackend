@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "uljvBkLuIVD7AeSuIYFRNAJj1I26F0TtMtxdB4xYTIM=",
+  "Source": "LapkaBackend.API",
+  "BasePath": "_content/LapkaBackend.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
