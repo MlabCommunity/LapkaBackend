@@ -9,11 +9,17 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.8">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\LapkaBackend.Application\LapkaBackend.Application.csproj" />
+      <ProjectReference Include="..\LapkaBackend.Domain\LapkaBackend.Domain.csproj" />
+      <ProjectReference Include="..\LapkaBackend.Infrastructure\LapkaBackend.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

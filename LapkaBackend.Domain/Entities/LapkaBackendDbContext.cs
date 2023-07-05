@@ -9,16 +9,27 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Domain.Entities
 {
-    internal class LapkaBackendDBContext:DbContext
+    public class LapkaBackendDBContext:DbContext
     {
         private string _connectionString = "Server=(localdb)\\MSSQLLocalDB; Database=LapkaBackend;Trusted_Connection=True;";
         public DbSet<User> Users { get; set; }
 
-        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
-                .Property()
+                .Property(r => r.firstName)
+                .IsRequired()
+                .HasMaxLength(25);
+
+            modelBuilder.Entity<User>()
+                .Property(r => r.lastName)
+                .IsRequired()
+                .HasMaxLength(25);
+
+            modelBuilder.Entity<User>()
+                .Property(r => r.email)
+                .IsRequired()
+                .HasMaxLength(25);
         }   
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

@@ -10,3 +10,5 @@ C:\Users\sawom\Source\Repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\La
 C:\Users\sawom\Source\Repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\refint\LapkaBackend.Domain.dll
 C:\Users\sawom\Source\Repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\LapkaBackend.Domain.pdb
 C:\Users\sawom\Source\Repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\ref\LapkaBackend.Domain.dll
+C:\Users\sawom\Source\Repos\LapkaBackend\LapkaBackend.Domain\bin\Debug\net7.0\LapkaBackend.Domain.runtimeconfig.json
+C:\Users\sawom\Source\Repos\LapkaBackend\LapkaBackend.Domain\obj\Debug\net7.0\LapkaBackend.Domain.genruntimeconfig.cache

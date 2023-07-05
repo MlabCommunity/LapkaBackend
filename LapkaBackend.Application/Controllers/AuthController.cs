@@ -13,6 +13,7 @@ using LapkaBackend.Application.Dto;
 using System.Runtime.InteropServices;
 using LapkaBackend.Domain.Models;
 using Microsoft.Extensions.Configuration;
+using LapkaBackend.Domain.Entities;
 
 namespace LapkaBackend.Application.Controllers
 {
@@ -20,26 +21,48 @@ namespace LapkaBackend.Application.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public static User user = new User();
-        private readonly IConfiguration _configuration;
-
-        public AuthController(IConfiguration configuration)
+        private readonly LapkaBackendDBContext _dbContext;
+        public AuthController(LapkaBackendDBContext dbContext)
         {
-            _configuration = configuration;
+            _dbContext = dbContext;
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserDto request)
+        public async Task<ActionResult<User>> Register(UserDto userDto)
         {
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            CreatePasswordHash(userDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-            user.firstName = request.Username;
+            //user.PasswordHash = passwordHash;
+            //user.PasswordSalt = passwordSalt;
+
+            DateTime dateTimeNow = DateTime.Now;
+            string createdAt = dateTimeNow.ToString("yyyy-MM-dd HH:mm:ss");
+
+            var user = new User();
+            user.firstName = userDto.firstName;
+            user.lastName = userDto.lastName;
+            user.email = userDto.email;
+            user.createdAt = createdAt;
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
+
+            _dbContext.Users.Add(user);
+            _dbContext.SaveChanges();
 
             return Ok(user);
         }
 
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512())
+            {
+                passwordSalt = hmac.Key;
+                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            }
+        }
+
+
+        /*
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
@@ -78,14 +101,7 @@ namespace LapkaBackend.Application.Controllers
             return jwt;
         }
 
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
-        }
+        
 
         private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
         {
@@ -95,6 +111,6 @@ namespace LapkaBackend.Application.Controllers
                 return computedHash.SequenceEqual(passwordHash);
             }
 
-        }
+        } */
     }
 }

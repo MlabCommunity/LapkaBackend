@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\LapkaBackend.Domain",
+    "\\LapkaBackend.Domain\\Entities"
   ],
-  "SelectedNode": "\\C:\\Users\\sawom\\Source\\Repos\\LapkaBackend",
+  "SelectedNode": "\\LapkaBackend.Domain\\Entities\\LapkaBackendDbContext.cs",
   "PreviewInSolutionExplorer": false
 }
