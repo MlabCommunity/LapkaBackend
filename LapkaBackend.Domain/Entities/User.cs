@@ -14,5 +14,10 @@ namespace LapkaBackend.Domain.Entities
         public string Email { get; set; }
         public string Password { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string AccessToken { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
+        public DateTime TokenCreated { get; set; }
+        public DateTime TokenExpire { get; set; }
+        
     }
 }

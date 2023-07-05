@@ -15,6 +15,11 @@ namespace LapkaBackend.API.Controllers
             _authService = authService;
         }
 
+        /// <summary>
+        /// Get Auth where should be UserDTO and create new User
+        /// </summary>
+        /// <param name="auth"></param>
+        /// <returns>Return a Created User</returns>
         #region userRegister
         [HttpPost("userRegister")]
         public async Task<ActionResult<User>> UserRegister(Auth auth)
@@ -30,15 +35,22 @@ namespace LapkaBackend.API.Controllers
         }
         #endregion
 
+        /// <summary>
+        /// Let Registered User to SginIn and get JWT Token 
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns>string which is JWT Token</returns>
         #region userLogin
         [HttpPost("userLogin")]
-        public ActionResult<string> UserLogin(User user)
+        public ActionResult<(string, string)> UserLogin(User user)
         {
             var result = _authService.LoginUser(user);
 
             return result;
-        }
 
+        }
         #endregion
+
+
     }
 }

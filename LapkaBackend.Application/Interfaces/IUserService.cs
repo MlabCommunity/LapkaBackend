@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Infrastructure.Interfaces
 {
-    public interface IAuthService
+    public interface IUserService
     {
-        public User RegisterUser(Auth auth);
-        public string LoginUser(User user);
+        public Task<User> FindUserByAccessToken(string accessToken);
     }
 }

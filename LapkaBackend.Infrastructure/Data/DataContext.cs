@@ -1,4 +1,5 @@
-﻿using LapkaBackend.Domain.Entities;
+﻿using LapkaBackend.Application.Common;
+using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Infrastructure.Data
 {
-    public class DataContext : DbContext
+    public class DataContext : DbContext, IDataContext
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
@@ -24,6 +25,8 @@ namespace LapkaBackend.Infrastructure.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Auth> Auths { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
 
     }
 }

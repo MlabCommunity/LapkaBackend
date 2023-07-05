@@ -59,7 +59,6 @@ C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\obj\Debug\net7.0\LapkaB
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\obj\Debug\net7.0\LapkaBackend.API.AssemblyInfoInputs.cache
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\obj\Debug\net7.0\LapkaBackend.API.AssemblyInfo.cs
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\obj\Debug\net7.0\LapkaBackend.API.csproj.CoreCompileInputs.cache
-C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\obj\Debug\net7.0\LapkaBackend.API.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\obj\Debug\net7.0\LapkaBackend.API.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\obj\Debug\net7.0\staticwebassets\msbuild.LapkaBackend.API.Microsoft.AspNetCore.StaticWebAssets.props
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\obj\Debug\net7.0\staticwebassets\msbuild.build.LapkaBackend.API.props
@@ -80,3 +79,8 @@ C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Micros
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Microsoft.Extensions.DependencyModel.dll
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Mono.TextTemplating.dll
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\System.CodeDom.dll
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Scrutor.dll
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.dll
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
+C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\obj\Debug\net7.0\LapkaBackend.API.MvcApplicationPartsAssemblyInfo.cs
