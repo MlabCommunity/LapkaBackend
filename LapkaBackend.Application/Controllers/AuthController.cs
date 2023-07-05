@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using LapkaBackend.Application.Dto;
-using System.Runtime.InteropServices;
 using LapkaBackend.Domain.Models;
 using Microsoft.Extensions.Configuration;
-using LapkaBackend.Domain.Entities;
+using LapkaBackend.Domain.Common;
 
 namespace LapkaBackend.Application.Controllers
 {
@@ -21,9 +14,12 @@ namespace LapkaBackend.Application.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly LapkaBackendDBContext _dbContext;
-        public AuthController(LapkaBackendDBContext dbContext)
+        
+        private readonly ILapkaBackendDbContext _dbContext;
+        private readonly IConfiguration _configuration;
+        public AuthController(IConfiguration configuration, ILapkaBackendDbContext dbContext)
         {
+            _configuration = configuration;
             _dbContext = dbContext;
         }
 
@@ -31,9 +27,6 @@ namespace LapkaBackend.Application.Controllers
         public async Task<ActionResult<User>> Register(UserDto userDto)
         {
             CreatePasswordHash(userDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-            //user.PasswordHash = passwordHash;
-            //user.PasswordSalt = passwordSalt;
 
             DateTime dateTimeNow = DateTime.Now;
             string createdAt = dateTimeNow.ToString("yyyy-MM-dd HH:mm:ss");
@@ -61,30 +54,48 @@ namespace LapkaBackend.Application.Controllers
             }
         }
 
-
-        /*
+        
+        
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserDto request)
+        public async Task<ActionResult<string>> Login(string requestEmail, string requestPassword)
         {
-            if (user.Username != request.Username)
-            {
-                return BadRequest("User not found.");
-            }
+            User? user =  _dbContext.Users.FirstOrDefault(r => r.email == requestEmail);
 
-            if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
+            if (user !=null)
             {
-                return BadRequest("Wrong password.");
+                if (!VerifyPasswordHash(requestPassword, user.PasswordHash, user.PasswordSalt))
+                {
+                    return BadRequest("Wrong password.");
+                }
+                else
+                {
+                    string token = CreateToken(user);
+                    return Ok(token);
+                }
+                    
             }
+            
 
-            string token = CreateToken(user); 
-            return Ok(token);
+             
+            return BadRequest("Wrong email.");
         }
+
+        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512(passwordSalt))
+            {
+                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                return computedHash.SequenceEqual(passwordHash);
+            }
+
+        }
+
 
         private string CreateToken(User user)
         {
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Username)
+                new Claim(ClaimTypes.Name, user.firstName)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value)); // tu błąd System.ArgumentOutOfRangeException: IDX10720: Unable to create KeyedHashAlgorithm for algorithm 'http://www.w3.org/2001/04/xmldsig-more#hmac-sha512', the key size must be greater than: '512' bits, key has '136' bits. (Parameter 'keyBytes')
@@ -101,16 +112,11 @@ namespace LapkaBackend.Application.Controllers
             return jwt;
         }
 
+        /*
         
 
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512(passwordSalt))
-            {
-                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                return computedHash.SequenceEqual(passwordHash);
-            }
+        
 
-        } */
+         */
     }
 }
