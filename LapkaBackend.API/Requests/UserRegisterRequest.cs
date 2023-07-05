@@ -2,16 +2,12 @@
 
 namespace LapkaBackend.API.Requests;
 
-public class UserRegistrationRequest
+public class UserRegistrationRequest : LoginRequest
 {
     [MinLength(1)]
-    public string firstName { get; set; }
+    public string? FirstName { get; set; }
     [MinLength(1)]
-    public string lastName { get; set; }
+    public string? LastName { get; set; }
     [MinLength(1)]
-    public string email { get; set; }
-    [MinLength(1)]
-    public string password { get; set; }
-    [MinLength(1)]
-    public string passwordConfirm { get; set; }
+    public string? ConfirmPassword { get; set; }
 }

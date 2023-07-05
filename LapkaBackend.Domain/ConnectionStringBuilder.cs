@@ -1,4 +1,4 @@
-﻿namespace LapkaBackend.Infrastructure.Database;
+﻿namespace LapkaBackend.Domain;
 
 public class ConnectionStringBuilder
 {
