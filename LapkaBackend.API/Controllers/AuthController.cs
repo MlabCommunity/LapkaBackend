@@ -1,20 +1,29 @@
 ﻿using LapkaBackend.API.Requests;
+using LapkaBackend.API.Requests.Dtos;
 using LapkaBackend.Application;
 using LapkaBackend.Application.IServices;
-using LapkaBackend.Infrastructure.Database.Data;
-using Microsoft.AspNetCore.Authorization;
+using LapkaBackend.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers;
+
+/// <summary>
+///     Kontroler do obsługi logowania i rejestracji użytkowników
+///  </summary>
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private IUserService _userService;
-    private IDataContext _context;
-
-    public AuthController(IUserService userService, IDataContext context)
+    private readonly IUserService _userService;
+    private readonly ITokenService _tokenService;
+    private readonly IDataContext _context;
+    
+    /// <summary>
+    ///   Konstruktor kontrolera
+    /// </summary>
+    public AuthController(IUserService userService, ITokenService tokenService, IDataContext context)
     {
         _userService = userService;
+        _tokenService = tokenService;
         _context = context;
     }
 
@@ -29,9 +38,10 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public ActionResult LoginWeb()
+    public async Task<ActionResult> LoginWeb()
     {
-        return _userService.LoginWeb(_context, new List<string>()) ? Ok() : StatusCode(403);
+        return await _userService.LoginWeb(_context, new Dictionary<string, string>()) 
+            ? Ok() : StatusCode(403);
     }
     
     /// <summary>
@@ -43,15 +53,22 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public ActionResult LoginMobile([FromBody] LoginRequest user)
+    public async Task<ActionResult> LoginMobile([FromBody] LoginRequest loginRequest)
     {
-        return _userService.LoginMobile(_context, new List<string> {user.Email, user.Password})
+        User user = await _userService.LoginMobile(_context,
+            new Dictionary<string, string>
+            {
+                {"email", loginRequest.Email }, 
+                { "password", loginRequest.Password }
+            });
+        
+        return user != null 
             ? Ok(new LoginResultDto
             {
-                accessToken = _userService.GenerateToken(DateTime.UtcNow.AddMinutes(5), "access_token"),
-                refreshToken = _userService.GenerateToken(DateTime.UtcNow.AddDays(3), "refresh_token")
+                accessToken = user.AccessToken,
+                refreshToken = user.RefreshToken
             })
-            : StatusCode(403);
+            : StatusCode(400);
     }
 
     /// <summary>
@@ -62,45 +79,37 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public ActionResult Register([FromBody] UserRegistrationRequest newUser)
+    public async Task<ActionResult> Register([FromBody] UserRegistrationRequest newUser)
     {
-        return _userService.Register(_context,
-            new List<string>
-                { newUser.Email, newUser.Password, newUser.FirstName, newUser.LastName, newUser.ConfirmPassword })
+        return await _userService.Register(_context,
+            new Dictionary<string, string>
+            {
+                { "firstName", newUser.FirstName },
+                { "lastName", newUser.LastName },
+                { "email", newUser.Email },
+                { "password", newUser.Password },
+                { "confirmPassword", newUser.ConfirmPassword }
+            })
             ? Ok()
-            : StatusCode(403);
+            : StatusCode(400);
     }
     
     /// <summary>
     /// Odnawia access token na podstawie refresh token (Working on it)
     /// </summary>
     [HttpPost]
-    [Authorize] //TODO change status code to 400
     [Route("/[controller]/useToken")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UseRefreshTokenResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        // Assuming we store user id in access token we can get refresh token internally on server without showing it on front
-        // From this point we can validate refresh token and generate new access token
-        // I think is somewhat secure
-    public ActionResult UseToken([FromBody] LoginResultDto tokens)
+    public async Task<ActionResult> UseToken([FromBody] LoginResultDto tokens)
     {
-            //Validate access token to check if user is logged in
-            //If not return 400. 
-            //If he is logged in check if refresh token is valid
-            //If not user needs to login again (session expired)
-            //If yes generate new access token and return it
-        if(_userService.ValidateToken(tokens.refreshToken!))
+        var newToken = await _tokenService.UseToken(tokens.accessToken, tokens.refreshToken, _context);
+        
+        return Ok(new UseRefreshTokenResultDto
         {
-            //TODO Generate new access token
-            var newAccessToken = _userService.GenerateToken(DateTime.UtcNow.AddMinutes(5), "access_token");
-            return Ok(new UseRefreshTokenResultDto()
-            {
-                accessToken = newAccessToken
-            });
-        }
-        return BadRequest();
-
+            accessToken = newToken
+        });
     }
     
 

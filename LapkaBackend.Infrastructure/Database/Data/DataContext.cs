@@ -1,5 +1,4 @@
 ﻿using LapkaBackend.Application;
-using LapkaBackend.Domain;
 using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 

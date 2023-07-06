@@ -1,4 +1,4 @@
-﻿namespace LapkaBackend.API.Requests;
+﻿namespace LapkaBackend.API.Requests.Dtos;
 
 public class LoginResultDto
 {
