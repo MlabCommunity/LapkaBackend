@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LapkaBackend.API</name>
+    </assembly>
+    <members>
+        <member name="M:LapkaBackend.API.Controllers.AuthController.UserRegister(LapkaBackend.Domain.Entities.Auth)">
+            <summary>
+            Rejestracja użytkownika
+            </summary>
+            <param name="auth"></param>
+            <returns>Return a Created User</returns>
+        </member>
+        <member name="M:LapkaBackend.API.Controllers.AuthController.UserLogin(LapkaBackend.Domain.Entities.User)">
+            <summary>
+            Let Registered User to SginIn and get JWT Token 
+            </summary>
+            <param name="user"></param>
+            <returns>returns JWT string</returns>
+        </member>
+    </members>
+</doc>

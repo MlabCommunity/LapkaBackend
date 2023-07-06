@@ -1,8 +1,6 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Interfaces;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -51,31 +49,23 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region LoginUser
-        public (string, string) LoginUser(User user)
+        public string LoginUser(User user)
         {
             var result = _dbContext.Users.FirstOrDefault(x => x.Email == user.Email);
 
             if (result == null)
             {
-                return ("Taki użytkownik nie istnieje", "sdadas");
+                return "Taki użytkownik nie istnieje";
             }
 
             if (result.Password != user.Password)
             {
-                return ("Hasła się nie zgadzają", "sdadas");
+                return "Hasła się nie zgadzają";
             }
 
             string token = CreateToken(result);
 
-            result.AccessToken = token;
-
-            var refreshToken = GenerateRefreshToken();
-
-            SetRefreshToken(token, refreshToken);
-
-
-
-            return (token, refreshToken.Token);
+            return (token);
         }
         #endregion
 
@@ -95,7 +85,7 @@ namespace LapkaBackend.Infrastructure.Services
 
             var token = new JwtSecurityToken(
                     claims: claims,
-                    expires: DateTime.Now.AddDays(3),
+                    expires: DateTime.Now.AddMinutes(5),
                     signingCredentials: creds
                 );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
@@ -104,7 +94,8 @@ namespace LapkaBackend.Infrastructure.Services
         }
         #endregion
 
-        private RefreshToken GenerateRefreshToken()
+        #region GenerateRefreshToken
+        public RefreshToken GenerateRefreshToken()
         {
             var refreshToken = new RefreshToken
             {
@@ -112,23 +103,22 @@ namespace LapkaBackend.Infrastructure.Services
                 Expire = DateTime.Now.AddDays(7),
                 Created = DateTime.Now
             };
+
             return refreshToken;
         }
+        #endregion
 
-        private async void SetRefreshToken(string accessToken, RefreshToken newRefreshToken)
+        #region SaveRefreshTokenInDb
+        public async Task SaveRefreshToken(User user, RefreshToken newRefreshToken)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.AccessToken == accessToken);
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Expires = newRefreshToken.Expire
-            };
-            
             user.RefreshToken = newRefreshToken.Token;
             user.TokenCreated = newRefreshToken.Created;
             user.TokenExpire = newRefreshToken.Expire;
-            _dbContext.SaveChangesAsync();
+
+            _dbContext.Users.Update(user);
+
+            await _dbContext.SaveChangesAsync();
         }
+        #endregion
     }
 }

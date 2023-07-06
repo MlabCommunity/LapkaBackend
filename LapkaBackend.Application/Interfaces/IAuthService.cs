@@ -10,6 +10,9 @@ namespace LapkaBackend.Infrastructure.Interfaces
     public interface IAuthService
     {
         public Task<User> RegisterUser(Auth auth);
-        public (string, string) LoginUser(User user);
+        public string LoginUser(User user);
+        public string CreateToken(User user);
+        public RefreshToken GenerateRefreshToken();
+        public Task SaveRefreshToken(User user, RefreshToken newRefreshToken);
     }
 }

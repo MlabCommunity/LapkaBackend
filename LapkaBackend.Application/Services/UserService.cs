@@ -19,10 +19,11 @@ namespace LapkaBackend.Infrastructure.Services
             _context = context;
         }
 
-        public async Task<User> FindUserByAccessToken(string accessToken)
+        public async Task<User> FindUserByRefreshToken(string refreshToken)
         {
             var myUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.AccessToken == accessToken);
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
 
             if (myUser == null) 
             {

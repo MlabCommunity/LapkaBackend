@@ -1,5 +1,6 @@
 ﻿using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +16,6 @@ namespace LapkaBackend.Application.Common
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        public EntityEntry Entry(object entity);
     }
 }

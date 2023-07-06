@@ -9,6 +9,7 @@ namespace LapkaBackend.Infrastructure.Interfaces
 {
     public interface IUserService
     {
-        public Task<User> FindUserByAccessToken(string accessToken);
+        public Task<User> FindUserByRefreshToken(string refreshToken);
+
     }
 }
