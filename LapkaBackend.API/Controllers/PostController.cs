@@ -9,9 +9,7 @@ using System.Security.Cryptography;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using LapkaBackend.Application.Dto;
 using System.Runtime.InteropServices;
-using LapkaBackend.Domain.Models;
 using Microsoft.Extensions.Configuration;
 
 namespace LapkaBackend.Application.Controllers

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LapkaBackend.Application.Dto
+namespace LapkaBackend.Application.ApplicationDtos
 {
     public class UserDto
     {

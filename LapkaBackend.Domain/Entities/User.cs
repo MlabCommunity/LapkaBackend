@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LapkaBackend.Domain.Models
+namespace LapkaBackend.Domain.Entities
 {
     public class User
     {

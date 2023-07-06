@@ -1,5 +1,5 @@
 ﻿using LapkaBackend.Application.Interfaces;
-using LapkaBackend.Domain.Models;
+using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using System;
@@ -14,6 +14,7 @@ namespace LapkaBackend.Infrastructure
     {
         private string _connectionString = "Server=(localdb)\\MSSQLLocalDB; Database=LapkaBackend;Trusted_Connection=True;TrustServerCertificate=true;";
         public DbSet<User> Users { get; set; }
+        public DbSet<Shelter> Shelters { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +32,34 @@ namespace LapkaBackend.Infrastructure
                 .Property(r => r.Email)
                 .IsRequired()
                 .HasMaxLength(25);
+            modelBuilder.Entity<User>()
+                .Property(r => r.PasswordHash)
+                .IsRequired();
+
+            modelBuilder.Entity<User>()
+            .Property(r => r.PasswordSalt)
+            .IsRequired();
+
+
+            modelBuilder.Entity<Shelter>()
+                .Property(r => r.OrganizationName)
+                .IsRequired();
+
+            modelBuilder.Entity<Shelter>()
+                .Property(r => r.City)
+                .IsRequired();
+
+            modelBuilder.Entity<Shelter>()
+                .Property(r => r.Street)
+                .IsRequired();
+
+            modelBuilder.Entity<Shelter>()
+                .Property(r => r.ZipCode)
+                .IsRequired();
+
+            modelBuilder.Entity<Shelter>()
+                .Property(r => r.Nip)
+                .IsRequired();
         }   
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

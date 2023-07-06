@@ -3,11 +3,12 @@ using System.Security.Cryptography;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using LapkaBackend.Application.Dto;
-using LapkaBackend.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Services;
+using LapkaBackend.Domain.Entities;
+using LapkaBackend.Application.ApplicationDtos;
+using Microsoft.AspNetCore.Mvc.Razor;
 
 namespace LapkaBackend.Application.Controllers
 {
@@ -15,105 +16,47 @@ namespace LapkaBackend.Application.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        
-        private readonly ILapkaBackendDbContext _dbContext;
-        private readonly IConfiguration _configuration;
         private readonly IAuthService _authService;
 
-        public AuthController(IConfiguration configuration, ILapkaBackendDbContext dbContext, IAuthService authService)
+        public AuthController(IAuthService authService)
         {
-            _configuration = configuration;
-            _dbContext = dbContext;
             _authService = authService;
         }
-        /*
-        [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserDto userDto)
-        {
-            CreatePasswordHash(userDto.password, out byte[] passwordHash, out byte[] passwordSalt);
 
-            DateTime dateTimeNow = DateTime.Now;
-            string createdAt = dateTimeNow.ToString("yyyy-MM-dd HH:mm:ss");
-
-            var user = new User();
-            user.FirstName = userDto.firstName;
-            user.LastName = userDto.lastName;
-            user.Email = userDto.email;
-            user.CreatedAt = createdAt;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok(user);
-        } */
-
-        
         [HttpPost("userRegister")]
         public async Task<ActionResult<User>> UserRegister(UserDto userDto)
         {
-            if (!(string.IsNullOrWhiteSpace(userDto.firstName) && string.IsNullOrWhiteSpace(userDto.lastName) && string.IsNullOrWhiteSpace(userDto.emailAddress) && string.IsNullOrWhiteSpace(userDto.password) && string.IsNullOrWhiteSpace(userDto.confirmPassword)))
-            {
-                if (userDto.password == userDto.confirmPassword)
-                {
-                    CreatePasswordHash(userDto.password, out byte[] passwordHash, out byte[] passwordSalt);
-
-                    DateTime dateTimeNow = DateTime.Now;
-                    string createdAt = dateTimeNow.ToString("yyyy-MM-dd HH:mm:ss");
-
-                    var user = new User();
-                    user.FirstName = userDto.firstName;
-                    user.LastName = userDto.lastName;
-                    user.Email = userDto.emailAddress;
-                    user.CreatedAt = createdAt;
-                    user.PasswordHash = passwordHash;
-                    user.PasswordSalt = passwordSalt;
-
-                    _dbContext.Users.Add(user);
-                    await _dbContext.SaveChangesAsync();
-
-                    return Ok(user);
-                }
-                
-                return BadRequest("Passwords doesn't match");
-            }
-            return NoContent();
+            return await (_authService.UserRegister(userDto));
         }
 
-        
-        /*
-        [HttpPost("shelterRegister")]
-        public async Task<ActionResult<User>> shelterRegister(string organizationName, float longitude, float latitude, string city, string street, string zipCode, string nip, string krs, string phoneNumber, UserDto userDto)
+
+
+        [HttpPost("shelterRegister")] // Rejestracja schroniska wraz z danymi użytkownika 
+        public async Task<ActionResult<Shelter>> ShelterRegister(RegistrationRequest RegistrationRequest)
         {
-            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) || string.IsNullOrWhiteSpace(emailAddress) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
+            //await _authService.UserRegister(userDto);
+            //await _authService.ShelterRegister(shelterDto);
+            //return ();
+            var userResult = await _authService.UserRegister(RegistrationRequest.UserDto);
+            var shelterResult = await _authService.ShelterRegister(RegistrationRequest.ShelterDto);
+
+            if (userResult.Result is BadRequestResult || shelterResult.Result is BadRequestResult)
             {
-                if (password == confirmPassword)
-                {
-                    CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
-
-                    DateTime dateTimeNow = DateTime.Now;
-                    string createdAt = dateTimeNow.ToString("yyyy-MM-dd HH:mm:ss");
-
-                    var user = new User();
-                    user.FirstName = userDto.firstName;
-                    user.LastName = userDto.lastName;
-                    user.Email = userDto.emailAddress;
-                    user.CreatedAt = createdAt;
-                    user.PasswordHash = passwordHash;
-                    user.PasswordSalt = passwordSalt;
-
-                    _dbContext.Users.Add(user);
-                    await _dbContext.SaveChangesAsync();
-
-                    return Ok(user);
-                }
-                return NoContent();
+                return BadRequest("fields filled in incorrectly");
             }
-            return BadRequest("Passwords doesn't match");
-        } */
+            else if(userResult.Result is OkObjectResult || shelterResult.Result is OkObjectResult)
+            {
+                
+
+                return Ok(shelterResult.Value);
+            }
+            else
+                return StatusCode(500, "Sorry, something went wrong");
+        }
 
 
+
+        /*
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using (var hmac = new HMACSHA512())
@@ -125,39 +68,7 @@ namespace LapkaBackend.Application.Controllers
 
         
         
-        [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(string requestEmail, string requestPassword)
-        {
-            User? user =  _dbContext.Users.FirstOrDefault(r => r.Email == requestEmail);
-
-            if (user !=null)
-            {
-                if (!VerifyPasswordHash(requestPassword, user.PasswordHash, user.PasswordSalt))
-                {
-                    return BadRequest("Wrong password.");
-                }
-                else
-                {
-                    string token = CreateToken(user);
-                    return Ok(token);
-                }
-                    
-            }
-            
-
-             
-            return BadRequest("Wrong email.");
-        }
-
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512(passwordSalt))
-            {
-                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                return computedHash.SequenceEqual(passwordHash);
-            }
-
-        }
+       
 
 
         private string CreateToken(User user)
@@ -181,7 +92,7 @@ namespace LapkaBackend.Application.Controllers
             return jwt;
         }
 
-        /*
+        
         
 
         

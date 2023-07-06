@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LapkaBackend.Domain.Entities
+namespace LapkaBackend.Application.ApplicationDtos
 {
-    public class Shelter
+    public class ShelterDto
     {
-        public int Id { get; set; }
         public string OrganizationName { get; set; }
         public float Longtitude { get; set; }
         public float Latitude { get; set; }
@@ -18,7 +17,5 @@ namespace LapkaBackend.Domain.Entities
         public string Nip { get; set; }
         public string Krs { get; set; }
         public string phoneNumber { get; set; }
-        public int UserId { get; set; }
-
     }
 }
