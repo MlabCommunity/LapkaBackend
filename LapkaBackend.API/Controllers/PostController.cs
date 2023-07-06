@@ -13,7 +13,6 @@ using LapkaBackend.Application.Dto;
 using System.Runtime.InteropServices;
 using LapkaBackend.Domain.Models;
 using Microsoft.Extensions.Configuration;
-using LapkaBackend.Domain.Entities;
 
 namespace LapkaBackend.Application.Controllers
 {

@@ -1,6 +1,8 @@
-using LapkaBackend.Domain.Common;
 using LapkaBackend.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Common;
+using LapkaBackend.Application;
+using LapkaBackend.Application.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,13 +15,14 @@ builder.Services.AddSwaggerGen();
 
 // Add services to the container.
 builder.Services.AddControllers();
-//builder.Services.AddApplication();
-//builder.Services.AddInfrastructure();
-//builder.Services.AddDbContext<LapkaBackendDBContext>();
 
-// Dodaj konfiguracjê DbContext i interfejsu do wstrzykiwania zale¿noœci.
-builder.Services.AddDbContext<ILapkaBackendDbContext, LapkaBackendDBContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Server=(localdb)\\MSSQLLocalDB; Database=LapkaBackend;Trusted_Connection=True;")));
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure();
+
+
+
+
+
 
 var app = builder.Build();
 

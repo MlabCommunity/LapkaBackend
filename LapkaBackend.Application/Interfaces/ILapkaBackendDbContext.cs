@@ -6,12 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LapkaBackend.Application.Common
+namespace LapkaBackend.Application.Interfaces
 {
-    public interface IDataContext
+    public interface ILapkaBackendDbContext
     {
         public DbSet<User> Users { get; set; }
-
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
     }
 }

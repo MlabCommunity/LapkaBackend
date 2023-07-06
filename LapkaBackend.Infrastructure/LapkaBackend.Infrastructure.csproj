@@ -10,4 +10,8 @@
       <ProjectReference Include="..\LapkaBackend.Application\LapkaBackend.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Interfaces\" />
+    </ItemGroup>
+
 </Project>

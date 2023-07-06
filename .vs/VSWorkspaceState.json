@@ -1,9 +1,11 @@
 {
   "ExpandedNodes": [
     "",
+    "\\LapkaBackend.Application",
+    "\\LapkaBackend.Application\\Controllers",
     "\\LapkaBackend.Domain",
     "\\LapkaBackend.Domain\\Entities"
   ],
-  "SelectedNode": "\\LapkaBackend.Domain\\Entities\\LapkaBackendDbContext.cs",
+  "SelectedNode": "\\LapkaBackend.Application\\Controllers\\AuthController.cs",
   "PreviewInSolutionExplorer": false
 }

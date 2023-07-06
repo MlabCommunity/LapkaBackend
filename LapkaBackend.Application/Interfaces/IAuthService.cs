@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LapkaBackend.Infrastructure.Interfaces
+namespace LapkaBackend.Application.Interfaces
 {
-    internal interface IDbContext
+    public interface IAuthService
     {
-        int SaveChanges();
     }
 }

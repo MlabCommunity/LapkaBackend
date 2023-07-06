@@ -8,9 +8,10 @@ namespace LapkaBackend.Application.Dto
 {
     public class UserDto
     {
-        public string firstName { get; set; }
-        public string lastName { get; set; }
-        public string email { get; set; }
-        public string Password { get; set; } = String.Empty;
+        public string? firstName { get; set; }
+        public string? lastName { get; set; }
+        public string? emailAddress { get; set; }
+        public string? password { get; set; }
+        public string? confirmPassword { get; set; }
     }
 }
