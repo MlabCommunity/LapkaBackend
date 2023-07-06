@@ -1,4 +1,5 @@
 ﻿using LapkaBackend.Application.Common;
+using LapkaBackend.Application.Dtos;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -23,13 +24,11 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         /// Rejestracja użytkownika
         /// </summary>
-        /// <param name="auth"></param>
-        /// <returns>Return a Created User</returns>
         #region userRegister
         [HttpPost("userRegister")]
-        public async Task<ActionResult<User>> UserRegister(Auth auth) // TODO: Dodać UserDTO 
+        public async Task<ActionResult<User>> UserRegister(UserRegisterDto user)
         {
-            var result = await _authService.RegisterUser(auth);
+            var result = await _authService.RegisterUser(user);
 
             if(result == null)
             {
@@ -41,58 +40,65 @@ namespace LapkaBackend.API.Controllers
         #endregion
 
         /// <summary>
-        /// Let Registered User to SginIn and get JWT Token 
+        ///  Logowanie użytkownika
         /// </summary>
         /// <param name="user"></param>
-        /// <returns>returns JWT string</returns>
+        /// <returns>zwraca AccesToken oraz RefreshToken</returns>
         #region userLogin
         [HttpPost("userLogin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<string> UserLogin(User user)
+        public async Task<ActionResult<string>> UserLogin(UserLoginDto user)
         {
             var result = _authService.LoginUser(user);
 
             var newRefreshToken = _authService.GenerateRefreshToken();
             SetTokenInCookies(newRefreshToken);
-            _authService.SaveRefreshToken(user, newRefreshToken); // sprawdzić czy działa
+            await _authService.SaveRefreshToken(user, newRefreshToken);
 
-            return "acces: " + result + " refresh: " + newRefreshToken.Token;
+            return "acces: " + result + " refresh: " + newRefreshToken.RefreshToken;
         }
         #endregion
 
+        /// <summary>
+        /// Odświeżanie AccesTokenu na podstawe RefreshTokenu
+        /// </summary>
         #region RefreshToken
         [HttpPost("refreshToken")]
-        public async Task<ActionResult<string>> RefreshToken(string refreshToken)
+        public async Task<ActionResult<string>> RefreshAccesToken(string refreshToken)
         {
             var refreshTokenCookies = Request.Cookies["refreshToken"];
-            var user = _userService.FindUserByRefreshToken(refreshToken);
+            var user =await _userService.FindUserByRefreshToken(refreshToken);
 
             if (!refreshToken.Equals(refreshTokenCookies))
             {
                 return Unauthorized("Invalid Refresh Token.");
             }
-            else if (user.Result.TokenExpire < DateTime.Now)
+            else if (user.TokenExpire < DateTime.Now)
             {
                 return Unauthorized("Token expired.");
             }
 
-            string token = _authService.CreateToken(user.Result);
+            string token = _authService.CreateToken(user);
 
             return Ok(token);
         }
         #endregion
 
-
-        private async Task SetTokenInCookies(RefreshToken token)
+        /// <summary>
+        /// Zapisuje Token w Cookies przeglądarki
+        /// </summary>
+        #region SetTokenInCookies
+        private void SetTokenInCookies(TokenDto token) // TODO: Zmienic na tokenDTO
         {
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Expires = token.Expire
+                Expires = token.TokenExpire
             };
-            Response.Cookies.Append("refreshToken", token.Token, cookieOptions);
+            Response.Cookies.Append("refreshToken", token.RefreshToken, cookieOptions);
         }
+        #endregion
     }
 }

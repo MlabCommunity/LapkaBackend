@@ -23,4 +23,8 @@
       <ProjectReference Include="..\LapkaBackend.Domain\LapkaBackend.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Mappers\" />
+    </ItemGroup>
+
 </Project>

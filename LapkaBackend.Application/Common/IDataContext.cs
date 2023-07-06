@@ -12,10 +12,7 @@ namespace LapkaBackend.Application.Common
     public interface IDataContext
     {
         public DbSet<User> Users { get; set; }
-        public DbSet<Auth> Auths { get; set; }
-        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-        public EntityEntry Entry(object entity);
     }
 }

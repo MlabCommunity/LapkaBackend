@@ -24,8 +24,6 @@ namespace LapkaBackend.Infrastructure.Data
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Auth> Auths { get; set; }
-        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
 
     }

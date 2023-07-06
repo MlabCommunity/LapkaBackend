@@ -1,4 +1,5 @@
-﻿using LapkaBackend.Domain.Entities;
+﻿using LapkaBackend.Application.Dtos;
+using LapkaBackend.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace LapkaBackend.Infrastructure.Interfaces
 {
     public interface IAuthService
     {
-        public Task<User> RegisterUser(Auth auth);
-        public string LoginUser(User user);
+        public Task<User> RegisterUser(UserRegisterDto user);
+        public string LoginUser(UserLoginDto user);
         public string CreateToken(User user);
-        public RefreshToken GenerateRefreshToken();
-        public Task SaveRefreshToken(User user, RefreshToken newRefreshToken);
+        public TokenDto GenerateRefreshToken();
+        public Task SaveRefreshToken(UserLoginDto user, TokenDto newRefreshToken);
     }
 }

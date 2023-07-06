@@ -1,6 +1,8 @@
 ﻿using LapkaBackend.Application.Common;
+using LapkaBackend.Application.Dtos;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -24,21 +26,20 @@ namespace LapkaBackend.Infrastructure.Services
 
 
         #region RegisterUser
-        public async Task<User> RegisterUser(Auth auth)
+        public async Task<User> RegisterUser(UserRegisterDto user)
         {
 
-            if (auth.Password != auth.ConfirmPassword)
+            if (user.Password != user.ConfirmPassword)
             {
                 return null;
             }
 
             var newUser = new User()
             {
-                FirstName = auth.FirstName,
-                LastName = auth.LastName,
-                Email = auth.Email,
-                Password = auth.Password,
-                CreatedAt = DateTime.Now
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Password = user.Password
             };
 
             await _dbContext.Users.AddAsync(newUser);
@@ -49,7 +50,7 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region LoginUser
-        public string LoginUser(User user)
+        public string LoginUser(UserLoginDto user)
         {
             var result = _dbContext.Users.FirstOrDefault(x => x.Email == user.Email);
 
@@ -70,12 +71,12 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region CreateToken
-        public string CreateToken(User user)
+        public string CreateToken(User user) 
         {
             List<Claim> claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name, user.Email),
-                new Claim(ClaimTypes.Role, "Admin") // zamiast Admin ma być zmienna Rola z Encji User 
+                new Claim(ClaimTypes.Role, "Admin") // TODO: zamiast Admin ma być zmienna Rola z Encji User 
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -95,13 +96,13 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region GenerateRefreshToken
-        public RefreshToken GenerateRefreshToken()
+        public TokenDto GenerateRefreshToken()
         {
-            var refreshToken = new RefreshToken
+            var refreshToken = new TokenDto
             {
-                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                Expire = DateTime.Now.AddDays(7),
-                Created = DateTime.Now
+                RefreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+                TokenExpire = DateTime.Now.AddDays(7),
+                TokenCreated = DateTime.Now
             };
 
             return refreshToken;
@@ -109,13 +110,15 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region SaveRefreshTokenInDb
-        public async Task SaveRefreshToken(User user, RefreshToken newRefreshToken)
+        public async Task SaveRefreshToken(UserLoginDto user, TokenDto newRefreshToken)
         {
-            user.RefreshToken = newRefreshToken.Token;
-            user.TokenCreated = newRefreshToken.Created;
-            user.TokenExpire = newRefreshToken.Expire;
+            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == user.Email);
 
-            _dbContext.Users.Update(user);
+            result.RefreshToken = newRefreshToken.RefreshToken;
+            result.TokenCreated = newRefreshToken.TokenCreated;
+            result.TokenExpire = newRefreshToken.TokenExpire;
+
+            _dbContext.Users.Update(result);
 
             await _dbContext.SaveChangesAsync();
         }

@@ -19,6 +19,68 @@ namespace LapkaBackend.Infrastructure.Services
             _context = context;
         }
 
+
+        #region GetAllUsers
+        public async Task<List<User>> GetAllUsers()
+        {
+            return await _context.Users.ToListAsync();
+        }
+        #endregion
+
+
+        #region GetUserById
+        public async Task<User> GetUserById(int id)
+        {
+            var result = await _context.Users.FindAsync(id);
+
+            //TODO: Wyjątek z możliwym zwrotem nulla
+
+            return result;
+        }
+        #endregion
+
+
+        #region AddUser
+        public async Task<List<User>> AddUser(User user)
+        {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            return await _context.Users.ToListAsync();
+        }
+        #endregion
+
+
+        #region UpdateUser
+        public async Task<List<User>> UpdateUser(User user, int id)
+        {
+            var result = await GetUserById(id);
+
+            result.FirstName = user.FirstName;
+            result.LastName = user.LastName;
+            result.Email = user.Email;
+
+            _context.Users.Update(result);
+
+            await _context.SaveChangesAsync();
+
+            return await _context.Users.ToListAsync();
+        }
+        #endregion
+
+        #region DeleteUser
+        public async Task<List<User>> DeleteUser(int id)
+        {
+            var result = await GetUserById(id);
+
+            _context.Users.Remove(result);
+            await _context.SaveChangesAsync();
+
+            return await _context.Users.ToListAsync();
+        }
+        #endregion
+
+        #region FindUserByRefreshToken
         public async Task<User> FindUserByRefreshToken(string refreshToken)
         {
             var myUser = await _context.Users
@@ -27,10 +89,11 @@ namespace LapkaBackend.Infrastructure.Services
 
             if (myUser == null) 
             {
-                return null;
+                return null; // TODO: Tu powinien być custom wyjątek
             }
 
             return myUser;
         }
+        #endregion
     }
 }
