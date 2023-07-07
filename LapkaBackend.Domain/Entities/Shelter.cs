@@ -19,6 +19,5 @@ namespace LapkaBackend.Domain.Entities
         public string Krs { get; set; }
         public string phoneNumber { get; set; }
         public int UserId { get; set; }
-
     }
 }

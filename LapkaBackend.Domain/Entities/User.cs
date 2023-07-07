@@ -15,5 +15,7 @@ namespace LapkaBackend.Domain.Entities
         public string CreatedAt { get; set; }
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
+        //public char Role { get; set; } // role u - user, w - worker, a - admin, s - superAdmin
+        //public enum Role { user, worker, admin, superAdmin }
     }
 }

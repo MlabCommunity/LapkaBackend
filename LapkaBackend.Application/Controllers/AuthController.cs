@@ -27,10 +27,10 @@ namespace LapkaBackend.Application.Controllers
         [HttpPost("userRegister")]
         public async Task<ActionResult<User>> UserRegister(UserDto userDto)
         {
-            return await (_authService.UserRegister(userDto));
+            return await _authService.UserRegister(userDto);
         }
 
-        [HttpPost("shelterRegister")] // Rejestracja schroniska wraz z danymi użytkownika 
+        [HttpPost("shelterRegister")] // Rejestracja schroniska wraz z danymi użytkownika
         public async Task<ActionResult<Shelter>> ShelterRegister(RegistrationRequest RegistrationRequest)
         {
             var userResult = await _authService.UserRegister(RegistrationRequest.UserDto);
@@ -42,26 +42,17 @@ namespace LapkaBackend.Application.Controllers
             }
             else if(userResult.Result is OkObjectResult || shelterResult.Result is OkObjectResult)
             {
-                return Ok(shelterResult.Value);// nie wiem dlaczego zwraca 
+                return Ok();
             }
             else
                 return StatusCode(500, "Sorry, something went wrong");
         }
 
-        /* Do zrobienia - Potwierdzenie maila podanego przy rejestracji
-        [HttpPost("loginMobile")]
-        public async Task<ActionResult<TokenResponse>> LoginMobile(LoginUserDto loginUserDto)
-        {
-            return await _authService.Login(loginUserDto);
-        }   */
-
-        
-        [HttpPost("loginWeb")] // logowanie pracownika i schroniska - zwracanie tokenów
-        public async Task<ActionResult<TokenResponse>> LoginWeb(LoginUserDto loginUserDto)
-        {
-
-            return await _authService.Login(loginUserDto);
-        }
+        /* 
+        Do zrobienia:
+        Potwierdzenie maila podanego przy rejestracji
+        logowanie pracownika i schroniska - zwracanie tokenów
+        */
 
         [HttpPost("loginMobile")]
         public async Task<ActionResult<TokenResponse>> LoginMobile(LoginUserDto loginUserDto)

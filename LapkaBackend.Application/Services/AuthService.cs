@@ -26,9 +26,9 @@ namespace LapkaBackend.Application.Services
             _configuration = configuration;
             _dbContext = dbContext;
         }
-            public async Task<ActionResult<User>> UserRegister(UserDto userDto)
+        public async Task<ActionResult<User>> UserRegister(UserDto userDto)
         {
-            if (!(string.IsNullOrWhiteSpace(userDto.firstName) && string.IsNullOrWhiteSpace(userDto.lastName) && string.IsNullOrWhiteSpace(userDto.emailAddress) && string.IsNullOrWhiteSpace(userDto.password) && string.IsNullOrWhiteSpace(userDto.confirmPassword)))
+            if (!string.IsNullOrWhiteSpace(userDto.firstName) && !string.IsNullOrWhiteSpace(userDto.lastName) && !string.IsNullOrWhiteSpace(userDto.emailAddress) && !string.IsNullOrWhiteSpace(userDto.password) && !string.IsNullOrWhiteSpace(userDto.confirmPassword))
             {
                 if (userDto.password == userDto.confirmPassword)
                 {
@@ -89,28 +89,6 @@ namespace LapkaBackend.Application.Services
             return new NoContentResult();
         }
 
-        /*
-        private string CreateToken(User user)
-        {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.FirstName)
-            };
-
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value)); // tu błąd System.ArgumentOutOfRangeException: IDX10720: Unable to create KeyedHashAlgorithm for algorithm 'http://www.w3.org/2001/04/xmldsig-more#hmac-sha512', the key size must be greater than: '512' bits, key has '136' bits. (Parameter 'keyBytes')
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds);
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return jwt;
-        }   */
-
         public async Task<ActionResult<TokenResponse>> Login(LoginUserDto loginUserDto)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == loginUserDto.Email);
@@ -125,8 +103,8 @@ namespace LapkaBackend.Application.Services
                 return new BadRequestObjectResult("Wrong password.");
             }
 
-            string secretKey = "secret-key-secret-key-secret-key";
-            int accessTokenExpiryMinutes = 60;
+            string secretKey = "secret-key-secret-key-secret-key-secret-key";
+            int accessTokenExpiryMinutes = 360;
             string accessToken = GenerateAccessToken(user,secretKey,accessTokenExpiryMinutes);
             string refreshToken = GenerateRefreshToken();
 
@@ -156,10 +134,10 @@ namespace LapkaBackend.Application.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.FirstName),
-            // można dodać inne potrzebne claimy
-        }),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.FirstName),
+                    // można dodać inne potrzebne claimy
+                }),
                 Expires = DateTime.UtcNow.AddMinutes(expiryMinutes),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
