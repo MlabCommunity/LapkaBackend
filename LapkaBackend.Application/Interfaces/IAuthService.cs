@@ -13,5 +13,6 @@ namespace LapkaBackend.Application.Interfaces
     {
         public Task<ActionResult<User>> UserRegister(UserDto userDto);
         public Task<ActionResult<Shelter>> ShelterRegister(ShelterDto shelterDto);
+        public Task<ActionResult<TokenResponse>> Login(LoginUserDto loginUserDto);
     }
 }

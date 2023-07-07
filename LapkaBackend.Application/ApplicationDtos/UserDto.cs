@@ -13,5 +13,7 @@ namespace LapkaBackend.Application.ApplicationDtos
         public string? emailAddress { get; set; }
         public string? password { get; set; }
         public string? confirmPassword { get; set; }
+        //public char Role { get; set; } // role u - user, w - worker, a - admin, s - superAdmin
+        public enum Role { user,worker,admin,superAdmin }
     }
 }

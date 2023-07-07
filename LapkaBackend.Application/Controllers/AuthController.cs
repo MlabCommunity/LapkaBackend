@@ -23,20 +23,16 @@ namespace LapkaBackend.Application.Controllers
             _authService = authService;
         }
 
+
         [HttpPost("userRegister")]
         public async Task<ActionResult<User>> UserRegister(UserDto userDto)
         {
             return await (_authService.UserRegister(userDto));
         }
 
-
-
         [HttpPost("shelterRegister")] // Rejestracja schroniska wraz z danymi użytkownika 
         public async Task<ActionResult<Shelter>> ShelterRegister(RegistrationRequest RegistrationRequest)
         {
-            //await _authService.UserRegister(userDto);
-            //await _authService.ShelterRegister(shelterDto);
-            //return ();
             var userResult = await _authService.UserRegister(RegistrationRequest.UserDto);
             var shelterResult = await _authService.ShelterRegister(RegistrationRequest.ShelterDto);
 
@@ -46,57 +42,47 @@ namespace LapkaBackend.Application.Controllers
             }
             else if(userResult.Result is OkObjectResult || shelterResult.Result is OkObjectResult)
             {
-                
-
-                return Ok(shelterResult.Value);
+                return Ok(shelterResult.Value);// nie wiem dlaczego zwraca 
             }
             else
                 return StatusCode(500, "Sorry, something went wrong");
         }
 
-
-
-        /*
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        /* Do zrobienia - Potwierdzenie maila podanego przy rejestracji
+        [HttpPost("loginMobile")]
+        public async Task<ActionResult<TokenResponse>> LoginMobile(LoginUserDto loginUserDto)
         {
-            using (var hmac = new HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
+            return await _authService.Login(loginUserDto);
+        }   */
+
+        
+        [HttpPost("loginWeb")] // logowanie pracownika i schroniska - zwracanie tokenów
+        public async Task<ActionResult<TokenResponse>> LoginWeb(LoginUserDto loginUserDto)
+        {
+
+            return await _authService.Login(loginUserDto);
         }
 
-        
-        
-       
-
-
-        private string CreateToken(User user)
+        [HttpPost("loginMobile")]
+        public async Task<ActionResult<TokenResponse>> LoginMobile(LoginUserDto loginUserDto)
         {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.FirstName)
-            };
+            return await _authService.Login(loginUserDto);
+        } 
 
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value)); // tu błąd System.ArgumentOutOfRangeException: IDX10720: Unable to create KeyedHashAlgorithm for algorithm 'http://www.w3.org/2001/04/xmldsig-more#hmac-sha512', the key size must be greater than: '512' bits, key has '136' bits. (Parameter 'keyBytes')
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds);
 
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return jwt;
-        }
+
+
+
+        
 
         
         
 
         
 
-         */
+         
     }
 }
