@@ -1,8 +1,10 @@
 ﻿using LapkaBackend.API.Requests;
 using LapkaBackend.API.Requests.Dtos;
 using LapkaBackend.Application;
+using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.IServices;
 using LapkaBackend.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers;
@@ -25,6 +27,48 @@ public class AuthController : ControllerBase
         _userService = userService;
         _tokenService = tokenService;
         _context = context;
+    }
+    
+    /// <summary>
+    ///     Rejestracja użytkownika
+    /// </summary>
+    [HttpPost]
+    [Route("/[controller]/userRegister")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> UserRegister([FromBody] UserRegistrationRequest newUser)
+    {
+        try
+        {
+            await _userService.Register(_context,
+                new Dictionary<string, string>
+                {
+                    { "firstName", newUser.FirstName! },
+                    { "lastName", newUser.LastName! },
+                    { "email", newUser.Email! },
+                    { "password", newUser.Password! },
+                    { "confirmPassword", newUser.ConfirmPassword! }
+                });
+            return NoContent();
+        }
+        catch (PlaceholderException e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
+    /// <summary>
+    ///     Rejestracja schroniska wraz z danymi użytkownika
+    /// </summary>
+    [HttpPost]
+    [Route("/[controller]/shelterRegister")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> ShelterRegister([FromBody] ShelterWithUserRegistrationRequest newShelter)
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -55,62 +99,72 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> LoginMobile([FromBody] LoginRequest loginRequest)
     {
-        User user = await _userService.LoginMobile(_context,
-            new Dictionary<string, string>
-            {
-                {"email", loginRequest.Email }, 
-                { "password", loginRequest.Password }
-            });
-        
-        return user != null 
-            ? Ok(new LoginResultDto
+        try
+        {
+            User user = await _userService.LoginMobile(_context,
+                new Dictionary<string, string>
+                {
+                    { "email", loginRequest.Email! },
+                    { "password", loginRequest.Password! }
+                });
+
+            return Ok(new LoginResultDto
             {
                 accessToken = user.AccessToken,
                 refreshToken = user.RefreshToken
-            })
-            : StatusCode(400);
+            });
+        }
+        catch (PlaceholderException e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
     /// <summary>
-    ///     Rejestracja użytkownika
+    ///     Odnawia access token na podstawie refresh token
     /// </summary>
     [HttpPost]
-    [Route("/[controller]/userRegister")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Register([FromBody] UserRegistrationRequest newUser)
-    {
-        return await _userService.Register(_context,
-            new Dictionary<string, string>
-            {
-                { "firstName", newUser.FirstName },
-                { "lastName", newUser.LastName },
-                { "email", newUser.Email },
-                { "password", newUser.Password },
-                { "confirmPassword", newUser.ConfirmPassword }
-            })
-            ? Ok()
-            : StatusCode(400);
-    }
-    
-    /// <summary>
-    /// Odnawia access token na podstawie refresh token (Working on it)
-    /// </summary>
-    [HttpPost]
+    [Authorize (Roles = "User")]
     [Route("/[controller]/useToken")]
     [ProducesResponseType(typeof(UseRefreshTokenResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UseToken([FromBody] LoginResultDto tokens)
     {
-        var newToken = await _tokenService.UseToken(tokens.accessToken, tokens.refreshToken, _context);
-        
-        return Ok(new UseRefreshTokenResultDto
+        try
         {
-            accessToken = newToken
-        });
+            var newToken = await _tokenService.UseToken(tokens.accessToken!, tokens.refreshToken!, _context);
+            return Ok(new UseRefreshTokenResultDto
+            {
+                accessToken = newToken
+            });
+        }
+        catch (PlaceholderException e)
+        {
+            return BadRequest(e.Message);
+        }
     }
     
-
+    /// <summary>
+    ///     Usuwa refresh token z bazy
+    /// </summary>
+    [HttpPost]
+    [Authorize (Roles = "User")]
+    [Route("/[controller]/revokeToken")]
+    [ProducesResponseType(typeof(UseRefreshTokenResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> RevokeToken([FromBody] TokenRequest token)
+    {
+        try
+        {
+            await _tokenService.RevokeToken(token.refreshToken!, _context);
+            return NoContent();
+        }
+        catch (PlaceholderException e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
 }
