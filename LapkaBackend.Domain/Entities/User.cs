@@ -12,4 +12,7 @@ public class User
     public string? RefreshToken { get; set; }
     [NotMapped]
     public string AccessToken { get; set; } = null!;
+    
+    
+    
 }
