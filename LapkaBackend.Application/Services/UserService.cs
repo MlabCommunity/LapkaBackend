@@ -93,5 +93,21 @@ namespace LapkaBackend.Infrastructure.Services
             return myUser;
         }
         #endregion
+
+        #region FindUserByRefreshToken
+        public async Task<User> FindUserByEmail(string email)
+        {
+            var myUser = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Email == email);
+
+            if (myUser == null)
+            {
+                return null; // TODO: Tu powinien być custom wyjątek
+            }
+
+            return myUser;
+        }
+        #endregion
     }
 }

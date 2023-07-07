@@ -29,7 +29,10 @@ namespace LapkaBackend.API.Controllers
         [HttpPost("userRegister")]
         public async Task<ActionResult<User>> UserRegister(UserRegisterDto user)
         {
+
+            var token = _authService.GenerateRefreshToken();
             var result = await _authService.RegisterUser(user);
+
 
             if(result == null)
             {
@@ -52,17 +55,26 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<LoginResultDto>> UserLogin(UserLoginDto user)
         {   
+         
             var result = _authService.LoginUser(user);
 
-            var newRefreshToken = _authService.GenerateRefreshToken();
-            SetTokenInCookies(newRefreshToken);
-            await _authService.SaveRefreshToken(user, newRefreshToken);
+            LoginResultDto tokens = new LoginResultDto();
 
-            LoginResultDto tokens = new LoginResultDto()
-            {
-                AccessToken = result,
-                RefreshToken = newRefreshToken.RefreshToken
-            };
+            var findedUser = await _userService.FindUserByEmail(user.Email);
+            tokens.RefreshToken = findedUser.RefreshToken;
+            //TODO: SPrawdzaać ważność refreshTokenu
+
+            if (true)
+            { 
+                var newRefreshToken = _authService.GenerateRefreshToken();
+                SetTokenInCookies(newRefreshToken);
+                await _authService.SaveRefreshToken(user, newRefreshToken);
+                tokens.RefreshToken = newRefreshToken;
+            }
+
+            tokens.AccessToken = result;
+            
+
             return tokens;
         }
         #endregion
@@ -102,14 +114,13 @@ namespace LapkaBackend.API.Controllers
         /// Zapisuje Token w Cookies przeglądarki
         /// </summary>
         #region SetTokenInCookies
-        private void SetTokenInCookies(TokenDto token)
+        private void SetTokenInCookies(string token)
         {
             var cookieOptions = new CookieOptions
             {
-                HttpOnly = true,
-                Expires = token.TokenExpire
+                HttpOnly = true
             };
-            Response.Cookies.Append("refreshToken", token.RefreshToken, cookieOptions);
+            Response.Cookies.Append("refreshToken", token, cookieOptions);
         }
         #endregion
 

@@ -25,7 +25,6 @@ namespace LapkaBackend.Infrastructure.Services
             _configuration = configuration;
         }
 
-
         #region RegisterUser
         public async Task<User> RegisterUser(UserRegisterDto user)
         {
@@ -41,6 +40,7 @@ namespace LapkaBackend.Infrastructure.Services
                 LastName = user.LastName,
                 Email = user.Email,
                 Password = user.Password,
+                RefreshToken = GenerateRefreshToken(),
                 CreatedAt = DateTime.Now
             };
 
@@ -52,7 +52,7 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region LoginUser
-        public string LoginUser(UserLoginDto user)
+        public  string LoginUser(UserLoginDto user)
         {
             var result = _dbContext.Users.FirstOrDefault(x => x.Email == user.Email);
 
@@ -66,9 +66,9 @@ namespace LapkaBackend.Infrastructure.Services
                 return "Hasła się nie zgadzają";
             }
 
-            string token = CreateToken(result);
+            var token = CreateToken(result);
 
-            return (token);
+            return token;
         }
         #endregion
 
@@ -98,27 +98,30 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region GenerateRefreshToken
-        public TokenDto GenerateRefreshToken()
+        public string GenerateRefreshToken()
         {
-            var refreshToken = new TokenDto
-            {
-                RefreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                TokenExpire = DateTime.Now.AddDays(7),
-                TokenCreated = DateTime.Now
-            };
 
-            return refreshToken;
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Token").Value!));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                    expires: DateTime.Now.AddDays(7),
+                    signingCredentials: creds
+                );
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return jwt;
         }
         #endregion
 
         #region SaveRefreshTokenInDb
-        public async Task SaveRefreshToken(UserLoginDto user, TokenDto newRefreshToken)
+        public async Task SaveRefreshToken(UserLoginDto user, string newRefreshToken)
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == user.Email);
 
-            result.RefreshToken = newRefreshToken.RefreshToken;
-            result.TokenCreated = newRefreshToken.TokenCreated;
-            result.TokenExpire = newRefreshToken.TokenExpire;
+            result.RefreshToken = newRefreshToken;
 
             _dbContext.Users.Update(result);
 

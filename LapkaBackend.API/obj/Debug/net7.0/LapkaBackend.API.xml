@@ -21,7 +21,7 @@
             Odświeżanie AccesTokenu na podstawe RefreshTokenu
             </summary>
         </member>
-        <member name="M:LapkaBackend.API.Controllers.AuthController.SetTokenInCookies(LapkaBackend.Application.Dtos.TokenDto)">
+        <member name="M:LapkaBackend.API.Controllers.AuthController.SetTokenInCookies(System.String)">
             <summary>
             Zapisuje Token w Cookies przeglądarki
             </summary>
@@ -30,8 +30,6 @@
             <summary>
             Usuwa refresh token z bazy
             </summary>
-            <param name="tokens"></param>
-            <returns></returns>
         </member>
         <member name="M:LapkaBackend.API.Controllers.UserController.GetAllUsers">
             <summary>
