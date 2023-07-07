@@ -116,8 +116,6 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         /// Usuwa refresh token z bazy
         /// </summary>
-        /// <param name="tokens"></param>
-        /// <returns></returns>
         #region RevokeToken
         [HttpPost("revokeToken")]
         public async Task RevokeToken(TokensDto tokens)

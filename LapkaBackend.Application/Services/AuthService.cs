@@ -126,6 +126,7 @@ namespace LapkaBackend.Infrastructure.Services
         }
         #endregion
 
+        #region IsAccesTokenValid
         public bool IsAccesTokenValid(string token)
         {
             JwtSecurityToken jwtSecurityToken;
@@ -139,7 +140,9 @@ namespace LapkaBackend.Infrastructure.Services
             }
             return jwtSecurityToken.ValidTo > DateTime.UtcNow;
         }
+        #endregion
 
+        #region RevokeToken
         public async Task RevokeToken(string token)
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x=> x.RefreshToken == token);
@@ -152,5 +155,6 @@ namespace LapkaBackend.Infrastructure.Services
                 await _dbContext.SaveChangesAsync();
             }
         }
+        #endregion
     }
 }

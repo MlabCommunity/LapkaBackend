@@ -23,6 +23,27 @@ namespace LapkaBackend.Infrastructure.Data
             optionsBuilder.UseSqlServer("Server=localhost;Database=Lapka;Trusted_Connection=true;TrustServerCertificate=true;");
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            // TODO: Puszczenie migracji po dodaniu wszystkich atrybutów
+            modelBuilder.Entity<User>()
+                .ToTable("Users")
+                .HasKey(u => u.Id);
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Email)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Password)
+                .IsRequired()
+                .HasMaxLength(8)
+                .HasAnnotation("RegularExpression", "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
+        }
+
+
         public DbSet<User> Users { get; set; }
 
 
