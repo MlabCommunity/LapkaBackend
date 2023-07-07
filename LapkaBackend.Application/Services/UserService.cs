@@ -1,4 +1,6 @@
 ﻿using LapkaBackend.Application.Common;
+using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +21,6 @@ namespace LapkaBackend.Infrastructure.Services
             _context = context;
         }
 
-
         #region GetAllUsers
         public async Task<List<User>> GetAllUsers()
         {
@@ -27,18 +28,16 @@ namespace LapkaBackend.Infrastructure.Services
         }
         #endregion
 
-
         #region GetUserById
         public async Task<User> GetUserById(int id)
         {
             var result = await _context.Users.FindAsync(id);
 
-            //TODO: Wyjątek z możliwym zwrotem nulla
+            //TODO: Wyjątek z możliwym zwrotem nulla, dodać new exception
 
             return result;
         }
         #endregion
-
 
         #region AddUser
         public async Task<List<User>> AddUser(User user)
@@ -49,7 +48,6 @@ namespace LapkaBackend.Infrastructure.Services
             return await _context.Users.ToListAsync();
         }
         #endregion
-
 
         #region UpdateUser
         public async Task<List<User>> UpdateUser(User user, int id)
@@ -81,11 +79,11 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region FindUserByRefreshToken
-        public async Task<User> FindUserByRefreshToken(string refreshToken)
+        public async Task<User> FindUserByRefreshToken(TokensDto token)
         {
             var myUser = await _context.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+                .FirstOrDefaultAsync(u => u.RefreshToken == token.RefreshToken);
 
             if (myUser == null) 
             {

@@ -21,7 +21,6 @@ internal class Program
 
         builder.Services.AddControllers();
 
-
         builder.Services.AddApplication();
         builder.Services.AddInfrasturcture();
 
@@ -44,7 +43,7 @@ internal class Program
 
             options.OperationFilter<SecurityRequirementsOperationFilter>();
         });
-
+        //TODO: Spróbowaæ wy³aczyæ cia³o na 400 error
 
         //builder.Services.AddScoped<IUserService, UserService>();
 

@@ -1,4 +1,6 @@
-﻿using LapkaBackend.Domain.Entities;
+﻿using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Requests;
+using LapkaBackend.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +16,7 @@ namespace LapkaBackend.Infrastructure.Interfaces
         Task<List<User>> AddUser(User user);
         Task<List<User>> UpdateUser(User user, int id);
         Task<List<User>> DeleteUser(int id);
-        public Task<User> FindUserByRefreshToken(string refreshToken);
+        public Task<User> FindUserByRefreshToken(TokensDto token);
 
     }
 }

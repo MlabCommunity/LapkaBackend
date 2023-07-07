@@ -1,4 +1,6 @@
-﻿using LapkaBackend.Domain.Entities;
+﻿using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Requests;
+using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -90,9 +92,9 @@ namespace LapkaBackend.API.Controllers
         /// </summary>
         #region GetUserByRefreshToken
         [HttpGet("GetUserByRefreshToken")]
-        public async Task<ActionResult<User>> GetUserByRefreshToken(string refreshToken)
+        public async Task<ActionResult<User>> GetUserByRefreshToken(TokensDto token)
         {
-            var result =await _userService.FindUserByRefreshToken(refreshToken);
+            var result =await _userService.FindUserByRefreshToken(token);
 
             if(result == null)
             {

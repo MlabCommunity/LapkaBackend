@@ -17,6 +17,5 @@ namespace LapkaBackend.Domain.Entities
         public string RefreshToken { get; set; } = string.Empty;
         public DateTime TokenCreated { get; set; }
         public DateTime TokenExpire { get; set; }
-        // TODO: Puścić migracje po dodaniu już wszystkich DTO, bo jest usunięta kolumna AccessToken i mogą być jakieś problemy
     }
 }

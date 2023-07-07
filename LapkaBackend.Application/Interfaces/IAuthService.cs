@@ -14,6 +14,8 @@ namespace LapkaBackend.Infrastructure.Interfaces
         public string LoginUser(UserLoginDto user);
         public string CreateToken(User user);
         public TokenDto GenerateRefreshToken();
-        public Task SaveRefreshToken(UserLoginDto user, TokenDto newRefreshToken);
+        public Task SaveRefreshToken(UserLoginDto user, TokenDto tokens);
+        public bool IsAccesTokenValid(string token);
+        public Task RevokeToken(string token);
     }
 }

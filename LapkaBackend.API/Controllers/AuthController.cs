@@ -1,5 +1,6 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -49,15 +50,20 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<string>> UserLogin(UserLoginDto user)
-        {
+        public async Task<ActionResult<LoginResultDto>> UserLogin(UserLoginDto user)
+        {   
             var result = _authService.LoginUser(user);
 
             var newRefreshToken = _authService.GenerateRefreshToken();
             SetTokenInCookies(newRefreshToken);
             await _authService.SaveRefreshToken(user, newRefreshToken);
 
-            return "acces: " + result + " refresh: " + newRefreshToken.RefreshToken;
+            LoginResultDto tokens = new LoginResultDto()
+            {
+                AccessToken = result,
+                RefreshToken = newRefreshToken.RefreshToken
+            };
+            return tokens;
         }
         #endregion
 
@@ -66,16 +72,22 @@ namespace LapkaBackend.API.Controllers
         /// </summary>
         #region RefreshToken
         [HttpPost("refreshToken")]
-        public async Task<ActionResult<string>> RefreshAccesToken(string refreshToken)
+        public async Task<ActionResult<string>> RefreshAccesToken(TokensDto tokens)
         {
             var refreshTokenCookies = Request.Cookies["refreshToken"];
-            var user =await _userService.FindUserByRefreshToken(refreshToken);
+            var user = await _userService.FindUserByRefreshToken(tokens);
 
-            if (!refreshToken.Equals(refreshTokenCookies))
+            if(_authService.IsAccesTokenValid(tokens.AccessToken))
+            {
+                return Ok(tokens.AccessToken);
+            }
+
+            if (!tokens.RefreshToken.Equals(refreshTokenCookies))
             {
                 return Unauthorized("Invalid Refresh Token.");
             }
-            else if (user.TokenExpire < DateTime.Now)
+
+            if (user.TokenExpire < DateTime.Now)
             {
                 return Unauthorized("Token expired.");
             }
@@ -90,7 +102,7 @@ namespace LapkaBackend.API.Controllers
         /// Zapisuje Token w Cookies przeglądarki
         /// </summary>
         #region SetTokenInCookies
-        private void SetTokenInCookies(TokenDto token) // TODO: Zmienic na tokenDTO
+        private void SetTokenInCookies(TokenDto token)
         {
             var cookieOptions = new CookieOptions
             {
@@ -98,6 +110,19 @@ namespace LapkaBackend.API.Controllers
                 Expires = token.TokenExpire
             };
             Response.Cookies.Append("refreshToken", token.RefreshToken, cookieOptions);
+        }
+        #endregion
+
+        /// <summary>
+        /// Usuwa refresh token z bazy
+        /// </summary>
+        /// <param name="tokens"></param>
+        /// <returns></returns>
+        #region RevokeToken
+        [HttpPost("revokeToken")]
+        public async Task RevokeToken(TokensDto tokens)
+        {
+            await _authService.RevokeToken(tokens.RefreshToken);
         }
         #endregion
     }

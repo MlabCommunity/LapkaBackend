@@ -16,7 +16,7 @@
             <param name="user"></param>
             <returns>zwraca AccesToken oraz RefreshToken</returns>
         </member>
-        <member name="M:LapkaBackend.API.Controllers.AuthController.RefreshAccesToken(System.String)">
+        <member name="M:LapkaBackend.API.Controllers.AuthController.RefreshAccesToken(LapkaBackend.Application.Dtos.TokensDto)">
             <summary>
             Odświeżanie AccesTokenu na podstawe RefreshTokenu
             </summary>
@@ -25,6 +25,13 @@
             <summary>
             Zapisuje Token w Cookies przeglądarki
             </summary>
+        </member>
+        <member name="M:LapkaBackend.API.Controllers.AuthController.RevokeToken(LapkaBackend.Application.Dtos.TokensDto)">
+            <summary>
+            Usuwa refresh token z bazy
+            </summary>
+            <param name="tokens"></param>
+            <returns></returns>
         </member>
         <member name="M:LapkaBackend.API.Controllers.UserController.GetAllUsers">
             <summary>
@@ -51,7 +58,7 @@
             Usuwa użytkownika z bazy
             </summary>
         </member>
-        <member name="M:LapkaBackend.API.Controllers.UserController.GetUserByRefreshToken(System.String)">
+        <member name="M:LapkaBackend.API.Controllers.UserController.GetUserByRefreshToken(LapkaBackend.Application.Dtos.TokensDto)">
             <summary>
             Wyszukaj użytkownika po refreshTokenie
             </summary>

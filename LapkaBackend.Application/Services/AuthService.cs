@@ -5,6 +5,7 @@ using LapkaBackend.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualBasic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -39,7 +40,8 @@ namespace LapkaBackend.Infrastructure.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                Password = user.Password
+                Password = user.Password,
+                CreatedAt = DateTime.Now
             };
 
             await _dbContext.Users.AddAsync(newUser);
@@ -123,5 +125,32 @@ namespace LapkaBackend.Infrastructure.Services
             await _dbContext.SaveChangesAsync();
         }
         #endregion
+
+        public bool IsAccesTokenValid(string token)
+        {
+            JwtSecurityToken jwtSecurityToken;
+            try
+            {
+                jwtSecurityToken = new JwtSecurityToken(token);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return jwtSecurityToken.ValidTo > DateTime.UtcNow;
+        }
+
+        public async Task RevokeToken(string token)
+        {
+            var result = await _dbContext.Users.FirstOrDefaultAsync(x=> x.RefreshToken == token);
+
+            if (result != null)
+            {
+                result.RefreshToken = "";
+                // TODO: Dopytać czy można ustawić jakoś datetime na pusty
+                _dbContext.Users.Update(result);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }
