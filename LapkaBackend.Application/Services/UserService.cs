@@ -29,7 +29,7 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region GetUserById
-        public async Task<User> GetUserById(int id)
+        public async Task<User> GetUserById(Guid id)
         {
             var result = await _context.Users.FindAsync(id);
 
@@ -50,7 +50,7 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region UpdateUser
-        public async Task<List<User>> UpdateUser(User user, int id)
+        public async Task<List<User>> UpdateUser(User user, Guid id)
         {
             var result = await GetUserById(id);
 
@@ -67,7 +67,7 @@ namespace LapkaBackend.Infrastructure.Services
         #endregion
 
         #region DeleteUser
-        public async Task<List<User>> DeleteUser(int id)
+        public async Task<List<User>> DeleteUser(Guid id)
         {
             var result = await GetUserById(id);
 

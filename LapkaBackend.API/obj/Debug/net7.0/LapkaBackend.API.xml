@@ -36,7 +36,7 @@
             Pobiera listę użytkowników
             </summary>
         </member>
-        <member name="M:LapkaBackend.API.Controllers.UserController.GetUserById(System.Int32)">
+        <member name="M:LapkaBackend.API.Controllers.UserController.GetUserById(System.Guid)">
             <summary>
             Informacje na temat użytkownika o podanym Id
             </summary>
@@ -46,12 +46,12 @@
             Dodaje użytkownika do bazy
             </summary>
         </member>
-        <member name="M:LapkaBackend.API.Controllers.UserController.UpdateUser(LapkaBackend.Domain.Entities.User,System.Int32)">
+        <member name="M:LapkaBackend.API.Controllers.UserController.UpdateUser(LapkaBackend.Domain.Entities.User,System.Guid)">
             <summary>
             Pozwala zmodyfikować użytkownikowi imie, nazwisko oraz email
             </summary>
         </member>
-        <member name="M:LapkaBackend.API.Controllers.UserController.DeleteTeam(System.Int32)">
+        <member name="M:LapkaBackend.API.Controllers.UserController.DeleteTeam(System.Guid)">
             <summary>
             Usuwa użytkownika z bazy
             </summary>

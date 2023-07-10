@@ -12,10 +12,10 @@ namespace LapkaBackend.Infrastructure.Interfaces
     public interface IUserService
     {
         Task<List<User>> GetAllUsers();
-        Task<User> GetUserById(int id);
+        Task<User> GetUserById(Guid id);
         Task<List<User>> AddUser(User user);
-        Task<List<User>> UpdateUser(User user, int id);
-        Task<List<User>> DeleteUser(int id);
+        Task<List<User>> UpdateUser(User user, Guid id);
+        Task<List<User>> DeleteUser(Guid id);
         public Task<User> FindUserByRefreshToken(TokensDto token);
         public Task<User> FindUserByEmail(string email);
 

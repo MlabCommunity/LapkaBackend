@@ -83,7 +83,6 @@ C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Micros
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Scrutor.dll
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.dll
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
-C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\obj\Debug\net7.0\LapkaBackend.API.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\LapkaBackend.API.xml
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\DocumentFormat.OpenXml.dll
 C:\Users\User\source\repos\LapkaBackend\LapkaBackend.API\bin\Debug\net7.0\System.IO.Packaging.dll

@@ -35,7 +35,7 @@ namespace LapkaBackend.API.Controllers
         /// </summary>
         #region GetUserById
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUserById(int id)
+        public async Task<ActionResult<User>> GetUserById(Guid id)
         {
             var result =await _userService.GetUserById(id);
 
@@ -66,7 +66,7 @@ namespace LapkaBackend.API.Controllers
         /// </summary>
         #region UpdateUser
         [HttpPut]
-        public async Task<ActionResult<List<User>>> UpdateUser(User user, int id)
+        public async Task<ActionResult<List<User>>> UpdateUser(User user, Guid id)
         {
             var result = await _userService.UpdateUser(user, id);
 
@@ -79,7 +79,7 @@ namespace LapkaBackend.API.Controllers
         /// </summary>
         #region DeleteTeam
         [HttpDelete]
-        public async Task<ActionResult<List<User>>> DeleteTeam(int id)
+        public async Task<ActionResult<List<User>>> DeleteTeam(Guid id)
         {
             var result = await _userService.DeleteUser(id);
 
