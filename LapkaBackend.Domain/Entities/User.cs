@@ -8,7 +8,7 @@ namespace LapkaBackend.Domain.Entities
 {
     public class User
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
@@ -17,5 +17,6 @@ namespace LapkaBackend.Domain.Entities
         public byte[] PasswordSalt { get; set; }
         //public char Role { get; set; } // role u - user, w - worker, a - admin, s - superAdmin
         //public enum Role { user, worker, admin, superAdmin }
+        public string RefreshToken { get; set; }
     }
 }

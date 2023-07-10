@@ -55,3 +55,12 @@
 /LapkaBackend.Application/obj/rider.project.restore.info
 /LapkaBackend.Domain/obj/rider.project.restore.info
 /LapkaBackend.Infrastructure/obj/rider.project.restore.info
+/.vs
+/LapkaBackend.API/bin/
+/LapkaBackend.API/obj/
+/LapkaBackend.Application/bin/
+/LapkaBackend.Application/obj/
+/LapkaBackend.Domain/bin/
+/LapkaBackend.Domain/obj/
+/LapkaBackend.Infrastructure/bin/
+/LapkaBackend.Infrastructure/obj/

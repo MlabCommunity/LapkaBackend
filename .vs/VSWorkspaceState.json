@@ -3,10 +3,11 @@
     "",
     "\\LapkaBackend.Application",
     "\\LapkaBackend.Application\\Controllers",
+    "\\LapkaBackend.Application\\Services",
     "\\LapkaBackend.Domain",
     "\\LapkaBackend.Domain\\Entities",
     "\\LapkaBackend.Infrastructure"
   ],
-  "SelectedNode": "\\LapkaBackend.Application\\Controllers\\AuthController.cs",
+  "SelectedNode": "\\LapkaBackend.Application\\Services\\AuthService.cs",
   "PreviewInSolutionExplorer": false
 }

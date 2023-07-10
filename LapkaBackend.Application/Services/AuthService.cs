@@ -44,6 +44,7 @@ namespace LapkaBackend.Application.Services
                     user.CreatedAt = createdAt;
                     user.PasswordHash = passwordHash;
                     user.PasswordSalt = passwordSalt;
+                    user.RefreshToken = GenerateRefreshToken();
 
                     _dbContext.Users.Add(user);
                     await _dbContext.SaveChangesAsync();
@@ -126,7 +127,7 @@ namespace LapkaBackend.Application.Services
             }
         }
 
-        public string GenerateAccessToken(User user, string secretKey, int expiryMinutes)
+        private string GenerateAccessToken(User user, string secretKey, int expiryMinutes)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(secretKey);
@@ -145,7 +146,8 @@ namespace LapkaBackend.Application.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public string GenerateRefreshToken()
+        
+        private string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
             using (var rng = RandomNumberGenerator.Create())
@@ -155,6 +157,27 @@ namespace LapkaBackend.Application.Services
             }
         }
 
+        
+        private string GenerateToken(User user, string secretKey, int expiryMinutes, List<string> claims)
+        {
+            var expiryDays = 15;
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(secretKey);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.FirstName),
+                    new Claim("Expiration", DateTime.UtcNow.AddDays(expiryDays).ToString()),
+                }),
+                Expires = DateTime.UtcNow.AddDays(expiryDays),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
 
 
     }

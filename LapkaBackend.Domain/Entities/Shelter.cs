@@ -8,7 +8,7 @@ namespace LapkaBackend.Domain.Entities
 {
     public class Shelter
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string OrganizationName { get; set; }
         public float Longtitude { get; set; }
         public float Latitude { get; set; }

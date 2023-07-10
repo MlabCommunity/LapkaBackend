@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LapkaBackend.Domain.Migrations
+namespace LapkaBackend.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class ShelterTableAdded : Migration
+    public partial class ChangesIdIntToGuid3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,8 +15,7 @@ namespace LapkaBackend.Domain.Migrations
                 name: "Shelters",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OrganizationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Longtitude = table.Column<float>(type: "real", nullable: false),
                     Latitude = table.Column<float>(type: "real", nullable: false),
@@ -31,6 +31,24 @@ namespace LapkaBackend.Domain.Migrations
                 {
                     table.PrimaryKey("PK_Shelters", x => x.Id);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: false),
+                    CreatedAt = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PasswordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    PasswordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
         }
 
         /// <inheritdoc />
@@ -38,6 +56,9 @@ namespace LapkaBackend.Domain.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Shelters");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }
