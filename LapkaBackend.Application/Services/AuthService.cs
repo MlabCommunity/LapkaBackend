@@ -1,10 +1,12 @@
-﻿using LapkaBackend.Application.ApplicationDtos;
+﻿using Azure.Core;
+using LapkaBackend.Application.ApplicationDtos;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -21,6 +23,7 @@ namespace LapkaBackend.Application.Services
     {
         private readonly ILapkaBackendDbContext _dbContext;
         private readonly IConfiguration _configuration;
+        private readonly string secretKey = "secret-key-secret-key-secret-key-secret-key";
         public AuthService(IConfiguration configuration, ILapkaBackendDbContext dbContext)
         {
             _configuration = configuration;
@@ -44,7 +47,7 @@ namespace LapkaBackend.Application.Services
                     user.CreatedAt = createdAt;
                     user.PasswordHash = passwordHash;
                     user.PasswordSalt = passwordSalt;
-                    user.RefreshToken = GenerateRefreshToken();
+                    user.RefreshToken = GenerateRefreshToken(user, secretKey, 15);
 
                     _dbContext.Users.Add(user);
                     await _dbContext.SaveChangesAsync();
@@ -66,7 +69,6 @@ namespace LapkaBackend.Application.Services
             }
         }
 
-        // Rejestracja schroniska
         public async Task<ActionResult<Shelter>> ShelterRegister(ShelterDto shelterDto)
         {
             if (!(string.IsNullOrWhiteSpace(shelterDto.City) && string.IsNullOrWhiteSpace(shelterDto.Krs) && string.IsNullOrWhiteSpace(shelterDto.Nip) && string.IsNullOrWhiteSpace(shelterDto.OrganizationName) && string.IsNullOrWhiteSpace(shelterDto.phoneNumber) && string.IsNullOrWhiteSpace(shelterDto.Street) && string.IsNullOrWhiteSpace(shelterDto.ZipCode)))
@@ -89,7 +91,7 @@ namespace LapkaBackend.Application.Services
             }
             return new NoContentResult();
         }
-
+        
         public async Task<ActionResult<TokenResponse>> Login(LoginUserDto loginUserDto)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == loginUserDto.Email);
@@ -104,11 +106,21 @@ namespace LapkaBackend.Application.Services
                 return new BadRequestObjectResult("Wrong password.");
             }
 
-            string secretKey = "secret-key-secret-key-secret-key-secret-key";
-            int accessTokenExpiryMinutes = 360;
-            string accessToken = GenerateAccessToken(user,secretKey,accessTokenExpiryMinutes);
-            string refreshToken = GenerateRefreshToken();
+            string refreshToken;
+            if (!IsTokenValid(user.RefreshToken))
+            {
+                refreshToken = GenerateRefreshToken(user, secretKey, 15);
 
+                user.RefreshToken = refreshToken;
+                await _dbContext.SaveChangesAsync();               
+            }
+            else
+            {
+                refreshToken = user.RefreshToken;
+            }
+
+            string accessToken = GenerateAccessToken(user, secretKey, 60);
+            
             var tokenResponse = new TokenResponse
             {
                 AccessToken = accessToken,
@@ -117,6 +129,31 @@ namespace LapkaBackend.Application.Services
 
             return new OkObjectResult(tokenResponse);
         }
+        
+        private bool IsTokenValid(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var Token = tokenHandler.ReadJwtToken(token);
+            if (Token.Payload.TryGetValue("Expiration", out var expirationClaimValue) && expirationClaimValue is string expirationString)
+            {
+                if (DateTime.TryParse(expirationString, out var expirationDate))
+                {
+                    return DateTime.UtcNow >= expirationDate;
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid expiration date format");
+                }
+            }
+            else if (expirationClaimValue is DateTime expirationDate)
+            {
+                return DateTime.UtcNow >= expirationDate;
+            }
+            else
+            {
+                throw new ArgumentException("Expiration claim value is not a valid date");
+            }
+        } 
 
         private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
         {
@@ -146,7 +183,7 @@ namespace LapkaBackend.Application.Services
             return tokenHandler.WriteToken(token);
         }
 
-        
+        /*
         private string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
@@ -155,12 +192,11 @@ namespace LapkaBackend.Application.Services
                 rng.GetBytes(randomNumber);
                 return Convert.ToBase64String(randomNumber);
             }
-        }
+        }   */
 
         
-        private string GenerateToken(User user, string secretKey, int expiryMinutes, List<string> claims)
+        private string GenerateRefreshToken(User user, string secretKey, int expiryDays)
         {
-            var expiryDays = 15;
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(secretKey);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -178,7 +214,7 @@ namespace LapkaBackend.Application.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-
-
+        
+        
     }
 }
