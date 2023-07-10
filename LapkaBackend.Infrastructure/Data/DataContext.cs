@@ -31,9 +31,6 @@ namespace LapkaBackend.Infrastructure.Data
                 .ToTable("Users")
                 .HasKey(u => u.Id);
 
-            //modelBuilder.Entity<User>()
-            //    .Property(x => x.Id).HasDefaultValue("NEWID()");
-
             modelBuilder.Entity<User>()
                 .Property(u => u.Email)
                 .HasMaxLength(255)

@@ -16,7 +16,5 @@ namespace LapkaBackend.Domain.Entities
         public string Password { get; set; }
         public DateTime CreatedAt { get; set; }
         public string RefreshToken { get; set; } = string.Empty;
-        public DateTime TokenCreated { get; set; }
-        public DateTime TokenExpire { get; set; }
     }
 }

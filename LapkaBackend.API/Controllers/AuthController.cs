@@ -63,8 +63,7 @@ namespace LapkaBackend.API.Controllers
             var findedUser = await _userService.FindUserByEmail(user.Email);
             tokens.RefreshToken = findedUser.RefreshToken;
 
-            //TODO: (Najwazniejsze) SPrawdzaać ważność refreshTokenu, podobną metodą co do valid
-            if (_authService.IsAccesTokenValid(tokens.RefreshToken))
+            if (!_authService.IsAccesTokenValid(tokens.RefreshToken))
             { 
                 var newRefreshToken = _authService.GenerateRefreshToken();
                 SetTokenInCookies(newRefreshToken);
@@ -87,7 +86,6 @@ namespace LapkaBackend.API.Controllers
         public async Task<ActionResult<string>> RefreshAccesToken(TokensDto tokens)
         {
             var refreshTokenCookies = Request.Cookies["refreshToken"];
-            var user = await _userService.FindUserByRefreshToken(tokens);
 
             if(_authService.IsAccesTokenValid(tokens.AccessToken))
             {
@@ -99,11 +97,12 @@ namespace LapkaBackend.API.Controllers
                 return Unauthorized("Invalid Refresh Token.");
             }
 
-            if (user.TokenExpire < DateTime.Now)
+            if (!_authService.IsAccesTokenValid(tokens.RefreshToken))
             {
                 return Unauthorized("Token expired.");
             }
 
+            var user = await _userService.FindUserByRefreshToken(tokens);
             string token = _authService.CreateToken(user);
 
             return Ok(token);

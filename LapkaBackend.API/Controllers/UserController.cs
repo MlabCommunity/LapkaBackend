@@ -16,7 +16,7 @@ namespace LapkaBackend.API.Controllers
         {
             _userService = userService;
         }
-
+        
         /// <summary>
         /// Pobiera listę użytkowników
         /// </summary>

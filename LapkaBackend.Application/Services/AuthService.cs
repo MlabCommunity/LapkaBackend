@@ -153,7 +153,6 @@ namespace LapkaBackend.Infrastructure.Services
             if (result != null)
             {
                 result.RefreshToken = "";
-                // TODO: Dopytać czy można ustawić jakoś datetime na pusty
                 _dbContext.Users.Update(result);
                 await _dbContext.SaveChangesAsync();
             }
