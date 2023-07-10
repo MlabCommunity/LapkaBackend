@@ -62,9 +62,9 @@ namespace LapkaBackend.API.Controllers
 
             var findedUser = await _userService.FindUserByEmail(user.Email);
             tokens.RefreshToken = findedUser.RefreshToken;
-            //TODO: SPrawdzaać ważność refreshTokenu
 
-            if (true)
+            //TODO: (Najwazniejsze) SPrawdzaać ważność refreshTokenu, podobną metodą co do valid
+            if (_authService.IsAccesTokenValid(tokens.RefreshToken))
             { 
                 var newRefreshToken = _authService.GenerateRefreshToken();
                 SetTokenInCookies(newRefreshToken);
