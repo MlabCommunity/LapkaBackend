@@ -1,14 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Extensions.Configuration;
 using LapkaBackend.Application.Interfaces;
-using LapkaBackend.Application.Services;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Application.ApplicationDtos;
-using Microsoft.AspNetCore.Mvc.Razor;
+
 
 namespace LapkaBackend.Application.Controllers
 {
@@ -36,7 +30,7 @@ namespace LapkaBackend.Application.Controllers
             var userResult = await _authService.UserRegister(RegistrationRequest.UserDto);
             var shelterResult = await _authService.ShelterRegister(RegistrationRequest.ShelterDto);
 
-            if (userResult.Result is BadRequestResult || shelterResult.Result is BadRequestResult)
+            if (userResult.Result is BadRequestObjectResult || shelterResult.Result is BadRequestObjectResult)
             {
                 return BadRequest("fields filled in incorrectly");
             }

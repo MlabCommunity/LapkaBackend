@@ -77,7 +77,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task<ActionResult<Shelter>> ShelterRegister(ShelterDto shelterDto)
         {
-            if (!(string.IsNullOrWhiteSpace(shelterDto.City) && string.IsNullOrWhiteSpace(shelterDto.Krs) && string.IsNullOrWhiteSpace(shelterDto.Nip) && string.IsNullOrWhiteSpace(shelterDto.OrganizationName) && string.IsNullOrWhiteSpace(shelterDto.PhoneNumber) && string.IsNullOrWhiteSpace(shelterDto.Street) && string.IsNullOrWhiteSpace(shelterDto.ZipCode)))
+            if (!(string.IsNullOrWhiteSpace(shelterDto.City) || string.IsNullOrWhiteSpace(shelterDto.Krs) || string.IsNullOrWhiteSpace(shelterDto.Nip) || string.IsNullOrWhiteSpace(shelterDto.OrganizationName) || string.IsNullOrWhiteSpace(shelterDto.PhoneNumber) || string.IsNullOrWhiteSpace(shelterDto.Street) || string.IsNullOrWhiteSpace(shelterDto.ZipCode)))
             {
                 var shelter = new Shelter();
                 shelter.OrganizationName = shelterDto.OrganizationName;
@@ -95,7 +95,7 @@ namespace LapkaBackend.Application.Services
 
                 return new OkObjectResult(shelter);
             }
-            return new NoContentResult();
+            return new BadRequestObjectResult("Complete the required fields");
         }
         
         public async Task<ActionResult<TokenResponse>> Login(LoginUserDto loginUserDto)
