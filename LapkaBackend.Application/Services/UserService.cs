@@ -8,39 +8,41 @@ namespace LapkaBackend.Application.Services;
 public class UserService : IUserService
 {
     private readonly ITokenService _tokenService;
+    private readonly IDataContext _context;
 
-    public UserService(ITokenService tokenService)
+    public UserService(ITokenService tokenService, IDataContext dataContext)
     {
         _tokenService = tokenService;
+        _context = dataContext;
     }
     
-    public async Task<User> LoginMobile(IDataContext context, Credentials credentials)
+    public async Task<User> LoginMobile(Credentials credentials)
     {
-        var userDb = context.Users.FirstOrDefault(x => 
+        var userDb = _context.Users.FirstOrDefault(x => 
             x.Email == credentials.Email && x.Password == credentials.Password);
         if (userDb is null) 
             throw new PlaceholderException("User not found");
 
         userDb.RefreshToken = _tokenService.GenerateRefreshToken();
-        await context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
 
         userDb.AccessToken = _tokenService.GenerateAccessToken(userDb);
         return userDb;
     }
 
-    public async Task<bool> LoginWeb(IDataContext context, Credentials credentials)
+    public async Task<bool> LoginWeb(Credentials credentials)
     {
         throw new NotImplementedException();
     }
 
     
-    public async Task Register(IDataContext context, Credentials credentials)
+    public async Task Register(Credentials credentials)
     {
-        if (context.Users.Any(x => x.Email == credentials.Email)) 
+        if (_context.Users.Any(x => x.Email == credentials.Email)) 
             throw new PlaceholderException("User already exists");
         if (credentials.Password != credentials.ConfirmPassword)
             throw new PlaceholderException("Passwords do not match");
-        context.Users.Add(new User
+        _context.Users.Add(new User
         {
             FirstName = credentials.FirstName,
             LastName = credentials.LastName,
@@ -48,7 +50,7 @@ public class UserService : IUserService
             Password = credentials.Password, //TODO Hashing passwords
             RefreshToken = _tokenService.GenerateRefreshToken()
         });
-        await context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
     }
     // what to do with this direcotry
     // we can just create models that will have only one task to transport data

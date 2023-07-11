@@ -1,7 +1,5 @@
 ﻿using LapkaBackend.API.Requests;
 using LapkaBackend.API.Requests.Dtos;
-using LapkaBackend.Application;
-using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.IServices;
 using LapkaBackend.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -17,16 +15,14 @@ public class AuthController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly ITokenService _tokenService;
-    private readonly IDataContext _context;
-    
+
     /// <summary>
     ///   Konstruktor kontrolera
     /// </summary>
-    public AuthController(IUserService userService, ITokenService tokenService, IDataContext context)
+    public AuthController(IUserService userService, ITokenService tokenService)
     {
         _userService = userService;
         _tokenService = tokenService;
-        _context = context;
     }
     
     /// <summary>
@@ -39,8 +35,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UserRegister([FromBody] UserRegistrationRequest newUser)
     {
-        await _userService.Register(_context, 
-            new Credentials
+        await _userService.Register(new Credentials
             {
                 Email = newUser.Email,
                 FirstName = newUser.FirstName,
@@ -77,8 +72,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> LoginWeb()
     {
-        return await _userService.LoginWeb(_context, 
-            new Credentials()) 
+        return await _userService.LoginWeb(new Credentials()) 
             ? Ok() : StatusCode(403);
     }
     
@@ -93,8 +87,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> LoginMobile([FromBody] LoginRequest loginRequest)
     {
-        User user = await _userService.LoginMobile(_context,
-            new Credentials
+        var user = await _userService.LoginMobile(new Credentials
             {
                 Email = loginRequest.Email,
                 Password = loginRequest.Password
@@ -118,7 +111,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UseToken([FromBody] LoginResultDto tokens)
     {
-        var newToken = await _tokenService.UseToken(tokens.AccessToken!, tokens.RefreshToken!, _context);
+        var newToken = await _tokenService.UseToken(tokens.AccessToken!, tokens.RefreshToken!);
         return Ok(new UseRefreshTokenResultDto
         {
             AccessToken = newToken
@@ -136,7 +129,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> RevokeToken([FromBody] TokenRequest token)
     {
-        await _tokenService.RevokeToken(token.RefreshToken, _context);
+        await _tokenService.RevokeToken(token.RefreshToken);
         return NoContent();
     }
 }

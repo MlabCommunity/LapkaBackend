@@ -14,9 +14,11 @@ namespace LapkaBackend.Application.Services;
 public class TokenService : ITokenService
 {
     private readonly IConfiguration _configuration;
-    public TokenService(IConfiguration configuration)
+    private readonly IDataContext _context;
+    public TokenService(IConfiguration configuration, IDataContext context)
     {
         _configuration = configuration;
+        _context = context;
     }
 
     public string GenerateAccessToken(User user)
@@ -46,7 +48,7 @@ public class TokenService : ITokenService
         return generatedToken;
     }
 
-    public async Task<string> UseToken(string accessToken, string refreshToken, IDataContext context)
+    public async Task<string> UseToken(string accessToken, string refreshToken)
     {
         if (!ValidateToken(refreshToken)) 
             throw new PlaceholderException("Token is not valid");
@@ -54,22 +56,22 @@ public class TokenService : ITokenService
             return accessToken;
         var jwtAccessToken = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
         var emailFromToken = jwtAccessToken.Claims.First(x => x.Type == ClaimTypes.Email).Value;
-        var user = await context.Users.FirstOrDefaultAsync(x => x.Email == emailFromToken);
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == emailFromToken);
         if (user is null) 
             throw new PlaceholderException("User not found");
         user.AccessToken = GenerateAccessToken(user);
         return user.AccessToken;
     }
     
-    public async Task RevokeToken(string refreshToken, IDataContext context)
+    public async Task RevokeToken(string refreshToken)
     {
         if (!ValidateToken(refreshToken)) 
             throw new PlaceholderException("Token is not valid");
-        var user = await context.Users.FirstOrDefaultAsync(x => x.RefreshToken == refreshToken);
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.RefreshToken == refreshToken);
         if (user is null) 
             throw new PlaceholderException("User not found");
         user.RefreshToken = null;
-        await context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
     }
 
     
