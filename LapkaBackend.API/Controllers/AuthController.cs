@@ -58,22 +58,7 @@ namespace LapkaBackend.Application.Controllers
         public async Task<ActionResult<TokenResponse>> LoginMobile(LoginUserDto loginUserDto)
         {
             return await _authService.Login(loginUserDto);
-        } 
-
-
-
-
-
-
-
-
+        }
         
-
-        
-        
-
-        
-
-         
     }
 }

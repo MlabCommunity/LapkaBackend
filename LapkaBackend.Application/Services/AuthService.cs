@@ -2,6 +2,7 @@
 using LapkaBackend.Application.ApplicationDtos;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,27 +24,32 @@ namespace LapkaBackend.Application.Services
     {
         private readonly ILapkaBackendDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        private readonly string secretKey = "secret-key-secret-key-secret-key-secret-key";
-        public AuthService(IConfiguration configuration, ILapkaBackendDbContext dbContext)
+        private string? secretKey;
+
+        public AuthService(IConfiguration configuration, ILapkaBackendDbContext dbContext, string? secretKey)
         {
             _configuration = configuration;
             _dbContext = dbContext;
+            this.secretKey = secretKey;
         }
+
+        
+
         public async Task<ActionResult<User>> UserRegister(UserDto userDto)
         {
-            if (!string.IsNullOrWhiteSpace(userDto.firstName) && !string.IsNullOrWhiteSpace(userDto.lastName) && !string.IsNullOrWhiteSpace(userDto.emailAddress) && !string.IsNullOrWhiteSpace(userDto.password) && !string.IsNullOrWhiteSpace(userDto.confirmPassword))
+            if (!string.IsNullOrWhiteSpace(userDto.FirstName) && !string.IsNullOrWhiteSpace(userDto.LastName) && !string.IsNullOrWhiteSpace(userDto.EmailAddress) && !string.IsNullOrWhiteSpace(userDto.Password) && !string.IsNullOrWhiteSpace(userDto.ConfirmPassword))
             {
-                if (userDto.password == userDto.confirmPassword)
+                if (userDto.Password == userDto.ConfirmPassword)
                 {
-                    CreatePasswordHash(userDto.password, out byte[] passwordHash, out byte[] passwordSalt);
+                    CreatePasswordHash(userDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
                     DateTime dateTimeNow = DateTime.Now;
                     string createdAt = dateTimeNow.ToString("yyyy-MM-dd HH:mm:ss");
 
                     var user = new User();
-                    user.FirstName = userDto.firstName;
-                    user.LastName = userDto.lastName;
-                    user.Email = userDto.emailAddress;
+                    user.FirstName = userDto.FirstName;
+                    user.LastName = userDto.LastName;
+                    user.Email = userDto.EmailAddress;
                     user.CreatedAt = createdAt;
                     user.PasswordHash = passwordHash;
                     user.PasswordSalt = passwordSalt;
@@ -71,7 +77,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task<ActionResult<Shelter>> ShelterRegister(ShelterDto shelterDto)
         {
-            if (!(string.IsNullOrWhiteSpace(shelterDto.City) && string.IsNullOrWhiteSpace(shelterDto.Krs) && string.IsNullOrWhiteSpace(shelterDto.Nip) && string.IsNullOrWhiteSpace(shelterDto.OrganizationName) && string.IsNullOrWhiteSpace(shelterDto.phoneNumber) && string.IsNullOrWhiteSpace(shelterDto.Street) && string.IsNullOrWhiteSpace(shelterDto.ZipCode)))
+            if (!(string.IsNullOrWhiteSpace(shelterDto.City) && string.IsNullOrWhiteSpace(shelterDto.Krs) && string.IsNullOrWhiteSpace(shelterDto.Nip) && string.IsNullOrWhiteSpace(shelterDto.OrganizationName) && string.IsNullOrWhiteSpace(shelterDto.PhoneNumber) && string.IsNullOrWhiteSpace(shelterDto.Street) && string.IsNullOrWhiteSpace(shelterDto.ZipCode)))
             {
                 var shelter = new Shelter();
                 shelter.OrganizationName = shelterDto.OrganizationName;
@@ -82,7 +88,7 @@ namespace LapkaBackend.Application.Services
                 shelter.ZipCode = shelterDto.ZipCode;
                 shelter.Nip = shelterDto.Nip;
                 shelter.Krs = shelterDto.Krs;
-                shelter.phoneNumber = shelterDto.phoneNumber;
+                shelter.PhoneNumber = shelterDto.PhoneNumber;
 
                 _dbContext.Shelters.Add(shelter);
                 await _dbContext.SaveChangesAsync();
@@ -130,29 +136,23 @@ namespace LapkaBackend.Application.Services
             return new OkObjectResult(tokenResponse);
         }
         
-        private bool IsTokenValid(string token)
+        private bool IsTokenValid(string tokenString)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var Token = tokenHandler.ReadJwtToken(token);
-            if (Token.Payload.TryGetValue("Expiration", out var expirationClaimValue) && expirationClaimValue is string expirationString)
+            var token = tokenHandler.ReadJwtToken(tokenString);
+            if (token.Payload.TryGetValue("Expiration", out var expirationClaimValue) && expirationClaimValue is string expirationString)
             {
                 if (DateTime.TryParse(expirationString, out var expirationDate))
                 {
                     return DateTime.UtcNow >= expirationDate;
                 }
-                else
-                {
                     throw new ArgumentException("Invalid expiration date format");
-                }
             }
             else if (expirationClaimValue is DateTime expirationDate)
             {
                 return DateTime.UtcNow >= expirationDate;
             }
-            else
-            {
                 throw new ArgumentException("Expiration claim value is not a valid date");
-            }
         } 
 
         private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
@@ -174,7 +174,6 @@ namespace LapkaBackend.Application.Services
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.FirstName),
-                    // można dodać inne potrzebne claimy
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(expiryMinutes),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

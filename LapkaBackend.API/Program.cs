@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Data.Common;
 using LapkaBackend.Application;
 using LapkaBackend.Application.Interfaces;
+using LapkaBackend.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,10 +20,7 @@ builder.Services.AddControllers();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 
-
-
-
-
+var secretKey = builder.Configuration["JwtConfig:SecretKey"];
 
 var app = builder.Build();
 

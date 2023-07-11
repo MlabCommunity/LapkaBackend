@@ -22,4 +22,8 @@
       <ProjectReference Include="..\LapkaBackend.Infrastructure\LapkaBackend.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Interfaces\" />
+    </ItemGroup>
+
 </Project>

@@ -12,7 +12,6 @@ namespace LapkaBackend.Infrastructure
     {
         public static void AddInfrastructure(this IServiceCollection services)
         {
-            //services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<ILapkaBackendDbContext, LapkaBackendDbContext>();
             services.AddDbContext<LapkaBackendDbContext>();
         }

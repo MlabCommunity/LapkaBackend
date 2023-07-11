@@ -17,7 +17,7 @@ namespace LapkaBackend.Domain.Entities
         public string ZipCode { get; set; }
         public string Nip { get; set; }
         public string Krs { get; set; }
-        public string phoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
         public int UserId { get; set; }
     }
 }
