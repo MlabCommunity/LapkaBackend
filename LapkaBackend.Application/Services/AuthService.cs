@@ -1,18 +1,18 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Exceptions;
+using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
-using LapkaBackend.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.VisualBasic;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 
-namespace LapkaBackend.Infrastructure.Services
+namespace LapkaBackend.Application.Services
 {
     public class AuthService : IAuthService
     {
@@ -24,14 +24,13 @@ namespace LapkaBackend.Infrastructure.Services
             _dbContext = dbContext;
             _configuration = configuration;
         }
-
-        #region RegisterUser
-        public async Task<User> RegisterUser(UserRegisterDto user)
+        
+        public async Task<User?> RegisterUser(UserRegisterDto user)
         {
-
+            //TODO: Exception ogarnąć
             if (user.Password != user.ConfirmPassword)
             {
-                return null;
+                throw new AuthException("Passwords do not match");
             }
 
             var newUser = new User()
@@ -49,30 +48,28 @@ namespace LapkaBackend.Infrastructure.Services
 
             return newUser;
         }
-        #endregion
 
-        #region LoginUser
-        public  string LoginUser(UserLoginDto user)
+        public LoginResultDto LoginUser(UserLoginDto user)
         {
+            //TODO: Exception ogarnąć
             var result = _dbContext.Users.FirstOrDefault(x => x.Email == user.Email);
 
             if (result == null)
             {
-                return "Taki użytkownik nie istnieje";
+                throw new AuthException("User not found");
             }
 
             if (result.Password != user.Password)
             {
-                return "Hasła się nie zgadzają";
+                throw new AuthException("Wrong password");
             }
-
-            var token = CreateToken(result);
-
-            return token;
+            return new LoginResultDto
+            {
+                AccessToken = CreateToken(result),
+                RefreshToken = GenerateRefreshToken()
+            }; 
         }
-        #endregion
 
-        #region CreateToken
         public string CreateToken(User user) 
         {
             List<Claim> claims = new List<Claim>()
@@ -95,9 +92,7 @@ namespace LapkaBackend.Infrastructure.Services
 
             return jwt;
         }
-        #endregion
 
-        #region GenerateRefreshToken
         public string GenerateRefreshToken()
         {
 
@@ -114,9 +109,7 @@ namespace LapkaBackend.Infrastructure.Services
 
             return jwt;
         }
-        #endregion
 
-        #region SaveRefreshTokenInDb
         public async Task SaveRefreshToken(UserLoginDto user, string newRefreshToken)
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == user.Email);
@@ -127,9 +120,7 @@ namespace LapkaBackend.Infrastructure.Services
 
             await _dbContext.SaveChangesAsync();
         }
-        #endregion
 
-        #region IsAccesTokenValid
         public bool IsAccesTokenValid(string token)
         {
             JwtSecurityToken jwtSecurityToken;
@@ -143,9 +134,7 @@ namespace LapkaBackend.Infrastructure.Services
             }
             return jwtSecurityToken.ValidTo > DateTime.UtcNow;
         }
-        #endregion
 
-        #region RevokeToken
         public async Task RevokeToken(string token)
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x=> x.RefreshToken == token);
@@ -157,6 +146,5 @@ namespace LapkaBackend.Infrastructure.Services
                 await _dbContext.SaveChangesAsync();
             }
         }
-        #endregion
     }
 }

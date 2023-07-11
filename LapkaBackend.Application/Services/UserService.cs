@@ -1,16 +1,10 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos;
-using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
-using LapkaBackend.Infrastructure.Interfaces;
+using LapkaBackend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace LapkaBackend.Infrastructure.Services
+namespace LapkaBackend.Application.Services
 {
     public class UserService : IUserService
     {
@@ -21,14 +15,11 @@ namespace LapkaBackend.Infrastructure.Services
             _context = context;
         }
 
-        #region GetAllUsers
         public async Task<List<User>> GetAllUsers()
         {
             return await _context.Users.ToListAsync();
         }
-        #endregion
 
-        #region GetUserById
         public async Task<User> GetUserById(Guid id)
         {
             var result = await _context.Users.FindAsync(id);
@@ -37,20 +28,16 @@ namespace LapkaBackend.Infrastructure.Services
 
             return result;
         }
-        #endregion
 
-        #region AddUser
-        public async Task<List<User>> AddUser(User user)
+        public async Task<User> AddUser(User user)
         {
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            return await _context.Users.ToListAsync();
+            return user;
         }
-        #endregion
 
-        #region UpdateUser
-        public async Task<List<User>> UpdateUser(User user, Guid id)
+        public async Task<User> UpdateUser(User user, Guid id)
         {
             var result = await GetUserById(id);
 
@@ -62,23 +49,19 @@ namespace LapkaBackend.Infrastructure.Services
 
             await _context.SaveChangesAsync();
 
-            return await _context.Users.ToListAsync();
+            return result;
         }
-        #endregion
 
-        #region DeleteUser
-        public async Task<List<User>> DeleteUser(Guid id)
+        public async Task<User> DeleteUser(Guid id)
         {
             var result = await GetUserById(id);
 
             _context.Users.Remove(result);
             await _context.SaveChangesAsync();
 
-            return await _context.Users.ToListAsync();
+            return result;
         }
-        #endregion
 
-        #region FindUserByRefreshToken
         public async Task<User> FindUserByRefreshToken(TokensDto token)
         {
             var myUser = await _context.Users
@@ -92,9 +75,7 @@ namespace LapkaBackend.Infrastructure.Services
 
             return myUser;
         }
-        #endregion
 
-        #region FindUserByRefreshToken
         public async Task<User> FindUserByEmail(string email)
         {
             var myUser = await _context.Users
@@ -108,6 +89,5 @@ namespace LapkaBackend.Infrastructure.Services
 
             return myUser;
         }
-        #endregion
     }
 }

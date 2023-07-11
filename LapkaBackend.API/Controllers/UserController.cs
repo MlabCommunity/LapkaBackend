@@ -1,7 +1,6 @@
 ﻿using LapkaBackend.Application.Dtos;
-using LapkaBackend.Application.Requests;
+using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
-using LapkaBackend.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers
@@ -20,7 +19,6 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         /// Pobiera listę użytkowników
         /// </summary>
-        #region GetAllUsers
         [HttpGet("GetAllUsers")]
         public async Task<ActionResult<List<User>>> GetAllUsers()
         {
@@ -28,12 +26,10 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(result);
         }
-        #endregion
 
         /// <summary>
         /// Informacje na temat użytkownika o podanym Id
         /// </summary>
-        #region GetUserById
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUserById(Guid id)
         {
@@ -46,25 +42,21 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(result);
         }
-        #endregion
 
         /// <summary>
         /// Dodaje użytkownika do bazy
         /// </summary>
-        #region AddUser
         [HttpPost]
-        public async Task<ActionResult<List<User>>> AddUser(User user)
+        public async Task<ActionResult<User>> AddUser(User user)
         {
             var result = await _userService.AddUser(user);
 
             return Ok(result);
         }
-        #endregion
 
         /// <summary>
         /// Pozwala zmodyfikować użytkownikowi imie, nazwisko oraz email
         /// </summary>
-        #region UpdateUser
         [HttpPut]
         public async Task<ActionResult<List<User>>> UpdateUser(User user, Guid id)
         {
@@ -72,12 +64,10 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(result);
         }
-        #endregion
 
         /// <summary>
         /// Usuwa użytkownika z bazy
         /// </summary>
-        #region DeleteTeam
         [HttpDelete]
         public async Task<ActionResult<List<User>>> DeleteTeam(Guid id)
         {
@@ -85,12 +75,10 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(result);
         }
-        #endregion
 
         /// <summary>
         /// Wyszukaj użytkownika po refreshTokenie
         /// </summary>
-        #region GetUserByRefreshToken
         [HttpGet("GetUserByRefreshToken")]
         public async Task<ActionResult<User>> GetUserByRefreshToken(TokensDto token)
         {
@@ -103,6 +91,5 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(result);
         }
-        #endregion
     }
 }

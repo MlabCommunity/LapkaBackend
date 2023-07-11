@@ -1,11 +1,7 @@
-﻿using LapkaBackend.Application.Common;
-using LapkaBackend.Application.Dtos;
-using LapkaBackend.Application.Requests;
+﻿using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
-using LapkaBackend.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
 
 namespace LapkaBackend.API.Controllers
 {
@@ -25,7 +21,6 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         /// Rejestracja użytkownika
         /// </summary>
-        #region userRegister
         [HttpPost("userRegister")]
         public async Task<ActionResult<User>> UserRegister(UserRegisterDto user)
         {
@@ -41,47 +36,28 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(result);
         }
-        #endregion
 
         /// <summary>
         ///  Logowanie użytkownika
         /// </summary>
         /// <param name="user"></param>
         /// <returns>zwraca AccesToken oraz RefreshToken</returns>
-        #region userLogin
         [HttpPost("userLogin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<LoginResultDto>> UserLogin(UserLoginDto user)
-        {   
-         
+        public async Task<ActionResult> UserLogin(UserLoginDto user)
+        {
             var result = _authService.LoginUser(user);
 
-            LoginResultDto tokens = new LoginResultDto();
+            SetTokenInCookies(result.RefreshToken);
 
-            var findedUser = await _userService.FindUserByEmail(user.Email);
-            tokens.RefreshToken = findedUser.RefreshToken;
-
-            if (!_authService.IsAccesTokenValid(tokens.RefreshToken))
-            { 
-                var newRefreshToken = _authService.GenerateRefreshToken();
-                SetTokenInCookies(newRefreshToken);
-                await _authService.SaveRefreshToken(user, newRefreshToken);
-                tokens.RefreshToken = newRefreshToken;
-            }
-
-            tokens.AccessToken = result;
-            
-
-            return tokens;
+            return Ok(result);
         }
-        #endregion
 
         /// <summary>
         /// Odświeżanie AccesTokenu na podstawe RefreshTokenu
         /// </summary>
-        #region RefreshToken
         [HttpPost("refreshToken")]
         public async Task<ActionResult<string>> RefreshAccesToken(TokensDto tokens)
         {
@@ -107,12 +83,10 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(token);
         }
-        #endregion
 
         /// <summary>
         /// Zapisuje Token w Cookies przeglądarki
         /// </summary>
-        #region SetTokenInCookies
         private void SetTokenInCookies(string token)
         {
             var cookieOptions = new CookieOptions
@@ -121,17 +95,14 @@ namespace LapkaBackend.API.Controllers
             };
             Response.Cookies.Append("refreshToken", token, cookieOptions);
         }
-        #endregion
 
         /// <summary>
         /// Usuwa refresh token z bazy
         /// </summary>
-        #region RevokeToken
         [HttpPost("revokeToken")]
         public async Task RevokeToken(TokensDto tokens)
         {
             await _authService.RevokeToken(tokens.RefreshToken);
         }
-        #endregion
     }
 }

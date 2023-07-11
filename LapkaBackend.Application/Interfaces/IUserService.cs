@@ -7,15 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LapkaBackend.Infrastructure.Interfaces
+namespace LapkaBackend.Application.Interfaces
 {
     public interface IUserService
     {
         Task<List<User>> GetAllUsers();
         Task<User> GetUserById(Guid id);
-        Task<List<User>> AddUser(User user);
-        Task<List<User>> UpdateUser(User user, Guid id);
-        Task<List<User>> DeleteUser(Guid id);
+        Task<User> AddUser(User user);
+        Task<User> UpdateUser(User user, Guid id);
+        Task<User> DeleteUser(Guid id);
         public Task<User> FindUserByRefreshToken(TokensDto token);
         public Task<User> FindUserByEmail(string email);
 

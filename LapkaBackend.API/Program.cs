@@ -1,6 +1,3 @@
-using LapkaBackend.Infrastructure.Data;
-using LapkaBackend.Infrastructure.Services;
-using LapkaBackend.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -8,8 +5,8 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using LapkaBackend.Application;
 using LapkaBackend.Infrastructure;
-using DocumentFormat.OpenXml.EMMA;
 using System.Reflection;
+using LapkaBackend.Application.Exceptions;
 
 internal class Program
 {
@@ -20,9 +17,9 @@ internal class Program
         // Add services to the container.
 
         builder.Services.AddControllers();
-
         builder.Services.AddApplication();
-        builder.Services.AddInfrasturcture();
+        builder.Services.AddInfrasturcture(builder.Configuration);
+
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -75,6 +72,8 @@ internal class Program
         app.UseAuthentication();
 
         app.UseAuthorization();
+
+        app.UseMiddleware<ErrorHandlerMiddleware>();
 
         app.MapControllers();
 
