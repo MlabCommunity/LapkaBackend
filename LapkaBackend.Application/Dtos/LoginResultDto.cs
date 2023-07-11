@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace LapkaBackend.Application.Dtos
 {
     public class LoginResultDto
-    {
-        public string AccessToken { get; set; }
-        public string RefreshToken { get; set; }
+    { 
+        public string? AccessToken { get; set; }
+        public string? RefreshToken { get; set; }
     }
 }

@@ -13,13 +13,12 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
 
             modelBuilder.Entity<User>()
                 .Property(u => u.Email)
-            .HasMaxLength(255)
+                .HasMaxLength(255)
                 .IsRequired();
 
             modelBuilder.Entity<User>()
                 .Property(u => u.Password)
                 .IsRequired()
-                .HasMaxLength(8)
                 .HasAnnotation("RegularExpression", "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
         }
     }
