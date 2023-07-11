@@ -4,20 +4,22 @@ namespace LapkaBackend.API.Requests;
 
 public class ShelterRegistrationRequest
 {
-    [MinLength(1)]
+    [Required]
     public string OrganizationName { get; set; }
+    [Required]
     public double Longitude { get; set; }
+    [Required]
     public double Latitude { get; set; }
-    [MinLength(1)]
+    [Required]
     public string City { get; set; }
-    [MinLength(1)]
+    [Required]
     public string Street { get; set; }
-    [MinLength(1)]
+    [Required]
     public string ZipCode { get; set; }
-    [MinLength(1)]
+    [Required]
     public string Nip { get; set; }
-    [MinLength(1)]
+    [Required]
     public string Krs { get; set; }
-    [MinLength(1)]
+    [Required]
     public string PhoneNumber { get; set; }
 }

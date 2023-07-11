@@ -39,23 +39,16 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UserRegister([FromBody] UserRegistrationRequest newUser)
     {
-        try
-        {
-            await _userService.Register(_context,
-                new Dictionary<string, string>
-                {
-                    { "firstName", newUser.FirstName! },
-                    { "lastName", newUser.LastName! },
-                    { "email", newUser.Email! },
-                    { "password", newUser.Password! },
-                    { "confirmPassword", newUser.ConfirmPassword! }
-                });
-            return NoContent();
-        }
-        catch (PlaceholderException e)
-        {
-            return BadRequest(e.Message);
-        }
+        await _userService.Register(_context, 
+            new Credentials
+            {
+                Email = newUser.Email,
+                FirstName = newUser.FirstName,
+                LastName = newUser.LastName,
+                Password = newUser.Password,
+                ConfirmPassword = newUser.ConfirmPassword
+            });
+        return NoContent();
     }
     
     /// <summary>
@@ -84,7 +77,8 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> LoginWeb()
     {
-        return await _userService.LoginWeb(_context, new Dictionary<string, string>()) 
+        return await _userService.LoginWeb(_context, 
+            new Credentials()) 
             ? Ok() : StatusCode(403);
     }
     
@@ -99,25 +93,18 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> LoginMobile([FromBody] LoginRequest loginRequest)
     {
-        try
-        {
-            User user = await _userService.LoginMobile(_context,
-                new Dictionary<string, string>
-                {
-                    { "email", loginRequest.Email! },
-                    { "password", loginRequest.Password! }
-                });
-
-            return Ok(new LoginResultDto
+        User user = await _userService.LoginMobile(_context,
+            new Credentials
             {
-                accessToken = user.AccessToken,
-                refreshToken = user.RefreshToken
+                Email = loginRequest.Email,
+                Password = loginRequest.Password
             });
-        }
-        catch (PlaceholderException e)
+
+        return Ok(new LoginResultDto
         {
-            return BadRequest(e.Message);
-        }
+            AccessToken = user.AccessToken,
+            RefreshToken = user.RefreshToken
+        });
     }
 
     /// <summary>
@@ -131,18 +118,11 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UseToken([FromBody] LoginResultDto tokens)
     {
-        try
+        var newToken = await _tokenService.UseToken(tokens.AccessToken!, tokens.RefreshToken!, _context);
+        return Ok(new UseRefreshTokenResultDto
         {
-            var newToken = await _tokenService.UseToken(tokens.accessToken!, tokens.refreshToken!, _context);
-            return Ok(new UseRefreshTokenResultDto
-            {
-                accessToken = newToken
-            });
-        }
-        catch (PlaceholderException e)
-        {
-            return BadRequest(e.Message);
-        }
+            AccessToken = newToken
+        });
     }
     
     /// <summary>
@@ -156,15 +136,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> RevokeToken([FromBody] TokenRequest token)
     {
-        try
-        {
-            await _tokenService.RevokeToken(token.refreshToken!, _context);
-            return NoContent();
-        }
-        catch (PlaceholderException e)
-        {
-            return BadRequest(e.Message);
-        }
+        await _tokenService.RevokeToken(token.RefreshToken, _context);
+        return NoContent();
     }
-    
 }

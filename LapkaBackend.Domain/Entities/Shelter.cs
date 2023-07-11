@@ -2,7 +2,7 @@
 
 public class Shelter
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string OrganizationName { get; set; }
     public double Longitude { get; set; }
     public double Latitude { get; set; }
@@ -12,5 +12,5 @@ public class Shelter
     public string Nip { get; set; }
     public string Krs { get; set; }
     public string PhoneNumber { get; set; }
-    public User User { get; set; } = null!;
+    public virtual User User { get; set; } = null!;
 }

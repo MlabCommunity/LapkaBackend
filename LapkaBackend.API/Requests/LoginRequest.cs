@@ -3,8 +3,8 @@ namespace LapkaBackend.API.Requests;
 
 public class LoginRequest
 {
-    [MinLength(1)]
+    [Required]
     public string Email { get; set; }
-    [MinLength(1)]
+    [Required]
     public string Password { get; set; }
 }

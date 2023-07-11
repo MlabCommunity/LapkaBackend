@@ -2,5 +2,5 @@
 
 public class UseRefreshTokenResultDto
 {
-    public string? accessToken { get; set; }
+    public string? AccessToken { get; set; }
 }

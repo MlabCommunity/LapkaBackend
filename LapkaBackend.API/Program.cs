@@ -1,5 +1,7 @@
 using System.Reflection;
+using System.Text;
 using LapkaBackend.Application;
+using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.IServices;
 using LapkaBackend.Application.Services;
 using LapkaBackend.Domain;
@@ -9,22 +11,24 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddSingleton<IUserService, UserService>();
-builder.Services.AddSingleton<ITokenService, TokenService>();
-builder.Services.AddSingleton<IShelterService, ShelterService>();
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IShelterService, ShelterService>();
 builder.Services.AddDbContext<IDataContext, DataContext>(options => 
-    options.UseSqlServer(ConnectionString.GetString()));
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"]));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt =>
     {
         opt.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey("YhlyL1kqamyhR1Q4FBHrIjOOyd6rtajB"u8.ToArray()),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
             ValidateIssuer = false,
             ValidateAudience = false
         };
@@ -77,6 +81,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<PlaceholderExceptionHandler>();
 
 app.MapControllers();
 app.Run();

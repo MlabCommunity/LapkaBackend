@@ -1,6 +1,9 @@
-﻿namespace LapkaBackend.API.Requests;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LapkaBackend.API.Requests;
 
 public class TokenRequest
 {
-    public string refreshToken { get; set; }
+    [Required]
+    public string RefreshToken { get; set; }
 }
