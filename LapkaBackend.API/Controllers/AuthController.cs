@@ -1,7 +1,5 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
-using LapkaBackend.Application.Dtos;
+﻿using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Interfaces;
-using LapkaBackend.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,28 +30,23 @@ namespace LapkaBackend.API.Controllers
             await _authService.RegisterUser(user);
             return NoContent();
         }
-
-            return Ok(result);
-        }
+        //
+        //     return Ok(result);
+        // }
 
         /// <summary>
-        /// Rejestracja schroniska wraz z danymi użytkownika
+        ///     Rejestracja schroniska wraz z danymi użytkownika
         /// </summary>
-        /// 
-        [HttpPost("shelterRegister")]
-        public async Task<ActionResult<Shelter>> ShelterRegister(RegistrationRequest RegistrationRequest)
+        [HttpPost ("shelterRegister")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> ShelterRegister(RegistrationRequest RegistrationRequest)
         {
-            var userResult = await _authService.RegisterUser(RegistrationRequest.UserDto);
-            var shelterResult = await _authService.RegisterShelter(RegistrationRequest.ShelterDto);
-
-            if (userResult is null || shelterResult is null)
-            {
-                return BadRequest("fields filled in incorrectly");
-            }
-
-            return Ok();
+            await _authService.RegisterUser(RegistrationRequest.UserDto);
+            await _authService.RegisterShelter(RegistrationRequest.ShelterDto);
+            return NoContent();
         }
-
         /// <summary>
         ///     Logowanie użytkownika - zwracanie tokenów
         /// </summary>
@@ -62,15 +55,14 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        /*
-        public async Task<ActionResult> UserLogin(UserLoginDto user)
-        {
-            var result = await _authService.LoginUser(user);
+          public async Task<ActionResult> UserLogin(UserLoginDto user)
+          {
+              var result = await _authService.LoginUser(user);
 
-            SetTokenInCookies(result.RefreshToken);
+              SetTokenInCookies(result.RefreshToken);
 
-            return Ok(result);
-        } */
+              return Ok(result);
+          }
 
         /// <summary>
         ///     Odnawia access token na podstawie refresh token

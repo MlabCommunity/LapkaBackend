@@ -35,12 +35,14 @@ internal class Program
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
+            options.SupportNonNullableReferenceTypes();
+
 
             
 
             options.OperationFilter<SecurityRequirementsOperationFilter>();
         });
-        //TODO: Spróbowaæ wy³aczyæ cia³o na 400 error
+        //TODO: Sprï¿½bowaï¿½ wyï¿½aczyï¿½ ciaï¿½o na 400 error
 
         //builder.Services.AddScoped<IUserService, UserService>();
 
@@ -57,7 +59,11 @@ internal class Program
                     ValidateAudience = false
                 };
             });
-
+        builder.Services.AddControllers()
+            .ConfigureApiBehaviorOptions(opt =>
+            {
+                opt.SuppressMapClientErrors = true;
+            });
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

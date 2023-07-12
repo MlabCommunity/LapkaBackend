@@ -26,6 +26,7 @@ namespace LapkaBackend.Application.Services
         
         public async Task RegisterUser(UserRegisterDto user)
         {
+            
             if (user.Password != user.ConfirmPassword)
             {
                 throw new AuthException("Passwords do not match");
@@ -152,6 +153,8 @@ namespace LapkaBackend.Application.Services
         {
             throw new NotImplementedException();
         }
+        
+        
 
         public async Task<Shelter?> RegisterShelter(ShelterRegisterDto shelterDto)
         {
