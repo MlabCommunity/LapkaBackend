@@ -1,11 +1,12 @@
 ﻿using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class AuthController : Controller
     {
@@ -19,36 +20,29 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        /// Rejestracja użytkownika
+        ///     Rejestracja użytkownika
         /// </summary>
-        [HttpPost("userRegister")]
-        public async Task<ActionResult<User>> UserRegister(UserRegisterDto user)
+        [HttpPost ("userRegister")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> UserRegister(UserRegisterDto user)
         {
-
-            var token = _authService.GenerateRefreshToken();
-            var result = await _authService.RegisterUser(user);
-
-
-            if(result == null)
-            {
-                return BadRequest("Niespójne hasła");
-            }
-
-            return Ok(result);
+            await _authService.RegisterUser(user);
+            return NoContent();
         }
 
         /// <summary>
-        ///  Logowanie użytkownika
+        ///     Logowanie użytkownika - zwracanie tokenów
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns>zwraca AccesToken oraz RefreshToken</returns>
-        [HttpPost("userLogin")]
+        [HttpPost ("loginMobile")]
         [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UserLogin(UserLoginDto user)
         {
-            var result = _authService.LoginUser(user);
+            var result = await _authService.LoginUser(user);
 
             SetTokenInCookies(result.RefreshToken);
 
@@ -56,14 +50,18 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        /// Odświeżanie AccesTokenu na podstawe RefreshTokenu
+        ///     Odnawia access token na podstawie refresh token
         /// </summary>
-        [HttpPost("refreshToken")]
-        public async Task<ActionResult<string>> RefreshAccesToken(TokensDto tokens)
+        [HttpPost ("useToken")]
+        [Authorize (Roles = "User")]
+        [ProducesResponseType(typeof(TokensDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> RefreshAccesToken(TokensDto tokens)
         {
             var refreshTokenCookies = Request.Cookies["refreshToken"];
 
-            if(_authService.IsAccesTokenValid(tokens.AccessToken))
+            if(_authService.IsTokenValid(tokens.AccessToken))
             {
                 return Ok(tokens.AccessToken);
             }
@@ -73,13 +71,13 @@ namespace LapkaBackend.API.Controllers
                 return Unauthorized("Invalid Refresh Token.");
             }
 
-            if (!_authService.IsAccesTokenValid(tokens.RefreshToken))
+            if (!_authService.IsTokenValid(tokens.RefreshToken))
             {
                 return Unauthorized("Token expired.");
             }
 
             var user = await _userService.FindUserByRefreshToken(tokens);
-            string token = _authService.CreateToken(user);
+            string token = _authService.CreateAccessToken(user);
 
             return Ok(token);
         }
@@ -97,9 +95,13 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        /// Usuwa refresh token z bazy
+        ///     Usuwa refresh token z bazy
         /// </summary>
-        [HttpPost("revokeToken")]
+        [HttpPost ("revokeToken")]
+        [Authorize (Roles = "User")]
+        [ProducesResponseType(typeof(TokensDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task RevokeToken(TokensDto tokens)
         {
             await _authService.RevokeToken(tokens.RefreshToken);

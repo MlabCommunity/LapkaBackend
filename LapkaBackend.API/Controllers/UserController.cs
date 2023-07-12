@@ -1,11 +1,12 @@
 ﻿using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class UserController : Controller
     {
@@ -17,21 +18,15 @@ namespace LapkaBackend.API.Controllers
         }
         
         /// <summary>
-        /// Pobiera listę użytkowników
-        /// </summary>
-        [HttpGet("GetAllUsers")]
-        public async Task<ActionResult<List<User>>> GetAllUsers()
-        {
-            var result = await _userService.GetAllUsers();
-
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Informacje na temat użytkownika o podanym Id
+        ///     Informacje o użytkowniku o podanym id
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUserById(Guid id)
+        [Authorize (Roles = "User")]
+        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> GetUserById(Guid id)
         {
             var result =await _userService.GetUserById(id);
 
@@ -42,23 +37,17 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(result);
         }
-
+        
         /// <summary>
-        /// Dodaje użytkownika do bazy
+        ///     Aktualizuj informacje o zalogowanym użytkowniku
         /// </summary>
-        [HttpPost]
-        public async Task<ActionResult<User>> AddUser(User user)
-        {
-            var result = await _userService.AddUser(user);
-
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Pozwala zmodyfikować użytkownikowi imie, nazwisko oraz email
-        /// </summary>
-        [HttpPut]
-        public async Task<ActionResult<List<User>>> UpdateUser(User user, Guid id)
+        [HttpPatch]
+        [Authorize (Roles = "User")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> UpdateUser(User user, Guid id)
         {
             var result = await _userService.UpdateUser(user, id);
 
@@ -66,28 +55,17 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        /// Usuwa użytkownika z bazy
+        ///     Usuń zalogowanego użytkownika
         /// </summary>
         [HttpDelete]
-        public async Task<ActionResult<List<User>>> DeleteTeam(Guid id)
+        [Authorize (Roles = "User")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> DeleteTeam(Guid id)
         {
             var result = await _userService.DeleteUser(id);
-
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Wyszukaj użytkownika po refreshTokenie
-        /// </summary>
-        [HttpGet("GetUserByRefreshToken")]
-        public async Task<ActionResult<User>> GetUserByRefreshToken(TokensDto token)
-        {
-            var result =await _userService.FindUserByRefreshToken(token);
-
-            if(result == null)
-            {
-                return NotFound("User doesn't exists");
-            }
 
             return Ok(result);
         }
