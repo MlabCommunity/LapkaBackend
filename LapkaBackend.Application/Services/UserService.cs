@@ -3,6 +3,7 @@ using LapkaBackend.Application.Dtos;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using LapkaBackend.Application.Exceptions;
 
 namespace LapkaBackend.Application.Services
 {
@@ -24,7 +25,10 @@ namespace LapkaBackend.Application.Services
         {
             var result = await _context.Users.FindAsync(id);
 
-            //TODO: Wyjątek z możliwym zwrotem nulla, dodać new exception
+            if (result is null)
+            {
+                throw new AuthException("User doesn't exists");
+            }
 
             return result;
         }
@@ -39,7 +43,13 @@ namespace LapkaBackend.Application.Services
 
         public async Task<User> UpdateUser(User user, Guid id)
         {
+            //TODO: Zwracać DTO GetUserDataBuIdQueryResult
             var result = await GetUserById(id);
+
+            if (result is null)
+            {
+                throw new AuthException("User doesn't exists");
+            }
 
             result.FirstName = user.FirstName;
             result.LastName = user.LastName;
@@ -52,42 +62,45 @@ namespace LapkaBackend.Application.Services
             return result;
         }
 
-        public async Task<User> DeleteUser(Guid id)
+        public async Task DeleteUser(Guid id)
         {
             var result = await GetUserById(id);
 
+            if (result is null)
+            {
+                throw new AuthException("User doesn't exists");
+            }
+
             _context.Users.Remove(result);
             await _context.SaveChangesAsync();
-
-            return result;
         }
 
         public async Task<User> FindUserByRefreshToken(TokensDto token)
         {
-            var myUser = await _context.Users
+            var result = await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.RefreshToken == token.RefreshToken);
 
-            if (myUser == null) 
+            if (result is null)
             {
-                return null; // TODO: Tu powinien być custom wyjątek
+                throw new AuthException("User doesn't exists");
             }
 
-            return myUser;
+            return result;
         }
 
         public async Task<User> FindUserByEmail(string email)
         {
-            var myUser = await _context.Users
+            var result = await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Email == email);
 
-            if (myUser == null)
+            if (result is null)
             {
-                return null; // TODO: Tu powinien być custom wyjątek
+                throw new AuthException("User doesn't exists");
             }
 
-            return myUser;
+            return result;
         }
     }
 }

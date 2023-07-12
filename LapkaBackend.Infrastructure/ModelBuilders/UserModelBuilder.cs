@@ -18,8 +18,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
 
             modelBuilder.Entity<User>()
                 .Property(u => u.Password)
-                .IsRequired()
-                .HasAnnotation("RegularExpression", "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
+                .IsRequired();
         }
     }
 }

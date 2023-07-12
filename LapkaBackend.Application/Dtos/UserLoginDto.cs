@@ -8,7 +8,8 @@ namespace LapkaBackend.Application.Dtos
 {
     public class UserLoginDto
     {
-        public string? Email { get; set; }
-        public string? Password { get; set; }
+        //TODO: Rozdzielić wszystkie DTO/Requesty tak jak w starym Api 
+        public string Email { get; set; } = null!;
+        public string Password { get; set; } = null!;
     }
 }

@@ -28,14 +28,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> GetUserById(Guid id)
         {
-            var result =await _userService.GetUserById(id);
-
-            if(result==null)
-            {
-                return NotFound("User doesn't exists");
-            }
-
-            return Ok(result);
+            return Ok(await _userService.GetUserById(id));
         }
         
         /// <summary>
@@ -65,9 +58,9 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> DeleteTeam(Guid id)
         {
-            var result = await _userService.DeleteUser(id);
+            await _userService.DeleteUser(id);
 
-            return Ok(result);
+            return NoContent();
         }
     }
 }

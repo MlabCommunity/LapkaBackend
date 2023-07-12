@@ -68,10 +68,11 @@ namespace LapkaBackend.Application.Services
 
         public string CreateAccessToken(User user) 
         {
+            // TODO: Wywalić przyjmowanie user zaminieć na tokensDTO ma zwracać accestoken
             List<Claim> claims = new List<Claim>()
             {
                 new(ClaimTypes.Name, user.Email),
-                // new (ClaimTypes.Role, "Admin") 
+                new(ClaimTypes.Role, "User")
                 // TODO: Change Admin to user.Role 
             };
 
@@ -149,37 +150,23 @@ namespace LapkaBackend.Application.Services
             }
         }
 
-        Task<LoginResultDto> IAuthService.LoginUser(UserLoginDto user)
+        public async Task RegisterShelter(ShelterRegisterDto shelterDto)
         {
-            throw new NotImplementedException();
-        }
-        
-        
-
-        public async Task<Shelter?> RegisterShelter(ShelterRegisterDto shelterDto)
-        {
-            if (!(string.IsNullOrWhiteSpace(shelterDto.City) || string.IsNullOrWhiteSpace(shelterDto.Krs) || string.IsNullOrWhiteSpace(shelterDto.Nip) || string.IsNullOrWhiteSpace(shelterDto.OrganizationName) || string.IsNullOrWhiteSpace(shelterDto.PhoneNumber) || string.IsNullOrWhiteSpace(shelterDto.Street) || string.IsNullOrWhiteSpace(shelterDto.ZipCode)))
+            var newShelter = new Shelter()
             {
-                var newShelter = new Shelter()
-                {
-                    OrganizationName = shelterDto.OrganizationName,
-                    Longtitude = shelterDto.Longtitude,
-                    Latitude = shelterDto.Latitude,
-                    City = shelterDto.City,
-                    Street = shelterDto.Street,
-                    ZipCode = shelterDto.ZipCode,
-                    Nip = shelterDto.Nip,
-                    Krs = shelterDto.Krs,
-                    PhoneNumber = shelterDto.PhoneNumber,
-                };
-                
+                OrganizationName = shelterDto.OrganizationName,
+                Longtitude = shelterDto.Longtitude,
+                Latitude = shelterDto.Latitude,
+                City = shelterDto.City,
+                Street = shelterDto.Street,
+                ZipCode = shelterDto.ZipCode,
+                Nip = shelterDto.Nip,
+                Krs = shelterDto.Krs,
+                PhoneNumber = shelterDto.PhoneNumber,
+            };
 
-                await _dbContext.Shelters.AddAsync(newShelter);
-                await _dbContext.SaveChangesAsync();
-
-                return newShelter;
-            }
-            return null;
+            await _dbContext.Shelters.AddAsync(newShelter);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

@@ -30,9 +30,6 @@ namespace LapkaBackend.API.Controllers
             await _authService.RegisterUser(user);
             return NoContent();
         }
-        //
-        //     return Ok(result);
-        // }
 
         /// <summary>
         ///     Rejestracja schroniska wraz z danymi użytkownika
@@ -59,8 +56,6 @@ namespace LapkaBackend.API.Controllers
           {
               var result = await _authService.LoginUser(user);
 
-              SetTokenInCookies(result.RefreshToken);
-
               return Ok(result);
           }
 
@@ -74,16 +69,10 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> RefreshAccesToken(TokensDto tokens)
         {
-            var refreshTokenCookies = Request.Cookies["refreshToken"];
-
+            //  TODO: Wyrzucić ify do Service na Exception
             if(_authService.IsTokenValid(tokens.AccessToken))
             {
                 return Ok(tokens.AccessToken);
-            }
-
-            if (!tokens.RefreshToken.Equals(refreshTokenCookies))
-            {
-                return Unauthorized("Invalid Refresh Token.");
             }
 
             if (!_authService.IsTokenValid(tokens.RefreshToken))
@@ -98,18 +87,6 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        /// Zapisuje Token w Cookies przeglądarki
-        /// </summary>
-        private void SetTokenInCookies(string token)
-        {
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true
-            };
-            Response.Cookies.Append("refreshToken", token, cookieOptions);
-        }
-
-        /// <summary>
         ///     Usuwa refresh token z bazy
         /// </summary>
         [HttpPost ("revokeToken")]
@@ -119,6 +96,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task RevokeToken(TokensDto tokens)
         {
+            //TODO: Zamienić tokens na tylko refresh
             await _authService.RevokeToken(tokens.RefreshToken);
         }
     }

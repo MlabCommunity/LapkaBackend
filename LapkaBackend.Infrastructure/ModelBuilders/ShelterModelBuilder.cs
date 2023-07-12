@@ -60,8 +60,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
             modelBuilder.Entity<Shelter>()
                  .Property(u => u.PhoneNumber)
                  .HasMaxLength(255)
-                 .IsRequired()
-                .HasAnnotation("RegularExpression", "^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$");
+                 .IsRequired();
         }
     }
 }
