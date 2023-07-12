@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Filters;
 using LapkaBackend.Application;
 using LapkaBackend.Infrastructure;
 using System.Reflection;
-using LapkaBackend.Application.Exceptions;
+//using LapkaBackend.Application.Exceptions;
 
 internal class Program
 {
@@ -73,7 +73,7 @@ internal class Program
 
         app.UseAuthorization();
 
-        app.UseMiddleware<ErrorHandlerMiddleware>();
+        //app.UseMiddleware<ErrorHandlerMiddleware>();
 
         app.MapControllers();
 

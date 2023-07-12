@@ -1,4 +1,5 @@
-﻿using LapkaBackend.Application.Dtos;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -38,6 +39,24 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
+        /// Rejestracja schroniska wraz z danymi użytkownika
+        /// </summary>
+        /// 
+        [HttpPost("shelterRegister")]
+        public async Task<ActionResult<Shelter>> ShelterRegister(RegistrationRequest RegistrationRequest)
+        {
+            var userResult = await _authService.RegisterUser(RegistrationRequest.UserDto);
+            var shelterResult = await _authService.RegisterShelter(RegistrationRequest.ShelterDto);
+
+            if (userResult is null || shelterResult is null)
+            {
+                return BadRequest("fields filled in incorrectly");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
         ///  Logowanie użytkownika
         /// </summary>
         /// <param name="user"></param>
@@ -46,6 +65,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        /*
         public async Task<ActionResult> UserLogin(UserLoginDto user)
         {
             var result = _authService.LoginUser(user);
@@ -53,7 +73,7 @@ namespace LapkaBackend.API.Controllers
             SetTokenInCookies(result.RefreshToken);
 
             return Ok(result);
-        }
+        } */
 
         /// <summary>
         /// Odświeżanie AccesTokenu na podstawe RefreshTokenu

@@ -146,5 +146,36 @@ namespace LapkaBackend.Application.Services
                 await _dbContext.SaveChangesAsync();
             }
         }
+
+        Task<LoginResultDto> IAuthService.LoginUser(UserLoginDto user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Shelter?> RegisterShelter(ShelterRegisterDto shelterDto)
+        {
+            if (!(string.IsNullOrWhiteSpace(shelterDto.City) || string.IsNullOrWhiteSpace(shelterDto.Krs) || string.IsNullOrWhiteSpace(shelterDto.Nip) || string.IsNullOrWhiteSpace(shelterDto.OrganizationName) || string.IsNullOrWhiteSpace(shelterDto.PhoneNumber) || string.IsNullOrWhiteSpace(shelterDto.Street) || string.IsNullOrWhiteSpace(shelterDto.ZipCode)))
+            {
+                var newShelter = new Shelter()
+                {
+                    OrganizationName = shelterDto.OrganizationName,
+                    Longtitude = shelterDto.Longtitude,
+                    Latitude = shelterDto.Latitude,
+                    City = shelterDto.City,
+                    Street = shelterDto.Street,
+                    ZipCode = shelterDto.ZipCode,
+                    Nip = shelterDto.Nip,
+                    Krs = shelterDto.Krs,
+                    PhoneNumber = shelterDto.PhoneNumber,
+                };
+                
+
+                await _dbContext.Shelters.AddAsync(newShelter);
+                await _dbContext.SaveChangesAsync();
+
+                return newShelter;
+            }
+            return null;
+        }
     }
 }

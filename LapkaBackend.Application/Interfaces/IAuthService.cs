@@ -12,6 +12,7 @@ namespace LapkaBackend.Application.Interfaces
     {
         public Task<User?> RegisterUser(UserRegisterDto user);
         public Task<LoginResultDto> LoginUser(UserLoginDto user);
+        public Task<Shelter?> RegisterShelter(ShelterRegisterDto shelter);
         public string CreateToken(User user);
         public string GenerateRefreshToken();
         public Task SaveRefreshToken(UserLoginDto user, string tokens);
