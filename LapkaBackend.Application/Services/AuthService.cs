@@ -6,7 +6,6 @@ using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -25,9 +24,8 @@ namespace LapkaBackend.Application.Services
             _configuration = configuration;
         }
         
-        public async Task<User?> RegisterUser(UserRegisterDto user)
+        public async Task RegisterUser(UserRegisterDto user)
         {
-            //TODO: Exception ogarnąć
             if (user.Password != user.ConfirmPassword)
             {
                 throw new AuthException("Passwords do not match");
@@ -45,14 +43,11 @@ namespace LapkaBackend.Application.Services
 
             await _dbContext.Users.AddAsync(newUser);
             await _dbContext.SaveChangesAsync();
-
-            return newUser;
         }
 
-        public LoginResultDto LoginUser(UserLoginDto user)
+        public async Task<LoginResultDto> LoginUser(UserLoginDto user)
         {
-            //TODO: Exception ogarnąć
-            var result = _dbContext.Users.FirstOrDefault(x => x.Email == user.Email);
+            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == user.Email);
 
             if (result == null)
             {
@@ -65,17 +60,18 @@ namespace LapkaBackend.Application.Services
             }
             return new LoginResultDto
             {
-                AccessToken = CreateToken(result),
+                AccessToken = CreateAccessToken(result),
                 RefreshToken = GenerateRefreshToken()
             }; 
         }
 
-        public string CreateToken(User user) 
+        public string CreateAccessToken(User user) 
         {
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimTypes.Name, user.Email),
-                new Claim(ClaimTypes.Role, "Admin") // TODO: zamiast Admin ma być zmienna Rola z Encji User 
+                new(ClaimTypes.Name, user.Email),
+                // new (ClaimTypes.Role, "Admin") 
+                // TODO: Change Admin to user.Role 
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -114,6 +110,11 @@ namespace LapkaBackend.Application.Services
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == user.Email);
 
+            if(result is null) 
+            {
+                throw new AuthException("User not found");
+            }
+            
             result.RefreshToken = newRefreshToken;
 
             _dbContext.Users.Update(result);
@@ -121,7 +122,7 @@ namespace LapkaBackend.Application.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public bool IsAccesTokenValid(string token)
+        public bool IsTokenValid(string token)
         {
             JwtSecurityToken jwtSecurityToken;
             try
@@ -139,7 +140,7 @@ namespace LapkaBackend.Application.Services
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x=> x.RefreshToken == token);
 
-            if (result != null)
+            if (result is not null)
             {
                 result.RefreshToken = "";
                 _dbContext.Users.Update(result);
