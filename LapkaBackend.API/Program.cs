@@ -6,6 +6,14 @@ using Swashbuckle.AspNetCore.Filters;
 using LapkaBackend.Application;
 using LapkaBackend.Infrastructure;
 using System.Reflection;
+using System.Text.Json;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using LapkaBackend.Application.Intercepters;
+using LapkaBackend.Application.Validators;
+using LapkaBackend.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
+
 //using LapkaBackend.Application.Exceptions;
 
 internal class Program
@@ -16,7 +24,24 @@ internal class Program
 
         // Add services to the container.
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .ConfigureApiBehaviorOptions(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => JsonSerializer.Deserialize<Error>(e.ErrorMessage));
+                    var errorsWrapper = new
+                    {
+                        errors = errors
+                    };
+                    return new BadRequestObjectResult(JsonSerializer.SerializeToElement(errorsWrapper));
+                };
+            });
+        builder.Services.AddValidatorsFromAssembly(Assembly.Load("LapkaBackend.Application"));
+        builder.Services.AddFluentValidationAutoValidation();
+        builder.Services.AddTransient<IValidatorInterceptor, CustomIntercepter>();
         builder.Services.AddApplication();
         builder.Services.AddInfrasturcture(builder.Configuration);
 
@@ -36,14 +61,8 @@ internal class Program
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
             options.SupportNonNullableReferenceTypes();
-            
-
             options.OperationFilter<SecurityRequirementsOperationFilter>();
         });
-        //TODO: Spr�bowa� wy�aczy� cia�o na 400 error
-
-        //builder.Services.AddScoped<IUserService, UserService>();
-
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -61,7 +80,7 @@ internal class Program
             .ConfigureApiBehaviorOptions(opt =>
             {
                 opt.SuppressMapClientErrors = true;
-            });
+        });
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -77,7 +96,7 @@ internal class Program
 
         app.UseAuthorization();
 
-        //app.UseMiddleware<ErrorHandlerMiddleware>();
+        // app.UseMiddleware<ErrorHandlerMiddleware>();
 
         app.MapControllers();
 
