@@ -9,5 +9,7 @@
         public string Password { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public string RefreshToken { get; set; } = string.Empty;
+        public int Role{ get; set; }
+        public Guid ShelterId { get; set; }
     }
 }

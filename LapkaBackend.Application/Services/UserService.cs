@@ -4,6 +4,7 @@ using LapkaBackend.Domain.Entities;
 using LapkaBackend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using LapkaBackend.Application.Exceptions;
+using LapkaBackend.Application.Requests;
 
 namespace LapkaBackend.Application.Services
 {
@@ -75,11 +76,11 @@ namespace LapkaBackend.Application.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<User> FindUserByRefreshToken(TokensDto token)
+        public async Task<User> FindUserByRefreshToken(TokenRequest request)
         {
             var result = await _context.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.RefreshToken == token.RefreshToken);
+                .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
 
             if (result is null)
             {

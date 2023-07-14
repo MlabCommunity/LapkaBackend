@@ -36,8 +36,6 @@ internal class Program
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
             options.SupportNonNullableReferenceTypes();
-
-
             
 
             options.OperationFilter<SecurityRequirementsOperationFilter>();

@@ -1,5 +1,7 @@
 ﻿using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Interfaces;
+using LapkaBackend.Application.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +19,7 @@ namespace LapkaBackend.API.Controllers
             _authService = authService;
             _userService = userService;
         }
-
+        // TODO: (Krystian) Dopytać czego revokeToken zwraca 403 Forbiden 
         /// <summary>
         ///     Rejestracja użytkownika
         /// </summary>
@@ -25,9 +27,9 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> UserRegister(UserRegisterDto user)
+        public async Task<ActionResult> UserRegister(UserRegistrationRequest request)
         {
-            await _authService.RegisterUser(user);
+            await _authService.RegisterUser(request);
             return NoContent();
         }
 
@@ -38,10 +40,10 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> ShelterRegister(RegistrationRequest RegistrationRequest)
+        public async Task<ActionResult> ShelterRegister(ShelterWithUserRegistrationRequest request)
         {
-            await _authService.RegisterUser(RegistrationRequest.UserDto);
-            await _authService.RegisterShelter(RegistrationRequest.ShelterDto);
+            await _authService.RegisterShelter(request);
+
             return NoContent();
         }
         /// <summary>
@@ -52,9 +54,9 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-          public async Task<ActionResult> UserLogin(UserLoginDto user)
-          {
-              var result = await _authService.LoginUser(user);
+          public async Task<ActionResult> UserLogin(LoginRequest request)
+          { 
+              var result = await _authService.LoginUser(request);
 
               return Ok(result);
           }
@@ -63,25 +65,24 @@ namespace LapkaBackend.API.Controllers
         ///     Odnawia access token na podstawie refresh token
         /// </summary>
         [HttpPost ("useToken")]
-        [Authorize (Roles = "User")]
-        [ProducesResponseType(typeof(TokensDto), StatusCodes.Status200OK)]
+        //[Authorize (Roles = "User")]
+        [ProducesResponseType(typeof(UseRefreshTokenResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> RefreshAccesToken(TokensDto tokens)
+        public async Task<ActionResult> RefreshAccesToken(UseRefreshTokenRequest request)
         {
             //  TODO: Wyrzucić ify do Service na Exception
-            if(_authService.IsTokenValid(tokens.AccessToken))
+            if(_authService.IsTokenValid(request.AccessToken))
             {
-                return Ok(tokens.AccessToken);
+                return Ok(request.AccessToken);
             }
 
-            if (!_authService.IsTokenValid(tokens.RefreshToken))
+            if (!_authService.IsTokenValid(request.RefreshToken))
             {
                 return Unauthorized("Token expired.");
             }
 
-            var user = await _userService.FindUserByRefreshToken(tokens);
-            string token = _authService.CreateAccessToken(user);
+            var token = await _authService.RefreshAccessToken(request);
 
             return Ok(token);
         }
@@ -90,14 +91,13 @@ namespace LapkaBackend.API.Controllers
         ///     Usuwa refresh token z bazy
         /// </summary>
         [HttpPost ("revokeToken")]
-        [Authorize (Roles = "User")]
-        [ProducesResponseType(typeof(TokensDto), StatusCodes.Status200OK)]
+        //[Authorize (Roles = "User")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task RevokeToken(TokensDto tokens)
+        public async Task RevokeToken(TokenRequest request)
         {
-            //TODO: Zamienić tokens na tylko refresh
-            await _authService.RevokeToken(tokens.RefreshToken);
+            await _authService.RevokeToken(request);
         }
     }
 }

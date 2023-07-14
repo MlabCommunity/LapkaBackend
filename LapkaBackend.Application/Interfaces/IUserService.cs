@@ -16,7 +16,7 @@ namespace LapkaBackend.Application.Interfaces
         Task<User> AddUser(User user);
         Task<User> UpdateUser(User user, Guid id);
         Task DeleteUser(Guid id);
-        public Task<User> FindUserByRefreshToken(TokensDto token);
+        public Task<User> FindUserByRefreshToken(TokenRequest request);
         public Task<User> FindUserByEmail(string email);
 
     }

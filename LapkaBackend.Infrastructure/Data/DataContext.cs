@@ -21,12 +21,12 @@ namespace LapkaBackend.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // TODO: Puszczenie migracji po dodaniu wszystkich atrybutów
             modelBuilder.AddModels();
 
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Shelter> Shelters { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
 
     }
