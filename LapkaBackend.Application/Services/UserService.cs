@@ -28,7 +28,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists");
+                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
             }
 
             return result;
@@ -49,7 +49,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists");
+                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
             }
 
             result.FirstName = user.FirstName;
@@ -69,7 +69,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists");
+                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
             }
 
             _context.Users.Remove(result);
@@ -84,7 +84,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists");
+                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
             }
 
             return result;
@@ -98,7 +98,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists");
+                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
             }
 
             return result;

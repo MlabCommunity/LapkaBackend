@@ -31,9 +31,9 @@ namespace LapkaBackend.Application.Services
         public async Task RegisterUser(UserRegistrationRequest request)
         {
             
-            if (request.Password != request.ConfirmPassword)
+            if (_dbContext.Users.Any(x => x.Email == request.Email))
             {
-                throw new AuthException("Passwords do not match");
+                throw new AuthException("User already exists", 400);
             }
 
             var newUser = new User()
@@ -56,12 +56,12 @@ namespace LapkaBackend.Application.Services
 
             if (result == null)
             {
-                throw new AuthException("User not found");
+                throw new AuthException("User not found", AuthException.StatusCodes.BadRequest);
             }
 
             if (result.Password != request.Password)
             {
-                throw new AuthException("Wrong password");
+                throw new AuthException("Wrong password", AuthException.StatusCodes.BadRequest);
             }
             return new LoginResultDto
             {
@@ -79,7 +79,7 @@ namespace LapkaBackend.Application.Services
 
             if (jwtAccesToken == null)
             {
-                throw new AuthException("Błędny token");
+                throw new AuthException("Błędny token", AuthException.StatusCodes.BadRequest);
             }
 
             jwtAccesToken.Claims.Where(x => x.Type == ClaimTypes.Email).Select(x => x.Value);
@@ -88,7 +88,7 @@ namespace LapkaBackend.Application.Services
 
             if(user == null)
             {
-                throw new AuthException("Nie znaleziono użytkownika");
+                throw new AuthException("Nie znaleziono użytkownika", AuthException.StatusCodes.BadRequest);
             }
 
             List<Claim> claims = new List<Claim>()
@@ -120,7 +120,7 @@ namespace LapkaBackend.Application.Services
             {
                 new(ClaimTypes.Name, user.Email),
                 new(ClaimTypes.Role, "User")
-                // TODO: Change Admin to user.Role 
+                // TODO: Change User to user.Role 
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
