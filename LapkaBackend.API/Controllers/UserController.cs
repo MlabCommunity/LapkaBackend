@@ -1,7 +1,5 @@
-﻿using LapkaBackend.Application.Dtos;
-using LapkaBackend.Application.Interfaces;
+﻿using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers

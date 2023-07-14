@@ -1,8 +1,6 @@
-﻿using LapkaBackend.Application.Dtos;
-using LapkaBackend.Application.Dtos.Result;
+﻿using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers
@@ -12,12 +10,10 @@ namespace LapkaBackend.API.Controllers
     public class AuthController : Controller
     {
         private readonly IAuthService _authService;
-        private readonly IUserService _userService;
 
-        public AuthController(IAuthService authService, IUserService userService) 
+        public AuthController(IAuthService authService) 
         { 
             _authService = authService;
-            _userService = userService;
         }
         /// <summary>
         ///     Rejestracja użytkownika

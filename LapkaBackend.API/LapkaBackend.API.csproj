@@ -42,4 +42,8 @@
       <ProjectReference Include="..\LapkaBackend.Infrastructure\LapkaBackend.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="whattodo" />
+    </ItemGroup>
+
 </Project>

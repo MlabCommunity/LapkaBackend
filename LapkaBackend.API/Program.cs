@@ -1,21 +1,22 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Filters;
-using LapkaBackend.Application;
-using LapkaBackend.Infrastructure;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using LapkaBackend.Application;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Intercepters;
-using LapkaBackend.Application.Validators;
 using LapkaBackend.Domain.Entities;
+using LapkaBackend.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
 
 //using LapkaBackend.Application.Exceptions;
+
+namespace LapkaBackend.API;
 
 internal class Program
 {
@@ -35,7 +36,7 @@ internal class Program
                         .Select(e => JsonSerializer.Deserialize<Error>(e.ErrorMessage));
                     var errorsWrapper = new
                     {
-                        errors = errors
+                        errors
                     };
                     return new BadRequestObjectResult(JsonSerializer.SerializeToElement(errorsWrapper));
                 };
@@ -81,7 +82,7 @@ internal class Program
             .ConfigureApiBehaviorOptions(opt =>
             {
                 opt.SuppressMapClientErrors = true;
-        });
+            });
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

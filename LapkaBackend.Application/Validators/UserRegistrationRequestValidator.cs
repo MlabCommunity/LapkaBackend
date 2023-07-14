@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Requests;
 
 namespace LapkaBackend.Application.Validators;

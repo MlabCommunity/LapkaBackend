@@ -1,12 +1,9 @@
-﻿using Azure.Core;
-using LapkaBackend.Application.Common;
-using LapkaBackend.Application.Dtos;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -81,10 +78,8 @@ namespace LapkaBackend.Application.Services
             {
                 throw new AuthException("Błędny token", AuthException.StatusCodes.BadRequest);
             }
-
-            jwtAccesToken.Claims.Where(x => x.Type == ClaimTypes.Email).Select(x => x.Value);
-
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == jwtAccesToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value);
+            
+            var user = await _dbContext.Users.FirstAsync(c => c.Email == jwtAccesToken.Claims.First(x => x.Type == ClaimTypes.Email).Value);
 
             if(user == null)
             {
