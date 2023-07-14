@@ -19,7 +19,6 @@ namespace LapkaBackend.API.Controllers
             _authService = authService;
             _userService = userService;
         }
-        // TODO: (Krystian) Dopytać czego revokeToken zwraca 403 Forbiden 
         /// <summary>
         ///     Rejestracja użytkownika
         /// </summary>
@@ -72,7 +71,7 @@ namespace LapkaBackend.API.Controllers
         public async Task<ActionResult> RefreshAccesToken(UseRefreshTokenRequest request)
         {
             //  TODO: Wyrzucić ify do Service na Exception
-            if(_authService.IsTokenValid(request.AccessToken))
+            if (_authService.IsTokenValid(request.AccessToken))
             {
                 return Ok(request.AccessToken);
             }
@@ -94,6 +93,7 @@ namespace LapkaBackend.API.Controllers
         //[Authorize (Roles = "User")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task RevokeToken(TokenRequest request)
         {

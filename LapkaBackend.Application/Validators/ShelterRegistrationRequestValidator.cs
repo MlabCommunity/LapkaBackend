@@ -37,7 +37,7 @@ public class ShelterRegistrationRequestValidator : AbstractValidator<ShelterRegi
         RuleFor(x => x.Nip)
             .NotEmpty()
             .Matches("^[0-9]{10}$")
-            .WithMessage("Krs must be 10 digits number")
+            .WithMessage("Nip must be 10 digits number")
             .WithErrorCode("invalid_nip");
         RuleFor(x => x.Krs)
             .NotEmpty()

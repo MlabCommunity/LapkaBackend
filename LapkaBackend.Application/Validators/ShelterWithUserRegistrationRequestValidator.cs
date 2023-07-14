@@ -8,9 +8,9 @@ public class ShelterWithUserRegistrationRequestValidator : AbstractValidator<She
 {
     public ShelterWithUserRegistrationRequestValidator()
     {
-        RuleFor(x => x.UserRequest)
-            .SetValidator(new UserRegistrationRequestValidator());
         RuleFor(x => x.ShelterRequest)
             .SetValidator(new ShelterRegistrationRequestValidator());
+        RuleFor(x => x.UserRequest)
+            .SetValidator(new UserRegistrationRequestValidator());
     }
 }

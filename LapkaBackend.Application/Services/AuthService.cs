@@ -6,6 +6,7 @@ using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -65,7 +66,7 @@ namespace LapkaBackend.Application.Services
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),
-                RefreshToken = GenerateRefreshToken()
+                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : GenerateRefreshToken()
             }; 
         }
 
