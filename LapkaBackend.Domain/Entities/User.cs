@@ -9,5 +9,8 @@
         public string Password { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public string RefreshToken { get; set; } = string.Empty;
+        public string ExternalToken { get; set; } = string.Empty;
+        public Role Role { get; set; }
+        public int RoleId { get; set; }
     }
 }

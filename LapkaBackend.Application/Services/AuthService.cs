@@ -20,6 +20,7 @@ namespace LapkaBackend.Application.Services
 
         public AuthService(IDataContext dbContext, IConfiguration configuration)
         {
+
             _dbContext = dbContext;
             _configuration = configuration;
         }
@@ -32,6 +33,18 @@ namespace LapkaBackend.Application.Services
                 throw new AuthException("Passwords do not match");
             }
 
+            var RoleUser = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "Worker");
+            if (RoleUser == null)
+            {
+                RoleUser = new Role
+                {
+                    RoleName = "Worker"
+                };
+
+                await _dbContext.Roles.AddAsync(RoleUser);
+                await _dbContext.SaveChangesAsync();
+            }
+
             var newUser = new User()
             {
                 FirstName = user.FirstName,
@@ -39,7 +52,8 @@ namespace LapkaBackend.Application.Services
                 Email = user.Email,
                 Password = user.Password,
                 RefreshToken = GenerateRefreshToken(),
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                Role = RoleUser
             };
 
             await _dbContext.Users.AddAsync(newUser);

@@ -27,6 +27,7 @@ namespace LapkaBackend.Infrastructure.Data
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Shelter> Shelters { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
 
     }

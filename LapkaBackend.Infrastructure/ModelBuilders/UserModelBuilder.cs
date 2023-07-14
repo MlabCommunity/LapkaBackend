@@ -19,6 +19,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
             modelBuilder.Entity<User>()
                 .Property(u => u.Password)
                 .IsRequired();
+
         }
     }
 }
