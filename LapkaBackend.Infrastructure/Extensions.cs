@@ -23,6 +23,8 @@ namespace LapkaBackend.Infrastructure
         public static void AddModels(this ModelBuilder modelBuilder)
         {
             UserModelBuilder.BuildUserModel(modelBuilder);
+            ShelterModelBuilder.BuildShelterModel(modelBuilder);
+            RoleModelBuilder.BuildRoleModel(modelBuilder);
         }
     }
 }

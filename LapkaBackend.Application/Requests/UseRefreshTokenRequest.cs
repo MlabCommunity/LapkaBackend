@@ -2,8 +2,10 @@
 
 namespace LapkaBackend.Application.Requests
 {
-    public class TokenRequest
+    public class UseRefreshTokenRequest
     {
+        [Required]
+        public string AccessToken { get; set; } = null!;
         [Required]
         public string RefreshToken { get; set; } = null!;
     }

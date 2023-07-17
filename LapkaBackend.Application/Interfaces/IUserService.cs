@@ -1,11 +1,5 @@
-﻿using LapkaBackend.Application.Dtos;
-using LapkaBackend.Application.Requests;
+﻿using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Interfaces
 {
@@ -16,7 +10,7 @@ namespace LapkaBackend.Application.Interfaces
         Task<User> AddUser(User user);
         Task<User> UpdateUser(User user, Guid id);
         Task DeleteUser(Guid id);
-        public Task<User> FindUserByRefreshToken(TokensDto token);
+        public Task<User> FindUserByRefreshToken(TokenRequest request);
         public Task<User> FindUserByEmail(string email);
 
     }

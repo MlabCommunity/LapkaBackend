@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LapkaBackend.Application.Dtos
+namespace LapkaBackend.Application.Requests
 {
-    public class UserRegisterDto
+    public class UserRegistrationRequest
     {
         [Required]
         public string FirstName { get; set; } = string.Empty;

@@ -4,6 +4,7 @@ using LapkaBackend.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,16 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+<<<<<<<< HEAD:LapkaBackend.Infrastructure/Migrations/20230714073048_AddedRolesTable3.Designer.cs
+    [Migration("20230714073048_AddedRolesTable3")]
+    partial class AddedRolesTable3
+========
+    [Migration("20230714084050_Initial")]
+    partial class Initial
+>>>>>>>> e9a791e395c8e17bad890fa9b326e75e10de7ff6:LapkaBackend.Infrastructure/Migrations/20230714084050_Initial.Designer.cs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,11 +40,20 @@ namespace LapkaBackend.Infrastructure.Migrations
 
                     b.Property<string>("RoleName")
                         .IsRequired()
+<<<<<<<< HEAD:LapkaBackend.Infrastructure/Migrations/20230714073048_AddedRolesTable3.Designer.cs
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+========
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles", (string)null);
+>>>>>>>> e9a791e395c8e17bad890fa9b326e75e10de7ff6:LapkaBackend.Infrastructure/Migrations/20230714084050_Initial.Designer.cs
                 });
 
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Shelter", b =>
@@ -127,9 +144,18 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+<<<<<<<< HEAD:LapkaBackend.Infrastructure/Migrations/20230714073048_AddedRolesTable3.Designer.cs
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
+========
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ShelterId")
+                        .HasColumnType("uniqueidentifier");
+
+>>>>>>>> e9a791e395c8e17bad890fa9b326e75e10de7ff6:LapkaBackend.Infrastructure/Migrations/20230714084050_Initial.Designer.cs
                     b.HasKey("Id");
 
                     b.HasIndex("RoleId");

@@ -2,9 +2,9 @@
 
 namespace LapkaBackend.Application.Requests
 {
-    public class TokenRequest
+    public class UserEmailRequest
     {
         [Required]
-        public string RefreshToken { get; set; } = null!;
+        public string Email { get; set; } = null!;
     }
 }

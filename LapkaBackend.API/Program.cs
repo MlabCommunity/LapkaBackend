@@ -1,14 +1,22 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using LapkaBackend.Application;
+using LapkaBackend.Application.Exceptions;
+using LapkaBackend.Application.Intercepters;
+using LapkaBackend.Domain.Entities;
+using LapkaBackend.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
-using LapkaBackend.Application;
-using LapkaBackend.Infrastructure;
-using System.Reflection;
-using AutoMapper;
-using LapkaBackend.Application.Mappers;
+
 //using LapkaBackend.Application.Exceptions;
+
+namespace LapkaBackend.API;
 
 internal class Program
 {
@@ -18,7 +26,24 @@ internal class Program
 
         // Add services to the container.
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .ConfigureApiBehaviorOptions(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => JsonSerializer.Deserialize<Error>(e.ErrorMessage));
+                    var errorsWrapper = new
+                    {
+                        errors
+                    };
+                    return new BadRequestObjectResult(JsonSerializer.SerializeToElement(errorsWrapper));
+                };
+            });
+        builder.Services.AddValidatorsFromAssembly(Assembly.Load("LapkaBackend.Application"));
+        builder.Services.AddFluentValidationAutoValidation();
+        builder.Services.AddTransient<IValidatorInterceptor, CustomIntercepter>();
         builder.Services.AddApplication();
         builder.Services.AddInfrasturcture(builder.Configuration);
         builder.Services.AddAutoMapper(typeof(UserMappingProfile));
@@ -38,17 +63,8 @@ internal class Program
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
             options.SupportNonNullableReferenceTypes();
-
-
-            
-
             options.OperationFilter<SecurityRequirementsOperationFilter>();
         });
-        //TODO: Spr�bowa� wy�aczy� cia�o na 400 error
-
-        //builder.Services.AddScoped<IUserService, UserService>();
-
-        
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -82,7 +98,7 @@ internal class Program
 
         app.UseAuthorization();
 
-        //app.UseMiddleware<ErrorHandlerMiddleware>();
+        app.UseMiddleware<ErrorHandlerMiddleware>();
 
         app.MapControllers();
 

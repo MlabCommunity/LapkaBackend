@@ -21,7 +21,6 @@ namespace LapkaBackend.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // TODO: Puszczenie migracji po dodaniu wszystkich atrybutów
             modelBuilder.AddModels();
 
         }

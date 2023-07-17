@@ -1,7 +1,5 @@
-﻿using LapkaBackend.Application.Dtos;
-using LapkaBackend.Application.Interfaces;
+﻿using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers
@@ -21,7 +19,7 @@ namespace LapkaBackend.API.Controllers
         ///     Informacje o użytkowniku o podanym id
         /// </summary>
         [HttpGet("{id}")]
-        [Authorize (Roles = "User")]
+        //[Authorize (Roles = "User")]
         [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -35,7 +33,7 @@ namespace LapkaBackend.API.Controllers
         ///     Aktualizuj informacje o zalogowanym użytkowniku
         /// </summary>
         [HttpPatch]
-        [Authorize (Roles = "User")]
+        //[Authorize (Roles = "User")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -51,7 +49,7 @@ namespace LapkaBackend.API.Controllers
         ///     Usuń zalogowanego użytkownika
         /// </summary>
         [HttpDelete]
-        [Authorize (Roles = "User")]
+        //[Authorize (Roles = "User")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

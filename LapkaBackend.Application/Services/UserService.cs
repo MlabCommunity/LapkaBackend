@@ -1,9 +1,9 @@
 ﻿using LapkaBackend.Application.Common;
-using LapkaBackend.Application.Dtos;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using LapkaBackend.Application.Exceptions;
+using LapkaBackend.Application.Requests;
 
 namespace LapkaBackend.Application.Services
 {
@@ -27,7 +27,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists");
+                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
             }
 
             return result;
@@ -48,7 +48,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists");
+                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
             }
 
             result.FirstName = user.FirstName;
@@ -68,22 +68,22 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists");
+                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
             }
 
             _context.Users.Remove(result);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<User> FindUserByRefreshToken(TokensDto token)
+        public async Task<User> FindUserByRefreshToken(TokenRequest request)
         {
             var result = await _context.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.RefreshToken == token.RefreshToken);
+                .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists");
+                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
             }
 
             return result;
@@ -97,7 +97,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists");
+                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
             }
 
             return result;

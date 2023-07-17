@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using LapkaBackend.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LapkaBackend.Domain.Entities;
 
 namespace LapkaBackend.Infrastructure.ModelBuilders
 {
@@ -19,7 +19,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 .WithOne(u => u.Role)
                 .HasForeignKey(u => u.RoleId);
             });
-                
+
         }
     }
 }

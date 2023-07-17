@@ -1,11 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace LapkaBackend.Application.Exceptions
 {
@@ -24,11 +19,11 @@ namespace LapkaBackend.Application.Exceptions
             {
                 await _next(context);
             }
-            catch (Exception error)
+            catch (AuthException error)
             {
                 var response = context.Response;
                 response.ContentType = "application/json";
-                response.StatusCode = 400;
+                response.StatusCode = error.StatusCode;
 
                 var result = JsonSerializer.Serialize(new { message = error?.Message });
 
