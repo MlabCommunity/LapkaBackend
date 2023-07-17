@@ -28,7 +28,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> AssignAdminRole([FromRoute]Guid userId)
         {
-            await _managementService.AssignRemoveAdminRole(userId, "Admin");
+            await _managementService.AssignAdminRole(userId);
             return NoContent();
         }
 
@@ -41,7 +41,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> RemoveAdminRole([FromRoute] Guid userId)
         {
-            await _managementService.AssignRemoveAdminRole(userId, "Worker");
+            await _managementService.RemoveAdminRole(userId);
             return NoContent();
         }
 

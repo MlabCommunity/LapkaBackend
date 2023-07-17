@@ -10,7 +10,8 @@ namespace LapkaBackend.Application.Interfaces
 {
     public interface IManagementService
     {
-        public Task AssignRemoveAdminRole(Guid userId, string newRole);
+        public Task AssignAdminRole(Guid userId);
+        public Task RemoveAdminRole(Guid userId);
         public Task<List<UserDto>> ListOfUsersWithTheSpecifiedRole(string role);
     }
 }
