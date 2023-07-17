@@ -11,42 +11,41 @@ namespace LapkaBackend.API.Controllers
     [ApiController]
     public class ManagementController : ControllerBase
     {
-        private readonly IAuthService _authService;
-        private readonly IUserService _userService;
         private readonly IManagementService _managementService;
 
-        public ManagementController(IAuthService authService, IUserService userService, IManagementService managementService)
+        public ManagementController(IManagementService managementService)
         {
-            _authService = authService;
-            _userService = userService;
             _managementService = managementService;
         }
 
 
-        [HttpPost("assignAdminRole")]
+        //Auth
+        [HttpPost("assignAdminRole/{userId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> AssignAdminRole(Guid userId)
+        public async Task<ActionResult> AssignAdminRole([FromRoute]Guid userId)
         {
             await _managementService.AssignRemoveAdminRole(userId, "Admin");
             return NoContent();
         }
 
-        [HttpPost("removeAdminRole")]
+        //Auth
+        [HttpPost("removeAdminRole/{userId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> RemoveAdminRole(Guid userId)
+        public async Task<ActionResult> RemoveAdminRole([FromRoute] Guid userId)
         {
             await _managementService.AssignRemoveAdminRole(userId, "Worker");
             return NoContent();
         }
 
+        //Auth
         [HttpGet("/Management")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

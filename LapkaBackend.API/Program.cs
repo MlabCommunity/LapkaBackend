@@ -6,6 +6,8 @@ using Swashbuckle.AspNetCore.Filters;
 using LapkaBackend.Application;
 using LapkaBackend.Infrastructure;
 using System.Reflection;
+using AutoMapper;
+using LapkaBackend.Application.Mappers;
 //using LapkaBackend.Application.Exceptions;
 
 internal class Program
@@ -19,7 +21,7 @@ internal class Program
         builder.Services.AddControllers();
         builder.Services.AddApplication();
         builder.Services.AddInfrasturcture(builder.Configuration);
-
+        builder.Services.AddAutoMapper(typeof(UserMappingProfile));
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -46,6 +48,7 @@ internal class Program
 
         //builder.Services.AddScoped<IUserService, UserService>();
 
+        
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

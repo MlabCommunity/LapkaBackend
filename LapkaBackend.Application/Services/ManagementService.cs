@@ -1,4 +1,7 @@
-﻿using LapkaBackend.Application.Common;
+﻿using AutoMapper;
+using LapkaBackend.Application.Common;
+using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -15,53 +18,27 @@ namespace LapkaBackend.Application.Services
     {
         private readonly IDataContext _dbContext;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
-        public ManagementService(IDataContext dbContext, IConfiguration configuration)
+        public ManagementService(IDataContext dbContext, IConfiguration configuration, IMapper mapper)
         {
 
             _dbContext = dbContext;
             _configuration = configuration;
+            _mapper = mapper;
         }
 
-
-        
-        public async Task AssignAdminRole(Guid userId)
+        public async Task<List<UserDto>> ListOfUsersWithTheSpecifiedRole(string roleName)
         {
-            // trzeba sprawdzić czy user jest zalogowany jako superadmin
-
-            var userResult = await _dbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(x => x.Id == userId);
-
-            if (userResult.Role.RoleName != "Shelter"  && userResult.Role.RoleName != "User")
+            if (roleName == "SuperAdmin" || roleName == "Undefined" || roleName == "User")
             {
-                int adminRoleId = await _dbContext.Roles.Where(r => r.RoleName == "Admin").Select(r => r.Id).FirstOrDefaultAsync();
-
-                if (adminRoleId == 0)
-                {
-                    Role RoleAdmin = new Role
-                    {
-                        RoleName = "Admin"
-                    };
-                    await _dbContext.Roles.AddAsync(RoleAdmin);
-                    await _dbContext.SaveChangesAsync();
-
-                    userResult.RoleId = RoleAdmin.Id;
-                    await _dbContext.SaveChangesAsync();
-                }
-                else 
-                {
-                    userResult.RoleId = adminRoleId;
-                    await _dbContext.SaveChangesAsync();
-                }
+                throw new AuthException("Wrong role name !");
             }
-        }
-
-        public async Task<List<User>> ListOfUsersWithTheSpecifiedRole(string roleName)
-        {
             var users = await _dbContext.Users
             .Where(u => u.Role.RoleName == roleName)
             .ToListAsync();
-            
-            return users;
+            var usersDtos = _mapper.Map<List<UserDto>>(users);
+            return usersDtos;
         }
 
         public async Task AssignRemoveAdminRole(Guid userId, string newStringRole)
@@ -69,6 +46,10 @@ namespace LapkaBackend.Application.Services
             // trzeba sprawdzić czy user jest zalogowany jako superadmin
 
             var userResult = await _dbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(x => x.Id == userId);
+            if (newStringRole == "Worker" && userResult.Role.RoleName != "Admin")
+            {
+                throw new AuthException("the user is not admin !");
+            }
             if (userResult.Role.RoleName != "Shelter" && userResult.Role.RoleName != "User")
             {
                 int srearchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == newStringRole).Select(r => r.Id).FirstOrDefaultAsync();
