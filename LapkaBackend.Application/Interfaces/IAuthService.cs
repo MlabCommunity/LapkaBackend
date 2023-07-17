@@ -16,5 +16,6 @@ namespace LapkaBackend.Application.Interfaces
         public bool IsTokenValid(string token);
         public Task RevokeToken(TokenRequest request);
         public Task<LoginResultDto> LoginShelter(LoginRequest request);
+        public Task ResetPassword(string emailAddress);
     }
 }

@@ -4,9 +4,11 @@ using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
+using MailKit.Net.Smtp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using MimeKit;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -282,9 +284,20 @@ namespace LapkaBackend.Application.Services
             }
         }
 
-        public async Task<LoginResultDto> ResetPassword(string email)
+        public async Task ResetPassword(string emailAddress)
         {
-            
+            string body = "Test Changing Password";
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse("casimir28@ethereal.email"));
+            email.To.Add(MailboxAddress.Parse("emailAddress"));
+            email.Subject = "Changing password";
+            email.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = body };
+
+            using var smtp = new SmtpClient();
+            smtp.Connect("smtp.ethereal.email",587,MailKit.Security.SecureSocketOptions.StartTls);
+            smtp.Authenticate("casimir28@ethereal.email", "GAmcfRXj4CgvZuDyVm");
+            await smtp.SendAsync(email);
+            smtp.Disconnect(true);
         }
     }
 }
