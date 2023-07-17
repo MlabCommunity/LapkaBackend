@@ -15,5 +15,6 @@ namespace LapkaBackend.Application.Interfaces
         public Task SaveRefreshToken(LoginRequest request, string tokens);
         public bool IsTokenValid(string token);
         public Task RevokeToken(TokenRequest request);
+        public Task<LoginResultDto> LoginShelter(LoginRequest request);
     }
 }

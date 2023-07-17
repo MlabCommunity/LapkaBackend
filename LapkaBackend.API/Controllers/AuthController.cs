@@ -42,6 +42,20 @@ namespace LapkaBackend.API.Controllers
             return NoContent();
         }
         /// <summary>
+        ///     Logowanie schroniska
+        /// </summary>
+        [HttpPost("loginWeb")]
+        [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> LoginWeb(LoginRequest request)
+        {
+            var result = await _authService.LoginShelter(request);
+
+            return Ok(result);
+        }
+        /// <summary>
         ///     Logowanie użytkownika - zwracanie tokenów
         /// </summary>
         [HttpPost ("loginMobile")]
@@ -94,6 +108,19 @@ namespace LapkaBackend.API.Controllers
         public async Task RevokeToken(TokenRequest request)
         {
             await _authService.RevokeToken(request);
+        }
+
+        /// <summary>
+        ///     Wysłanie maila z linkiem do zmiany hasła
+        /// </summary>
+        [HttpPost("resetPassword")]
+        //[Authorize (Roles = "User")] ???
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task ResetPassword(TokenRequest request)
+        {
+            await _authService.ResetPassword(request);
         }
     }
 }

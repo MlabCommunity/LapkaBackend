@@ -81,6 +81,32 @@ namespace LapkaBackend.Application.Services
             }; 
         }
 
+        public async Task<LoginResultDto> LoginShelter (LoginRequest request)
+        {
+            var result = await _dbContext.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(x => x.Email == request.Email);
+
+            if (result == null)
+            {
+                throw new AuthException("User not found", AuthException.StatusCodes.BadRequest);
+            }
+            if (result.Role.RoleName != "Shelter" )
+            {
+                throw new AuthException("You are not Shelter !", AuthException.StatusCodes.BadRequest);
+            }
+
+            if (result.Password != request.Password)
+            {
+                throw new AuthException("Wrong password", AuthException.StatusCodes.BadRequest);
+            }
+            return new LoginResultDto
+            {
+                AccessToken = CreateAccessToken(result),
+                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : GenerateRefreshToken()
+            };
+        }
+
         public async Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request) 
         {
             // TODO: (Najważniejsze) dodać metode refreshaccesstoken ma przyjmować tokeny a create usera 
@@ -209,34 +235,56 @@ namespace LapkaBackend.Application.Services
 
         public async Task RegisterShelter(ShelterWithUserRegistrationRequest request)
         {
-            var newShelter = new Shelter()
+            if (_dbContext.Users.Any(x => x.Email == request.UserRequest.Email))
             {
-                OrganizationName = request.ShelterRequest.OrganizationName,
-                Longtitude = request.ShelterRequest.Longitude,
-                Latitude = request.ShelterRequest.Latitude,
-                City = request.ShelterRequest.City,
-                Street = request.ShelterRequest.Street,
-                ZipCode = request.ShelterRequest.ZipCode,
-                Nip = request.ShelterRequest.Nip,
-                Krs = request.ShelterRequest.Krs,
-                PhoneNumber = request.ShelterRequest.PhoneNumber,
-            };
-
-            await _dbContext.Shelters.AddAsync(newShelter);
-
-            var newUser = new User()
+                throw new AuthException("Shelter already exists", 400);
+            }
+            var RoleUser = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "Shelter");
+            if (RoleUser == null)
             {
-                FirstName = request.UserRequest.FirstName,
-                LastName = request.UserRequest.LastName,
-                Email = request.UserRequest.Email,
-                Password = request.UserRequest.Password,
-                RefreshToken = GenerateRefreshToken(),
-                CreatedAt = DateTime.Now,
-                ShelterId = newShelter.Id
-            };
+                RoleUser = new Role
+                {
+                    RoleName = "Shelter"
+                };
 
-            await _dbContext.Users.AddAsync(newUser);
-            await _dbContext.SaveChangesAsync();
+                await _dbContext.Roles.AddAsync(RoleUser);
+                await _dbContext.SaveChangesAsync();
+
+                var newShelter = new Shelter()
+                {
+                    OrganizationName = request.ShelterRequest.OrganizationName,
+                    Longtitude = request.ShelterRequest.Longitude,
+                    Latitude = request.ShelterRequest.Latitude,
+                    City = request.ShelterRequest.City,
+                    Street = request.ShelterRequest.Street,
+                    ZipCode = request.ShelterRequest.ZipCode,
+                    Nip = request.ShelterRequest.Nip,
+                    Krs = request.ShelterRequest.Krs,
+                    PhoneNumber = request.ShelterRequest.PhoneNumber,
+                };
+
+                await _dbContext.Shelters.AddAsync(newShelter);
+
+                var newUser = new User()
+                {
+                    FirstName = request.UserRequest.FirstName,
+                    LastName = request.UserRequest.LastName,
+                    Email = request.UserRequest.Email,
+                    Password = request.UserRequest.Password,
+                    RefreshToken = GenerateRefreshToken(),
+                    CreatedAt = DateTime.Now,
+                    Role = RoleUser,
+                    ShelterId = newShelter.Id
+                };
+
+                await _dbContext.Users.AddAsync(newUser);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task<LoginResultDto> ResetPassword(string email)
+        {
+            
         }
     }
 }

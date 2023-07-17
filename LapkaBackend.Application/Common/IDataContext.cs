@@ -5,9 +5,9 @@ namespace LapkaBackend.Application.Common
 {
     public interface IDataContext
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<Shelter> Shelters { get; set; }
-        public DbSet<Role> Roles { get; set; }
+        public DbSet<User> Users { get; }
+        public DbSet<Shelter> Shelters { get; }
+        public DbSet<Role> Roles { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

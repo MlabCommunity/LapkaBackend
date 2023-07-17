@@ -15,8 +15,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 
-//using LapkaBackend.Application.Exceptions;
-
 namespace LapkaBackend.API;
 
 internal class Program
@@ -24,8 +22,6 @@ internal class Program
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
-        // Add services to the container.
 
         builder.Services.AddControllers()
             .ConfigureApiBehaviorOptions(options =>

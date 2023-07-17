@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230717090625_ChangingMethods")]
-    partial class ChangingMethods
+    [Migration("20230717102404_MigrationName")]
+    partial class MigrationName
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

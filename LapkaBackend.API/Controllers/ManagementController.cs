@@ -20,6 +20,9 @@ namespace LapkaBackend.API.Controllers
 
 
         //Auth
+        /// <summary>
+        ///     Nadanie użytkownikowi roli admina przez superadmina. Schronisko i pracownik nie mogą dostać tej roli
+        /// </summary>
         [HttpPost("assignAdminRole/{userId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -33,6 +36,9 @@ namespace LapkaBackend.API.Controllers
         }
 
         //Auth
+        /// <summary>
+        ///     Odebranie adminowi roli przez superadmina
+        /// </summary>
         [HttpPost("removeAdminRole/{userId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -46,6 +52,9 @@ namespace LapkaBackend.API.Controllers
         }
 
         //Auth
+        /// <summary>
+        ///     Lista użytkowników o wskazanej roli. Niedozwolony wybór ról: SuperAdmin, Undefined, User.
+        /// </summary>
         [HttpGet("/Management")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

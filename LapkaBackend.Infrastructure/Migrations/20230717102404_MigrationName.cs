@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class ChangingMethods : Migration
+    public partial class MigrationName : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
