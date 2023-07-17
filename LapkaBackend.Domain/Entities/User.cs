@@ -12,5 +12,6 @@
         public string ExternalToken { get; set; } = string.Empty;
         public Role Role { get; set; }
         public int RoleId { get; set; }
+        public Guid ShelterId { get; set; }
     }
 }
