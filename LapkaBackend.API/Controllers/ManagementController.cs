@@ -18,7 +18,6 @@ namespace LapkaBackend.API.Controllers
             _managementService = managementService;
         }
 
-
         //Auth
         /// <summary>
         ///     Nadanie użytkownikowi roli admina przez superadmina. Schronisko i pracownik nie mogą dostać tej roli

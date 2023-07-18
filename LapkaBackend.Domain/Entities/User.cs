@@ -1,4 +1,6 @@
-﻿namespace LapkaBackend.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace LapkaBackend.Domain.Entities
 {
     public class User
     {
@@ -10,8 +12,8 @@
         public DateTime CreatedAt { get; set; }
         public string RefreshToken { get; set; } = string.Empty;
         public string ExternalToken { get; set; } = string.Empty;
-        public Role Role { get; set; }
-        public int RoleId { get; set; }
+        public int? RoleId { get; set; }
+        public virtual Role Role { get; set; }
         public Guid ShelterId { get; set; }
     }
 }

@@ -4,6 +4,8 @@ using LapkaBackend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Requests;
+using Microsoft.AspNetCore.Http;
+using LapkaBackend.Application.Dtos;
 
 namespace LapkaBackend.Application.Services
 {
@@ -101,6 +103,34 @@ namespace LapkaBackend.Application.Services
             }
 
             return result;
+        }
+
+        public async Task SetNewPassword(string id, UserPasswordRequest request)
+        {
+            var user = await GetUserById(new Guid(id));
+
+            user.Password = request.NewPassword;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SetNewEmail(string id, UpdateUserEmailRequest request)
+        {
+            var user = await GetUserById(new Guid(id));
+
+            user.Email = request.Email;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        //TODO: Do podmiany typ zwracany User na GetCurrentUserDataQueryResult po dodaniu loginProvider'a i profilePicture
+        public async Task<User> GetLoggedUser(string id)
+        {
+            var user = await GetUserById(new Guid(id));
+
+            return user;
         }
     }
 }

@@ -37,6 +37,28 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            RoleName = "SuperAdmin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            RoleName = "Shelter"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            RoleName = "User"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            RoleName = "Worker"
+                        });
                 });
 
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Shelter", b =>
@@ -127,7 +149,8 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleId")
+                    b.Property<int?>("RoleId")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<Guid>("ShelterId")

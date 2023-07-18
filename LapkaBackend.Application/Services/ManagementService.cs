@@ -12,14 +12,12 @@ namespace LapkaBackend.Application.Services
     public class ManagementService : IManagementService
     {
         private readonly IDataContext _dbContext;
-        private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
 
-        public ManagementService(IDataContext dbContext, IConfiguration configuration, IMapper mapper)
+        public ManagementService(IDataContext dbContext, IMapper mapper)
         {
 
             _dbContext = dbContext;
-            _configuration = configuration;
             _mapper = mapper;
         }
 
@@ -63,12 +61,12 @@ namespace LapkaBackend.Application.Services
                     await _dbContext.Roles.AddAsync(RoleNew);
                     await _dbContext.SaveChangesAsync();
 
-                    userResult.RoleId = RoleNew.Id;
+                    userResult.Role.Id = RoleNew.Id;
                     await _dbContext.SaveChangesAsync();
                 }
                 else
                 {
-                    userResult.RoleId = srearchedRoleId;
+                    userResult.Role.Id = srearchedRoleId;
                     await _dbContext.SaveChangesAsync();
                 }
             }
@@ -101,12 +99,12 @@ namespace LapkaBackend.Application.Services
                 await _dbContext.Roles.AddAsync(RoleNew);
                 await _dbContext.SaveChangesAsync();
 
-                userResult.RoleId = RoleNew.Id;
+                userResult.Role.Id = RoleNew.Id;
                 await _dbContext.SaveChangesAsync();
             }
             else
             {
-                userResult.RoleId = srearchedRoleId;
+                userResult.Role.Id = srearchedRoleId;
                 await _dbContext.SaveChangesAsync();
             }
 

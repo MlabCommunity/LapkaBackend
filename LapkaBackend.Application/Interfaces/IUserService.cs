@@ -12,6 +12,9 @@ namespace LapkaBackend.Application.Interfaces
         Task DeleteUser(Guid id);
         public Task<User> FindUserByRefreshToken(TokenRequest request);
         public Task<User> FindUserByEmail(string email);
+        public Task SetNewPassword(string id, UserPasswordRequest request);
+        public Task SetNewEmail(string id, UpdateUserEmailRequest request);
+        public Task<User> GetLoggedUser(string id);
 
     }
 }

@@ -9,7 +9,6 @@ using MailKit.Net.Smtp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using MimeKit;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -36,20 +35,10 @@ namespace LapkaBackend.Application.Services
             
             if (_dbContext.Users.Any(x => x.Email == request.Email))
             {
-                throw new AuthException("User already exists", 400);
+                throw new AuthException("User already exists", AuthException.StatusCodes.BadRequest);
             }
 
-            var RoleUser = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "Worker");
-            if (RoleUser == null)
-            {
-                RoleUser = new Role
-                {
-                    RoleName = "Worker"
-                };
-
-                await _dbContext.Roles.AddAsync(RoleUser);
-                await _dbContext.SaveChangesAsync();
-            }
+            var role = _dbContext.Roles.First(r => r.RoleName.ToUpper() == "USER");
 
             var newUser = new User()
             {
@@ -59,7 +48,8 @@ namespace LapkaBackend.Application.Services
                 Password = request.Password,
                 RefreshToken = GenerateRefreshToken(),
                 CreatedAt = DateTime.Now,
-                Role = RoleUser
+                Role = role,
+                RoleId = _dbContext.Roles.First(r => r.RoleName.ToUpper() == "USER").Id
             };
 
             await _dbContext.Users.AddAsync(newUser);
@@ -114,9 +104,6 @@ namespace LapkaBackend.Application.Services
 
         public async Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request) 
         {
-            // TODO: (Najważniejsze) dodać metode refreshaccesstoken ma przyjmować tokeny a create usera 
-            // TODO: Do przeanalizowania struktura
-
             var jwtAccesToken = new JwtSecurityToken(request.AccessToken);
 
             if (jwtAccesToken == null)
@@ -131,11 +118,13 @@ namespace LapkaBackend.Application.Services
                 throw new AuthException("Nie znaleziono użytkownika", AuthException.StatusCodes.BadRequest);
             }
 
+            var role = await _dbContext.Roles.FirstAsync(x => x.Id == user.RoleId);
+
             List<Claim> claims = new List<Claim>()
             {
-                new(ClaimTypes.Name, user.Email),
-                new(ClaimTypes.Role, "User")
-                // TODO: Change Admin to user.Role 
+                new("userId", user.Id.ToString()),
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Role, role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -154,13 +143,15 @@ namespace LapkaBackend.Application.Services
         }
 
         public string CreateAccessToken(User user)
-        { 
+        {
+
+            var role = _dbContext.Roles.First(x => x.Id == user.RoleId);
 
             List<Claim> claims = new List<Claim>()
             {
-                new(ClaimTypes.Name, user.Email),
-                new(ClaimTypes.Role, "User")
-                // TODO: Change User to user.Role 
+                new("userId", user.Id.ToString()),
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Role, role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -270,17 +261,16 @@ namespace LapkaBackend.Application.Services
 
                 await _dbContext.Shelters.AddAsync(newShelter);
 
-                var newUser = new User()
-                {
-                    FirstName = request.UserRequest.FirstName,
-                    LastName = request.UserRequest.LastName,
-                    Email = request.UserRequest.Email,
-                    Password = request.UserRequest.Password,
-                    RefreshToken = GenerateRefreshToken(),
-                    CreatedAt = DateTime.Now,
-                    Role = RoleUser,
-                    ShelterId = newShelter.Id
-                };
+            var newUser = new User()
+            {
+                FirstName = request.UserRequest.FirstName,
+                LastName = request.UserRequest.LastName,
+                Email = request.UserRequest.Email,
+                Password = request.UserRequest.Password,
+                RefreshToken = GenerateRefreshToken(),
+                CreatedAt = DateTime.Now,
+                ShelterId = newShelter.Id
+            };
 
                 await _dbContext.Users.AddAsync(newUser);
                 await _dbContext.SaveChangesAsync();

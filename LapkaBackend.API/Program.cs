@@ -8,7 +8,7 @@ using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Mappers;
-using LapkaBackend.Domain.Entities;
+using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
