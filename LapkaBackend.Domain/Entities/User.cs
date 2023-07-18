@@ -11,9 +11,11 @@ namespace LapkaBackend.Domain.Entities
         public string Password { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public string RefreshToken { get; set; } = string.Empty;
-        public string ExternalToken { get; set; } = string.Empty;
+        public string? VerificationToken { get; set; }
+        public DateTime? VeriviedAt { get; set; }
         public int? RoleId { get; set; }
-        public virtual Role Role { get; set; }
+        [ForeignKey("RoleId")]
+        public virtual Role? Role { get; set; }
         public Guid ShelterId { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Requests;
 using Microsoft.AspNetCore.Http;
 using LapkaBackend.Application.Dtos;
+using System.Security.Cryptography;
 
 namespace LapkaBackend.Application.Services
 {
@@ -64,9 +65,9 @@ namespace LapkaBackend.Application.Services
             return result;
         }
 
-        public async Task DeleteUser(Guid id)
+        public async Task DeleteUser(string id)
         {
-            var result = await GetUserById(id);
+            var result = await GetUserById(new Guid(id));
 
             if (result is null)
             {
@@ -120,9 +121,12 @@ namespace LapkaBackend.Application.Services
             var user = await GetUserById(new Guid(id));
 
             user.Email = request.Email;
+            user.VeriviedAt = null;
 
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+
+            //TODO: Tu ma być wysyłąnie linku do endpointa z tokenem.
         }
 
         //TODO: Do podmiany typ zwracany User na GetCurrentUserDataQueryResult po dodaniu loginProvider'a i profilePicture
@@ -131,6 +135,21 @@ namespace LapkaBackend.Application.Services
             var user = await GetUserById(new Guid(id));
 
             return user;
+        }
+
+        public async Task VerifyEmail(string token)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+            
+            if(user is null)
+            {
+                throw new AuthException("Invalid Token", AuthException.StatusCodes.BadRequest);
+            }
+
+            user.VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+            user.VeriviedAt = DateTime.Now;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
         }
     }
 }

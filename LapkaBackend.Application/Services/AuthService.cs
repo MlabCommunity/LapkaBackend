@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 
@@ -49,7 +50,7 @@ namespace LapkaBackend.Application.Services
                 RefreshToken = GenerateRefreshToken(),
                 CreatedAt = DateTime.Now,
                 Role = role,
-                RoleId = _dbContext.Roles.First(r => r.RoleName.ToUpper() == "USER").Id
+                VerificationToken = CreateRandomToken()
             };
 
             await _dbContext.Users.AddAsync(newUser);
@@ -63,6 +64,11 @@ namespace LapkaBackend.Application.Services
             if (result == null)
             {
                 throw new AuthException("User not found", AuthException.StatusCodes.BadRequest);
+            }
+
+            if (result.VeriviedAt == null)
+            {
+                throw new AuthException("Not verified", AuthException.StatusCodes.BadRequest); //TODO: Tu ma być inny statuscode
             }
 
             if (result.Password != request.Password)
@@ -186,6 +192,11 @@ namespace LapkaBackend.Application.Services
             return jwt;
         }
 
+        public string CreateRandomToken()
+        {
+            return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+        }
+
         public async Task SaveRefreshToken(LoginRequest request, string newRefreshToken)
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
@@ -235,7 +246,7 @@ namespace LapkaBackend.Application.Services
             {
                 throw new AuthException("Shelter already exists", 400);
             }
-            var RoleUser = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "Shelter");
+            var RoleUser = await _dbContext.Roles.FirstAsync(r => r.RoleName.ToUpper() == "SHELTER");
             if (RoleUser == null)
             {
                 RoleUser = new Role
@@ -269,6 +280,7 @@ namespace LapkaBackend.Application.Services
                 Password = request.UserRequest.Password,
                 RefreshToken = GenerateRefreshToken(),
                 CreatedAt = DateTime.Now,
+                Role = RoleUser,
                 ShelterId = newShelter.Id
             };
 
