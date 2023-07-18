@@ -1,4 +1,5 @@
 ﻿using LapkaBackend.Application.Common;
+using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
@@ -20,12 +21,14 @@ namespace LapkaBackend.Application.Services
     {
         private readonly IDataContext _dbContext;
         private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
 
-        public AuthService(IDataContext dbContext, IConfiguration configuration)
+        public AuthService(IDataContext dbContext, IConfiguration configuration, IEmailService emailService)
         {
 
             _dbContext = dbContext;
             _configuration = configuration;
+            _emailService = emailService;
         }
         
         public async Task RegisterUser(UserRegistrationRequest request)
@@ -286,18 +289,16 @@ namespace LapkaBackend.Application.Services
 
         public async Task ResetPassword(string emailAddress)
         {
-            string body = "Test Changing Password";
-            var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse("casimir28@ethereal.email"));
-            email.To.Add(MailboxAddress.Parse("emailAddress"));
-            email.Subject = "Changing password";
-            email.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = body };
+            EmailDto emailDto = new EmailDto()
+            { 
+                Body = "That is your link for changing password: link-link",
+                Subject = "Reset password",
+                To = emailAddress 
+            };
 
-            using var smtp = new SmtpClient();
-            smtp.Connect("smtp.ethereal.email",587,MailKit.Security.SecureSocketOptions.StartTls);
-            smtp.Authenticate("casimir28@ethereal.email", "GAmcfRXj4CgvZuDyVm");
-            await smtp.SendAsync(email);
-            smtp.Disconnect(true);
+            await _emailService.SendEmail(emailDto);
         }
+
+
     }
 }

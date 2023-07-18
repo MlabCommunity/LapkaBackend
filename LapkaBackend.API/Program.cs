@@ -6,6 +6,7 @@ using FluentValidation.AspNetCore;
 using LapkaBackend.Application;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Intercepters;
+using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Mappers;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure;
