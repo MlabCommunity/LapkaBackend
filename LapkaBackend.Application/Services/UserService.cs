@@ -30,7 +30,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
             return result;
@@ -51,7 +51,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
             result.FirstName = user.FirstName;
@@ -71,7 +71,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
             _context.Users.Remove(result);
@@ -86,7 +86,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
             return result;
@@ -100,7 +100,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
             return result;
@@ -121,7 +121,7 @@ namespace LapkaBackend.Application.Services
             var user = await GetUserById(new Guid(id));
 
             user.Email = request.Email;
-            user.VeriviedAt = null;
+            user.VerifiedAt = null;
 
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
@@ -143,11 +143,11 @@ namespace LapkaBackend.Application.Services
             
             if(user is null)
             {
-                throw new AuthException("Invalid Token", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_token","Invalid Token");
             }
 
             user.VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
-            user.VeriviedAt = DateTime.Now;
+            user.VerifiedAt = DateTime.Now;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }

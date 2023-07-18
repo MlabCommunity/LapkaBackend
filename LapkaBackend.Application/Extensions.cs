@@ -10,6 +10,7 @@ namespace LapkaBackend.Application
         public static void AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IExternalAuthService, ExternalAuthService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IManagementService, ManagementService>();
             services.AddScoped<IEmailService, EmailService>();

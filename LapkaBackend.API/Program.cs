@@ -6,7 +6,6 @@ using FluentValidation.AspNetCore;
 using LapkaBackend.Application;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Intercepters;
-using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Mappers;
 using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
@@ -32,6 +31,7 @@ internal class Program
                     var errors = context.ModelState.Values
                         .SelectMany(v => v.Errors)
                         .Select(e => JsonSerializer.Deserialize<Error>(e.ErrorMessage));
+                    //TODO try to work on error caused by wrong name of property
                     var errorsWrapper = new
                     {
                         errors
