@@ -29,7 +29,7 @@ namespace LapkaBackend.Application.Services
             }
 
             var users = await _dbContext.Users
-            .Where(u => u.Role.RoleName == roleName)
+            .Where(u => u.Role!.RoleName == roleName)
             .ToListAsync();
 
             var usersDtos = _mapper.Map<List<UserDto>>(users);
@@ -46,7 +46,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_user", "User not found!");
             }
 
-            if (userResult.Role.RoleName != "Shelter" && userResult.Role.RoleName != "User")
+            if (userResult.Role!.RoleName != "Shelter" && userResult.Role.RoleName != "User")
             {
                 int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == "Admin").Select(r => r.Id).FirstOrDefaultAsync();
 
@@ -81,7 +81,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_user","User not found!");
             }
 
-            if (userResult.Role.RoleName != "Admin")
+            if (userResult.Role!.RoleName != "Admin")
             {
                 throw new ForbiddenExcpetion("invalid_user","User is not an admin!");
             }

@@ -126,7 +126,7 @@ namespace LapkaBackend.Application.Services
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            //TODO: Tu ma być wysyłąnie linku do endpointa z tokenem.
+            //TODO: Tu ma być wysyłanie linku do endpointa z tokenem.
         }
 
         //TODO: Do podmiany typ zwracany User na GetCurrentUserDataQueryResult po dodaniu loginProvider'a i profilePicture

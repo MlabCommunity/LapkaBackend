@@ -57,8 +57,10 @@ public class ExternalAuth : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> AppleLogin(string? appleAccessToken, string? firstName, string? lastName)
+    public async Task<ActionResult> AppleLogin(string appleAccessToken, string firstName, string lastName)
     {
-        return NotFound();
+        var result = await _externalAuthService.LoginUserByApple(appleAccessToken, firstName, lastName);
+
+        return Ok(result);
     }
 }
