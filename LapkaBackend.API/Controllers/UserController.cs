@@ -66,7 +66,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> DeleteUser()
         {
-            await _userService.DeleteUser(HttpContext.User.FindFirstValue("userId")!);
+            //await _userService.DeleteUser(HttpContext.User.FindFirstValue("userId")!);
 
             return NoContent();
         }
@@ -83,7 +83,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> NewPassword(UserPasswordRequest request)
         {
-            await _userService.SetNewPassword(HttpContext.User.FindFirstValue("userId")!, request);
+            //await _userService.SetNewPassword(HttpContext.User.FindFirstValue("userId")!, request);
 
             return NoContent();
         }
@@ -100,7 +100,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> NewEmail(UpdateUserEmailRequest request)
         {
-            await _userService.SetNewEmail(HttpContext.User.FindFirstValue("userId")!, request);
+            //await _userService.SetNewEmail(HttpContext.User.FindFirstValue("userId")!, request);
 
             return NoContent();
         }
@@ -115,12 +115,13 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        /*
         public async Task<ActionResult> GetLoggedUser()
         {
-            var result = await _userService.GetLoggedUser(HttpContext.User.FindFirstValue("userId")!);
+            //var result = await _userService.GetLoggedUser(HttpContext.User.FindFirstValue("userId")!);
 
             return Ok(result);
-        }
+        }   */
 
         /// <summary>
         ///     Informacje o zalogowanym użytkowniku.
@@ -132,7 +133,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> ConfirmEmail(string token)
         {
-            await _userService.VerifyEmail(token);
+            //await _userService.VerifyEmail(token);
 
             return NoContent();
         }

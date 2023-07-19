@@ -127,8 +127,7 @@ namespace LapkaBackend.API.Controllers
 
         /// <summary>
         ///     Ustawie nowego hasła.
-        /// </summary>
-        
+        /// </summary>       
         [HttpPost("setPassword/{token}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

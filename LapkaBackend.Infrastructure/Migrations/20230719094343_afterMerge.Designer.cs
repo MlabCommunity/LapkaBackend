@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230718100233_init")]
-    partial class init
+    [Migration("20230719094343_afterMerge")]
+    partial class afterMerge
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -141,7 +141,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")
@@ -149,7 +148,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("RoleId")
-                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<Guid>("ShelterId")
@@ -158,7 +156,7 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.Property<string>("VerificationToken")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("VeriviedAt")
+                    b.Property<DateTime?>("VerifiedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -172,9 +170,7 @@ namespace LapkaBackend.Infrastructure.Migrations
                 {
                     b.HasOne("LapkaBackend.Domain.Entities.Role", "Role")
                         .WithMany("Users")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RoleId");
 
                     b.Navigation("Role");
                 });

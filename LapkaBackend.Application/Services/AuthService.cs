@@ -52,8 +52,7 @@ namespace LapkaBackend.Application.Services
                 Password = request.Password,
                 RefreshToken = GenerateRefreshToken(),
                 CreatedAt = DateTime.Now,
-                Role = role,
-                VerificationToken = CreateRandomToken()
+                Role = role
             };
 
             await _dbContext.Users.AddAsync(newUser);
@@ -68,11 +67,11 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_email", "User doesn't exists");
             }
-
+            /*
             if (result.VerifiedAt == null)
             {
                 throw new ForbiddenExcpetion("not_verified", "Not verified");
-            }
+            }   */
 
             if (result.Password != request.Password)
             {
@@ -297,7 +296,7 @@ namespace LapkaBackend.Application.Services
         public async Task ResetPassword(string emailAddress)
         {
             string baseUrl = "https://localhost:7214"; //""
-            string token = "qqq";//CreateSetNewPasswordToken(emailAddress);
+            string token = CreateSetNewPasswordToken(emailAddress);
             string endpoint = $"/Auth/setPassword/{token}";
 
             string link = $"{baseUrl}{endpoint}";
@@ -313,27 +312,28 @@ namespace LapkaBackend.Application.Services
             await _emailService.SendEmail(mailrequest);
         }
 
-        public async Task SetNewPassword(string password, string confirmPassword, string token)
+        public async Task SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token)
         {
             string? email = VerifyToken(token);
             if (email == null)
             {
-                throw new AuthException("token has expired or is not valid", 400);
+                throw new Exception("token has expired or is not valid");
             }
-            if (password != confirmPassword)
+            if (resetPasswordRequest.Password != resetPasswordRequest.ConfirmPassword)
             {
-                throw new AuthException("Passwords doesn't match", 400);
+                throw new Exception("Passwords doesn't match");
             }
             User user =  _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);
 
-            user.Password = password;
+            user.Password = resetPasswordRequest.Password;
 
             await _dbContext.SaveChangesAsync();
         }
 
         public string CreateSetNewPasswordToken(string emailAddress)
         {
-            User user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == emailAddress) ?? throw new AuthException("There are no such email !", 400);
+            User user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == emailAddress) 
+                ?? throw new BadRequestException("invalid_email","There are no such email !");
             List<Claim> claims = new List<Claim>()
             {
                 new(ClaimTypes.Email, user.Email),
