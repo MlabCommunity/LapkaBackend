@@ -2,15 +2,18 @@
 using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
+using LapkaBackend.Application.Helpter;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
 using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using MimeKit;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 
@@ -289,14 +292,101 @@ namespace LapkaBackend.Application.Services
 
         public async Task ResetPassword(string emailAddress)
         {
-            EmailDto emailDto = new EmailDto()
-            { 
-                Body = "That is your link for changing password: link-link",
+            string baseUrl = "https://localhost:7214"; //""
+            string token = "qqq";//CreateSetNewPasswordToken(emailAddress);
+            string endpoint = $"/Auth/setPassword/{token}";
+
+            string link = $"{baseUrl}{endpoint}";
+
+            Mailrequest mailrequest = new Mailrequest()
+            {
+                ToEmail = emailAddress,
                 Subject = "Reset password",
-                To = emailAddress 
+                Body = "That is your link for changing password:" + link
+
             };
 
-            await _emailService.SendEmail(emailDto);
+            await _emailService.SendEmail(mailrequest);
+        }
+
+        public async Task SetNewPassword(string password, string confirmPassword, string token)
+        {
+            string? email = VerifyToken(token);
+            if (email == null)
+            {
+                throw new AuthException("token has expired or is not valid", 400);
+            }
+            if (password != confirmPassword)
+            {
+                throw new AuthException("Passwords doesn't match", 400);
+            }
+            User user =  _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);
+
+            user.Password = password;
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public string CreateSetNewPasswordToken(string emailAddress)
+        {
+            User user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == emailAddress) ?? throw new AuthException("There are no such email !", 400);
+            List<Claim> claims = new List<Claim>()
+            {
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new(ClaimTypes.Name, user.LastName) 
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Token").Value!));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(5),
+                    signingCredentials: creds
+                );
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return jwt;
+        }
+
+        private string? VerifyToken(string token)
+        {
+            if (!IsTokenValid(token))
+            {
+                return null;
+            }
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value!);
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+
+            try
+            {
+
+                SecurityToken validatedToken;
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
+
+                var email = principal.FindFirst(ClaimTypes.Email)?.Value;
+                User? user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);
+                if (user == null)
+                {
+                    return null;
+                }
+
+                return email;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
 

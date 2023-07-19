@@ -17,5 +17,6 @@ namespace LapkaBackend.Application.Interfaces
         public Task RevokeToken(TokenRequest request);
         public Task<LoginResultDto> LoginShelter(LoginRequest request);
         public Task ResetPassword(string emailAddress);
+        public Task SetNewPassword(string password, string confirmPassword, string token);
     }
 }

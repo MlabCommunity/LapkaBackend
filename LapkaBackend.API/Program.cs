@@ -5,6 +5,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using LapkaBackend.Application;
 using LapkaBackend.Application.Exceptions;
+using LapkaBackend.Application.Helpter;
 using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Mappers;
@@ -45,6 +46,7 @@ internal class Program
         builder.Services.AddApplication();
         builder.Services.AddInfrasturcture(builder.Configuration);
         builder.Services.AddAutoMapper(typeof(UserMappingProfile));
+        builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
