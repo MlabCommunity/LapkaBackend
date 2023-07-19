@@ -24,6 +24,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UserRegister(UserRegistrationRequest request)
         {
+            
             await _authService.RegisterUser(request);
             return NoContent();
         }
@@ -51,7 +52,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> LoginWeb(LoginRequest request)
         {
-            var result = await _authService.LoginShelter(request);
+           var result = await _authService.LoginShelter(request);
 
             return Ok(result);
         }
