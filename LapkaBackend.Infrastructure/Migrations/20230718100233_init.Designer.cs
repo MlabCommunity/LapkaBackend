@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230717102404_MigrationName")]
-    partial class MigrationName
+    [Migration("20230718100233_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,6 +40,28 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            RoleName = "SuperAdmin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            RoleName = "Shelter"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            RoleName = "User"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            RoleName = "Worker"
+                        });
                 });
 
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Shelter", b =>
@@ -110,10 +132,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("ExternalToken")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -130,11 +148,18 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleId")
+                    b.Property<int?>("RoleId")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<Guid>("ShelterId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("VerificationToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("VeriviedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

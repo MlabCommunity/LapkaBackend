@@ -26,5 +26,15 @@ namespace LapkaBackend.Infrastructure
             ShelterModelBuilder.BuildShelterModel(modelBuilder);
             RoleModelBuilder.BuildRoleModel(modelBuilder);
         }
+
+        public static void Seed(this ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Role>().HasData(
+                    new Role() { Id =  1, RoleName = "SuperAdmin" },
+                    new Role() { Id =  2, RoleName = "Shelter" },
+                    new Role() { Id =  3, RoleName = "User" },
+                    new Role() { Id =  4, RoleName = "Worker" }
+                );
+        }
     }
 }

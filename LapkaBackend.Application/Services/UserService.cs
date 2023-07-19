@@ -4,6 +4,9 @@ using LapkaBackend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Requests;
+using Microsoft.AspNetCore.Http;
+using LapkaBackend.Application.Dtos;
+using System.Security.Cryptography;
 
 namespace LapkaBackend.Application.Services
 {
@@ -27,7 +30,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
             return result;
@@ -48,7 +51,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
             result.FirstName = user.FirstName;
@@ -62,13 +65,13 @@ namespace LapkaBackend.Application.Services
             return result;
         }
 
-        public async Task DeleteUser(Guid id)
+        public async Task DeleteUser(string id)
         {
-            var result = await GetUserById(id);
+            var result = await GetUserById(new Guid(id));
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
             _context.Users.Remove(result);
@@ -83,7 +86,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
             return result;
@@ -97,10 +100,56 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new AuthException("User doesn't exists", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
             return result;
+        }
+
+        public async Task SetNewPassword(string id, UserPasswordRequest request)
+        {
+            var user = await GetUserById(new Guid(id));
+
+            user.Password = request.NewPassword;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SetNewEmail(string id, UpdateUserEmailRequest request)
+        {
+            var user = await GetUserById(new Guid(id));
+
+            user.Email = request.Email;
+            user.VerifiedAt = null;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            //TODO: Tu ma być wysyłanie linku do endpointa z tokenem.
+        }
+
+        //TODO: Do podmiany typ zwracany User na GetCurrentUserDataQueryResult po dodaniu loginProvider'a i profilePicture
+        public async Task<User> GetLoggedUser(string id)
+        {
+            var user = await GetUserById(new Guid(id));
+
+            return user;
+        }
+
+        public async Task VerifyEmail(string token)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+            
+            if(user is null)
+            {
+                throw new BadRequestException("invalid_token","Invalid Token");
+            }
+
+            user.VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+            user.VerifiedAt = DateTime.Now;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
         }
     }
 }

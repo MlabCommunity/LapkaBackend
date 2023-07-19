@@ -11,10 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using MimeKit;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Mail;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 
@@ -33,26 +33,16 @@ namespace LapkaBackend.Application.Services
             _configuration = configuration;
             _emailService = emailService;
         }
-        
+
         public async Task RegisterUser(UserRegistrationRequest request)
         {
-            
+
             if (_dbContext.Users.Any(x => x.Email == request.Email))
             {
-                throw new AuthException("User already exists", 400);
+                throw new BadRequestException("invalid_email", "User with this email already exists");
             }
 
-            var RoleUser = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "Worker");
-            if (RoleUser == null)
-            {
-                RoleUser = new Role
-                {
-                    RoleName = "Worker"
-                };
-
-                await _dbContext.Roles.AddAsync(RoleUser);
-                await _dbContext.SaveChangesAsync();
-            }
+            var role = _dbContext.Roles.First(r => r.RoleName.ToUpper() == "USER");
 
             var newUser = new User()
             {
@@ -62,7 +52,8 @@ namespace LapkaBackend.Application.Services
                 Password = request.Password,
                 RefreshToken = GenerateRefreshToken(),
                 CreatedAt = DateTime.Now,
-                Role = RoleUser
+                Role = role,
+                VerificationToken = CreateRandomToken()
             };
 
             await _dbContext.Users.AddAsync(newUser);
@@ -75,39 +66,19 @@ namespace LapkaBackend.Application.Services
 
             if (result == null)
             {
-                throw new AuthException("User not found", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_email", "User doesn't exists");
+            }
+
+            if (result.VerifiedAt == null)
+            {
+                throw new ForbiddenExcpetion("not_verified", "Not verified");
             }
 
             if (result.Password != request.Password)
             {
-                throw new AuthException("Wrong password", AuthException.StatusCodes.BadRequest);
-            }
-            return new LoginResultDto
-            {
-                AccessToken = CreateAccessToken(result),
-                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : GenerateRefreshToken()
-            }; 
-        }
-
-        public async Task<LoginResultDto> LoginShelter (LoginRequest request)
-        {
-            var result = await _dbContext.Users
-            .Include(u => u.Role)
-            .FirstOrDefaultAsync(x => x.Email == request.Email);
-
-            if (result == null)
-            {
-                throw new AuthException("User not found", AuthException.StatusCodes.BadRequest);
-            }
-            if (result.Role.RoleName != "Shelter" )
-            {
-                throw new AuthException("You are not Shelter !", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_password", "Wrong password");
             }
 
-            if (result.Password != request.Password)
-            {
-                throw new AuthException("Wrong password", AuthException.StatusCodes.BadRequest);
-            }
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),
@@ -115,30 +86,58 @@ namespace LapkaBackend.Application.Services
             };
         }
 
-        public async Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request) 
+        public async Task<LoginResultDto> LoginShelter(LoginRequest request)
         {
-            // TODO: (Najważniejsze) dodać metode refreshaccesstoken ma przyjmować tokeny a create usera 
-            // TODO: Do przeanalizowania struktura
+            var result = await _dbContext.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(x => x.Email == request.Email);
 
+            if (result == null)
+            {
+                throw new BadRequestException("invalid_mail", "User not found");
+            }
+            // if (result.Role!.RoleName.ToUpper() != "SHELTER" && result.Role.RoleName.ToUpper() != "WORKER" )
+            // {
+            //     throw new BadRequestException("","You are not Shelter!");
+            // }
+            // TODO replace with authorize
+
+            if (result.Password != request.Password)
+            {
+                throw new BadRequestException("invalid_password", "Wrong password");
+            }
+
+            return new LoginResultDto
+            {
+                AccessToken = CreateAccessToken(result),
+                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : GenerateRefreshToken()
+            };
+        }
+
+        public async Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request)
+        {
             var jwtAccesToken = new JwtSecurityToken(request.AccessToken);
 
             if (jwtAccesToken == null)
             {
-                throw new AuthException("Błędny token", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_token", "Invalid token");
             }
-            
-            var user = await _dbContext.Users.FirstAsync(c => c.Email == jwtAccesToken.Claims.First(x => x.Type == ClaimTypes.Email).Value);
 
-            if(user == null)
+            var user = await _dbContext.Users.FirstAsync(c =>
+                c.Email == jwtAccesToken.Claims.First(x => x.Type == ClaimTypes.Email).Value);
+
+            if (user == null)
             {
-                throw new AuthException("Nie znaleziono użytkownika", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("", "User doesn't exists");
             }
+
+            var role = await _dbContext.Roles.FirstAsync(x => x.Id == user.RoleId);
 
             List<Claim> claims = new List<Claim>()
             {
-                new(ClaimTypes.Name, user.Email),
-                new(ClaimTypes.Role, "User")
-                // TODO: Change Admin to user.Role 
+                new("userId", user.Id.ToString()),
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Role, role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -147,23 +146,25 @@ namespace LapkaBackend.Application.Services
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
-                    claims: claims,
-                    expires: DateTime.Now.AddMinutes(5),
-                    signingCredentials: creds
-                );
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(5),
+                signingCredentials: creds
+            );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return new UseRefreshTokenResultDto { AccessToken = jwt};
+            return new UseRefreshTokenResultDto { AccessToken = jwt };
         }
 
         public string CreateAccessToken(User user)
-        { 
+        {
+
+            var role = _dbContext.Roles.First(x => x.Id == user.RoleId);
 
             List<Claim> claims = new List<Claim>()
             {
-                new(ClaimTypes.Name, user.Email),
-                new(ClaimTypes.Role, "User")
-                // TODO: Change User to user.Role 
+                new("userId", user.Id.ToString()),
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Role, role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -172,10 +173,10 @@ namespace LapkaBackend.Application.Services
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
-                    claims: claims,
-                    expires: DateTime.Now.AddMinutes(5),
-                    signingCredentials: creds
-                );
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(5),
+                signingCredentials: creds
+            );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
             return jwt;
@@ -189,24 +190,29 @@ namespace LapkaBackend.Application.Services
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
-                    expires: DateTime.Now.AddDays(7),
-                    signingCredentials: creds
-                );
+                expires: DateTime.Now.AddDays(7),
+                signingCredentials: creds
+            );
 
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
             return jwt;
         }
 
+        public string CreateRandomToken()
+        {
+            return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+        }
+
         public async Task SaveRefreshToken(LoginRequest request, string newRefreshToken)
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
 
-            if(result is null) 
+            if (result is null)
             {
-                throw new AuthException("User not found");
+                throw new BadRequestException("invalid_email", "User doesn't exists");
             }
-            
+
             result.RefreshToken = newRefreshToken;
 
             _dbContext.Users.Update(result);
@@ -220,18 +226,19 @@ namespace LapkaBackend.Application.Services
             try
             {
                 jwtSecurityToken = new JwtSecurityToken(token);
-                
+
             }
             catch (Exception)
             {
                 return false;
             }
+
             return jwtSecurityToken.ValidTo > DateTime.UtcNow;
         }
 
         public async Task RevokeToken(TokenRequest request)
         {
-            var result = await _dbContext.Users.FirstOrDefaultAsync(x=> x.RefreshToken == request.RefreshToken);
+            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.RefreshToken == request.RefreshToken);
 
             if (result is not null)
             {
@@ -245,19 +252,16 @@ namespace LapkaBackend.Application.Services
         {
             if (_dbContext.Users.Any(x => x.Email == request.UserRequest.Email))
             {
-                throw new AuthException("Shelter already exists", 400);
+                throw new BadRequestException("invalid_email", "Shelter already exists");
             }
-            var RoleUser = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "Shelter");
-            if (RoleUser == null)
+
+            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName.ToUpper() == "SHELTER");
+            if (roleUser == null)
             {
-                RoleUser = new Role
+                roleUser = new Role
                 {
                     RoleName = "Shelter"
                 };
-
-                await _dbContext.Roles.AddAsync(RoleUser);
-                await _dbContext.SaveChangesAsync();
-
                 var newShelter = new Shelter()
                 {
                     OrganizationName = request.ShelterRequest.OrganizationName,
@@ -281,7 +285,7 @@ namespace LapkaBackend.Application.Services
                     Password = request.UserRequest.Password,
                     RefreshToken = GenerateRefreshToken(),
                     CreatedAt = DateTime.Now,
-                    Role = RoleUser,
+                    Role = roleUser,
                     ShelterId = newShelter.Id
                 };
 
@@ -388,7 +392,6 @@ namespace LapkaBackend.Application.Services
                 return null;
             }
         }
-
-
     }
+
 }

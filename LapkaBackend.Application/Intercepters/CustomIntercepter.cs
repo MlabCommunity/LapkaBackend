@@ -2,7 +2,7 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using FluentValidation.Results;
-using LapkaBackend.Domain.Entities;
+using LapkaBackend.Domain.Records;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.Application.Intercepters;

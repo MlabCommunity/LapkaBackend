@@ -14,10 +14,11 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
         {
             modelBuilder.Entity<Role>(eb =>
             {
-                eb.Property(x => x.RoleName).IsRequired();
+                eb.Property(x => x.RoleName)
+                .IsRequired();
+
                 eb.HasMany(r => r.Users)
-                .WithOne(u => u.Role)
-                .HasForeignKey(u => u.RoleId);
+                .WithOne(u => u.Role);
             });
 
         }

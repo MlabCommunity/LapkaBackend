@@ -12,14 +12,12 @@ namespace LapkaBackend.Application.Services
     public class ManagementService : IManagementService
     {
         private readonly IDataContext _dbContext;
-        private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
 
-        public ManagementService(IDataContext dbContext, IConfiguration configuration, IMapper mapper)
+        public ManagementService(IDataContext dbContext, IMapper mapper)
         {
 
             _dbContext = dbContext;
-            _configuration = configuration;
             _mapper = mapper;
         }
 
@@ -27,11 +25,11 @@ namespace LapkaBackend.Application.Services
         {
             if (roleName == "SuperAdmin" || roleName == "Undefined" || roleName == "User")
             {
-                throw new AuthException("Wrong role name!");
+                throw new BadRequestException("invalid_role","Role not found!");
             }
 
             var users = await _dbContext.Users
-            .Where(u => u.Role.RoleName == roleName)
+            .Where(u => u.Role!.RoleName == roleName)
             .ToListAsync();
 
             var usersDtos = _mapper.Map<List<UserDto>>(users);
@@ -45,14 +43,14 @@ namespace LapkaBackend.Application.Services
 
             if (userResult is null)
             {
-                throw new AuthException("User not found!", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user", "User not found!");
             }
 
-            if (userResult.Role.RoleName != "Shelter" && userResult.Role.RoleName != "User")
+            if (userResult.Role!.RoleName != "Shelter" && userResult.Role.RoleName != "User")
             {
-                int srearchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == "Admin").Select(r => r.Id).FirstOrDefaultAsync();
+                int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == "Admin").Select(r => r.Id).FirstOrDefaultAsync();
 
-                if (srearchedRoleId == 0)
+                if (searchedRoleId == 0)
                 {
                     //TODO: Do wywalenia przy dodaniu roli
                     Role RoleNew = new Role
@@ -63,12 +61,12 @@ namespace LapkaBackend.Application.Services
                     await _dbContext.Roles.AddAsync(RoleNew);
                     await _dbContext.SaveChangesAsync();
 
-                    userResult.RoleId = RoleNew.Id;
+                    userResult.Role.Id = RoleNew.Id;
                     await _dbContext.SaveChangesAsync();
                 }
                 else
                 {
-                    userResult.RoleId = srearchedRoleId;
+                    userResult.RoleId = searchedRoleId;
                     await _dbContext.SaveChangesAsync();
                 }
             }
@@ -80,33 +78,33 @@ namespace LapkaBackend.Application.Services
 
             if (userResult is null)
             {
-                throw new AuthException("User not found!", AuthException.StatusCodes.BadRequest);
+                throw new BadRequestException("invalid_user","User not found!");
             }
 
-            if (userResult.Role.RoleName != "Admin")
+            if (userResult.Role!.RoleName != "Admin")
             {
-                throw new AuthException("User is not admin!", AuthException.StatusCodes.Forbidden);
+                throw new ForbiddenExcpetion("invalid_user","User is not an admin!");
             }
 
-            int srearchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == "Worker").Select(r => r.Id).FirstOrDefaultAsync();
+            int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == "Worker").Select(r => r.Id).FirstOrDefaultAsync();
 
-            if (srearchedRoleId == 0)
+            if (searchedRoleId == 0)
             {
                 //TODO: Do wywalenia przy dodaniu roli
-                Role RoleNew = new Role
+                Role roleNew = new Role
                 {
                     RoleName = "Worker"
                 };
 
-                await _dbContext.Roles.AddAsync(RoleNew);
+                await _dbContext.Roles.AddAsync(roleNew);
                 await _dbContext.SaveChangesAsync();
 
-                userResult.RoleId = RoleNew.Id;
+                userResult.Role.Id = roleNew.Id;
                 await _dbContext.SaveChangesAsync();
             }
             else
             {
-                userResult.RoleId = srearchedRoleId;
+                userResult.Role.Id = searchedRoleId;
                 await _dbContext.SaveChangesAsync();
             }
 
