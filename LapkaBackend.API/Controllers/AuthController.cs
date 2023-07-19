@@ -129,14 +129,13 @@ namespace LapkaBackend.API.Controllers
         ///     Ustawie nowego hasła.
         /// </summary>
         
-        [HttpPost("setPassword/{token}")]//
+        [HttpPost("setPassword/{token}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> SetNewPassword(string password, string confirmPassword, [FromRoute] string token)//
+        public async Task<ActionResult> SetNewPassword(ResetPasswordRequest resetPasswordRequest, [FromRoute] string token)
         {
-            //string token = "qqq";
-            await _authService.SetNewPassword(password, confirmPassword, token);
+            await _authService.SetNewPassword(resetPasswordRequest, token);
             return NoContent();
         } 
     }
