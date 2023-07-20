@@ -24,6 +24,7 @@ namespace LapkaBackend.Application.Services
             this.emailSettings = options.Value;
 
         }
+
         public async Task SendEmail(Mailrequest mailrequest)
         {
             var email = new MimeMessage();

@@ -305,7 +305,7 @@ namespace LapkaBackend.Application.Services
             {
                 ToEmail = emailAddress,
                 Subject = "Reset password",
-                Body = "That is your link for changing password:" + link
+                Body = "Hello! <br><br> That is your link for changing password: <br> " + link
 
             };
 
