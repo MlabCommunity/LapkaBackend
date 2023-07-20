@@ -7,8 +7,5 @@ public class BadRequestException : Exception
     {
         this.Code = code;
     }
-    public BadRequestException(string message) : base(message)
-    {
-    }
-    
+
 }

@@ -12,4 +12,5 @@ namespace LapkaBackend.Domain.Entities
         public string RoleName { get; set; } = null!;
         public virtual List<User>? Users { get; set; }
     }
+
 }

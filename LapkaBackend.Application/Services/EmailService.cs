@@ -1,45 +1,37 @@
-﻿using LapkaBackend.Application.Dtos;
-using LapkaBackend.Application.Helpter;
-using LapkaBackend.Application.Interfaces;
+﻿using LapkaBackend.Application.Interfaces;
 using MailKit.Net.Smtp;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Microsoft.Identity.Client;
 using MimeKit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using LapkaBackend.Application.Helper;
 
 namespace LapkaBackend.Application.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly IConfiguration _config;
-        private readonly EmailSettings emailSettings;
-        public EmailService(IConfiguration config, IOptions<EmailSettings> options)
+        private readonly EmailSettings _emailSettings;
+        public EmailService(IOptions<EmailSettings> options)
         {
-            _config = config;
-            this.emailSettings = options.Value;
+            _emailSettings = options.Value;
 
         }
 
         public async Task SendEmail(MailRequest mailRequest)
         {
             var email = new MimeMessage();
-            email.Sender = MailboxAddress.Parse(emailSettings.Email);
+            email.Sender = MailboxAddress.Parse(_emailSettings.Email);
             email.To.Add(MailboxAddress.Parse(mailRequest.ToEmail));
             email.Subject = mailRequest.Subject;
-            var builder = new BodyBuilder();
-            builder.HtmlBody = mailRequest.Body;
+            var builder = new BodyBuilder
+            {
+                HtmlBody = mailRequest.Body
+            };
             email.Body = builder.ToMessageBody();
 
             using var smtp = new SmtpClient();
-            smtp.Connect(emailSettings.Host, emailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
-            smtp.Authenticate(emailSettings.Email, emailSettings.Password);
+            await smtp.ConnectAsync(_emailSettings.Host, _emailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
+            await smtp.AuthenticateAsync(_emailSettings.Email, _emailSettings.Password);
             await smtp.SendAsync(email);
-            smtp.Disconnect(true);
+            await smtp.DisconnectAsync(true);
         }
     }
 }

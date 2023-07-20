@@ -1,6 +1,4 @@
-﻿using Azure.Core;
-using System.Net.Http.Json;
-using Google.Apis.Auth;
+﻿using Google.Apis.Auth;
 using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
@@ -85,8 +83,38 @@ public class ExternalAuthService : IExternalAuthService
         {
             throw new BadRequestException("invalid_facebook_access_token", "Facebook access token is invalid.");
         }
-
-        return null;
+        JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+        JwtSecurityToken jwtToken = tokenHandler.ReadJwtToken(fbAccessToken);
+        var user = _dbContext.Users.FirstOrDefault(u => u.Email == jwtToken.Claims.FirstOrDefault(x => x.Type == "email")!.Value);
+        if (user != null)
+        {
+            user.RefreshToken = _authService.GenerateRefreshToken();
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+            return new LoginResultWithRoleDto
+            {
+                AccessToken = _authService.CreateAccessToken(user),
+                RefreshToken = user.RefreshToken,
+                Role = user.Role!.RoleName
+            };
+        }
+        var newFacebookUser = new User
+        {
+            FirstName = jwtToken.Claims.FirstOrDefault(x => x.Type == "first_name")!.Value,
+            LastName = jwtToken.Claims.FirstOrDefault(x => x.Type == "last_name")!.Value,
+            Email = jwtToken.Claims.FirstOrDefault(x => x.Type == "email")!.Value,
+            CreatedAt = DateTime.UtcNow,
+            RefreshToken = _authService.GenerateRefreshToken(),
+            Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "User")!
+        };
+        _dbContext.Users.Add(newFacebookUser);
+        await _dbContext.SaveChangesAsync();
+        return new LoginResultWithRoleDto
+        {
+            AccessToken = _authService.CreateAccessToken(newFacebookUser),
+            RefreshToken = newFacebookUser.RefreshToken,
+            Role = newFacebookUser.Role.RoleName
+        };
     }
     
 
@@ -104,13 +132,13 @@ public class ExternalAuthService : IExternalAuthService
 
         string emailUser = jwtToken.Claims.FirstOrDefault(c => c.Type == "email")!.Value;
 
-        var findedUser = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == emailUser);
+        var foundUser = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == emailUser);
 
-        if (!(findedUser is null))
+        if (!(foundUser is null))
         {
             return new LoginResultWithRoleDto()
             {
-                AccessToken = _authService.CreateAccessToken(findedUser),
+                AccessToken = _authService.CreateAccessToken(foundUser),
                 RefreshToken = _authService.GenerateRefreshToken(),
                 Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "User")!.RoleName
             };
@@ -141,8 +169,8 @@ public class ExternalAuthService : IExternalAuthService
     private async Task<bool> ValidateFacebookAccessToken(string accessToken, string userId)
     {
         // Make an API call to Facebook to validate the access token
-        HttpClient httpClient = new HttpClient();
-        string appId = _configuration["Facebook:AppId"];
+        var httpClient = new HttpClient();
+        var appId = _configuration["Facebook:AppId"];
         string appSecret = _configuration["Facebook:AppSecret"];
         string debugTokenUrl = $"https://graph.facebook.com/v15.0/debug_token?input_token={accessToken}&access_token={appId}|{appSecret}";
 

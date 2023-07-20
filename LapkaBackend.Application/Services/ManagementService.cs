@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Enums;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace LapkaBackend.Application.Services
 {
@@ -23,7 +23,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task<List<UserDto>> ListOfUsersWithTheSpecifiedRole(string roleName)
         {
-            if (roleName == "SuperAdmin" || roleName == "Undefined" || roleName == "User")
+            if (roleName == RoleName.SuperAdmin.ToString() || roleName == RoleName.Undefined.ToString() || roleName == RoleName.User.ToString())
             {
                 throw new BadRequestException("invalid_role","Role not found!");
             }
@@ -46,29 +46,11 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_user", "User not found!");
             }
 
-            if (userResult.Role!.RoleName != "Shelter" && userResult.Role.RoleName != "User")
+            if (userResult.Role!.RoleName != RoleName.Shelter.ToString() && userResult.Role.RoleName != RoleName.User.ToString())
             {
-                int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == "Admin").Select(r => r.Id).FirstOrDefaultAsync();
-
-                if (searchedRoleId == 0)
-                {
-                    //TODO: Do wywalenia przy dodaniu roli
-                    Role RoleNew = new Role
-                    {
-                        RoleName = "Admin"
-                    };
-
-                    await _dbContext.Roles.AddAsync(RoleNew);
-                    await _dbContext.SaveChangesAsync();
-
-                    userResult.Role.Id = RoleNew.Id;
-                    await _dbContext.SaveChangesAsync();
-                }
-                else
-                {
-                    userResult.RoleId = searchedRoleId;
-                    await _dbContext.SaveChangesAsync();
-                }
+                int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == RoleName.Admin.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
+                userResult.RoleId = searchedRoleId;
+                await _dbContext.SaveChangesAsync();
             }
         }
 
@@ -86,27 +68,9 @@ namespace LapkaBackend.Application.Services
                 throw new ForbiddenExcpetion("invalid_user","User is not an admin!");
             }
 
-            int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == "Worker").Select(r => r.Id).FirstOrDefaultAsync();
-
-            if (searchedRoleId == 0)
-            {
-                //TODO: Do wywalenia przy dodaniu roli
-                Role roleNew = new Role
-                {
-                    RoleName = "Worker"
-                };
-
-                await _dbContext.Roles.AddAsync(roleNew);
-                await _dbContext.SaveChangesAsync();
-
-                userResult.Role.Id = roleNew.Id;
-                await _dbContext.SaveChangesAsync();
-            }
-            else
-            {
-                userResult.Role.Id = searchedRoleId;
-                await _dbContext.SaveChangesAsync();
-            }
+            int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == RoleName.Worker.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
+            userResult.Role.Id = searchedRoleId;
+            await _dbContext.SaveChangesAsync();
 
         }
     }

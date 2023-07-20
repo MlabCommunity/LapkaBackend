@@ -1,7 +1,7 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
-using LapkaBackend.Application.Helpter;
+using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using LapkaBackend.Application.Enums;
 
 
 namespace LapkaBackend.Application.Services
@@ -38,7 +39,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_email", "User with this email already exists");
             }
 
-            var role = _dbContext.Roles.First(r => r.RoleName.ToUpper() == "USER");
+            var role = _dbContext.Roles.First(r => r.RoleName == RoleName.User.ToString());
 
             var newUser = new User()
             {
@@ -92,7 +93,7 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_mail", "User not found");
             }
-            if (result.Role!.RoleName.ToUpper() != "SHELTER" && result.Role.RoleName.ToUpper() != "WORKER")
+            if (result.Role!.RoleName != RoleName.Shelter.ToString() && result.Role.RoleName.ToUpper() != RoleName.Worker.ToString())
             {
                 throw new BadRequestException("", "You are not Shelter!");
             }
@@ -251,7 +252,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_email", "Shelter already exists");
             }
 
-            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName.ToUpper() == "SHELTER");
+            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == RoleName.Shelter.ToString());
             if (roleUser == null)
             {
                 roleUser = new Role
@@ -374,9 +375,7 @@ namespace LapkaBackend.Application.Services
 
             try
             {
-
-                SecurityToken validatedToken;
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
 
                 var email = principal.FindFirst(ClaimTypes.Email)?.Value;
                 User? user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);

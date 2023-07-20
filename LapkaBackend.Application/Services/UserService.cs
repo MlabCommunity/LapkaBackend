@@ -4,10 +4,8 @@ using LapkaBackend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Requests;
-using Microsoft.AspNetCore.Http;
-using LapkaBackend.Application.Dtos;
 using System.Security.Cryptography;
-using LapkaBackend.Application.Helpter;
+using LapkaBackend.Application.Helper;
 
 namespace LapkaBackend.Application.Services
 {
