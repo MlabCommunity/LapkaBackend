@@ -301,7 +301,7 @@ namespace LapkaBackend.Application.Services
 
             string link = $"{baseUrl}{endpoint}";
 
-            Mailrequest mailrequest = new Mailrequest()
+            MailRequest mailRequest = new MailRequest()
             {
                 ToEmail = emailAddress,
                 Subject = "Reset password",
@@ -309,7 +309,7 @@ namespace LapkaBackend.Application.Services
 
             };
 
-            await _emailService.SendEmail(mailrequest);
+            await _emailService.SendEmail(mailRequest);
         }
 
         public async Task SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token)

@@ -14,9 +14,13 @@ public class ShelterRegistrationRequestValidator : AbstractValidator<ShelterRegi
             .WithErrorCode("invalid_organization_name"); 
         RuleFor(x => x.Longitude)
             .NotEmpty()
+            .LessThanOrEqualTo(24.15f)
+            .GreaterThanOrEqualTo(14.07f)
             .WithErrorCode("invalid_longitude");
         RuleFor(x => x.Latitude)
             .NotEmpty()
+            .GreaterThanOrEqualTo(49f)
+            .LessThanOrEqualTo(55.34f)
             .WithErrorCode("invalid_latitude");
         RuleFor(x => x.City)
             .NotEmpty()

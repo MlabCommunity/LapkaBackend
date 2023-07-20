@@ -25,14 +25,14 @@ namespace LapkaBackend.Application.Services
 
         }
 
-        public async Task SendEmail(Mailrequest mailrequest)
+        public async Task SendEmail(MailRequest mailRequest)
         {
             var email = new MimeMessage();
             email.Sender = MailboxAddress.Parse(emailSettings.Email);
-            email.To.Add(MailboxAddress.Parse(mailrequest.ToEmail));
-            email.Subject = mailrequest.Subject;
+            email.To.Add(MailboxAddress.Parse(mailRequest.ToEmail));
+            email.Subject = mailRequest.Subject;
             var builder = new BodyBuilder();
-            builder.HtmlBody = mailrequest.Body;
+            builder.HtmlBody = mailRequest.Body;
             email.Body = builder.ToMessageBody();
 
             using var smtp = new SmtpClient();

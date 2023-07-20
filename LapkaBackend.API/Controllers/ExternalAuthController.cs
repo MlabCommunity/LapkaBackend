@@ -42,7 +42,8 @@ public class ExternalAuth : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> FacebookLogin(string? userFbId, string? fbAccessToken)
     {
-        return NotFound();
+        await _externalAuthService.LoginUserByFacebook(userFbId, fbAccessToken);
+        return Ok();
     }
     
     /// <summary>

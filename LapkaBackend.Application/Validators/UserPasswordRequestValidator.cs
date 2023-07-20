@@ -20,9 +20,9 @@ namespace LapkaBackend.Application.Validators
             .WithMessage("Required at least 8 characters, one non alphanumeric character, one digit, one uppercase and one lowercase.");
 
             RuleFor(x => x.ConfirmNewPassword)
-                .Equal(x => x.NewPassword)
-                .WithMessage("Passwords do not match")
-                .WithErrorCode("invalid_confirm_password");
+            .Equal(x => x.NewPassword)
+            .WithMessage("Passwords do not match")
+            .WithErrorCode("invalid_confirm_password");
         }
     }
 }

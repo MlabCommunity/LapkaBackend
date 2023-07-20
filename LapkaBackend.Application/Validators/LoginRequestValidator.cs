@@ -13,7 +13,6 @@ public class LoginRequestValidator : AbstractValidator<LoginRequest>
             .WithErrorCode("invalid_email");
         RuleFor(x => x.Password)
             .NotEmpty()
-            .Matches("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")
             .WithErrorCode("invalid_password");
     }
 }
