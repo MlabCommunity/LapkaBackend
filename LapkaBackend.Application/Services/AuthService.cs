@@ -51,12 +51,34 @@ namespace LapkaBackend.Application.Services
                 Email = request.Email,
                 Password = request.Password,
                 RefreshToken = GenerateRefreshToken(),
+                VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
                 CreatedAt = DateTime.Now,
                 Role = role
             };
 
             await _dbContext.Users.AddAsync(newUser);
             await _dbContext.SaveChangesAsync();
+
+            await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
+        }
+        
+        public async Task SendEmailToConfirmEmail(string emailAddress, string token)
+        {
+            string baseUrl = "https://localhost:7214"; //""
+            
+            string endpoint = $"/Auth/confirmEmail/{token}";
+
+            string link = $"{baseUrl}{endpoint}";
+
+            Mailrequest mailrequest = new Mailrequest()
+            {
+                ToEmail = emailAddress,
+                Subject = "email confirmation",
+                Body = "Hello! <br><br> If you register in Lapka application Click in email confirmation link: <br> " + link
+
+            };
+
+            await _emailService.SendEmail(mailrequest);
         }
 
         public async Task<LoginResultDto> LoginUser(LoginRequest request)
@@ -67,11 +89,11 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_email", "User doesn't exists");
             }
-            /*
+            
             if (result.VerifiedAt == null)
             {
                 throw new ForbiddenExcpetion("not_verified", "Not verified");
-            }   */
+            }
 
             if (result.Password != request.Password)
             {
@@ -94,6 +116,10 @@ namespace LapkaBackend.Application.Services
             if (result == null)
             {
                 throw new BadRequestException("invalid_mail", "User not found");
+            }
+            if (result.VerifiedAt == null)
+            {
+                throw new ForbiddenExcpetion("not_verified", "Not verified");
             }
             // if (result.Role!.RoleName.ToUpper() != "SHELTER" && result.Role.RoleName.ToUpper() != "WORKER" )
             // {
@@ -283,6 +309,7 @@ namespace LapkaBackend.Application.Services
                     Email = request.UserRequest.Email,
                     Password = request.UserRequest.Password,
                     RefreshToken = GenerateRefreshToken(),
+                    VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
                     CreatedAt = DateTime.Now,
                     Role = roleUser,
                     ShelterId = newShelter.Id
@@ -290,6 +317,8 @@ namespace LapkaBackend.Application.Services
 
                 await _dbContext.Users.AddAsync(newUser);
                 await _dbContext.SaveChangesAsync();
+
+                await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
             }
         }
 
@@ -395,6 +424,23 @@ namespace LapkaBackend.Application.Services
                 return null;
             }
         }
+
+        public async Task ConfirmEmail(string token)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+
+            if (user is null)
+            {
+                throw new BadRequestException("invalid_token", "Invalid Token");
+            }
+
+            user.VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+            user.VerifiedAt = DateTime.Now;
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+        }
+
+
     }
 
 }

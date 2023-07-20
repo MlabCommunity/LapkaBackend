@@ -133,7 +133,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> ConfirmEmail(string token)
         {
-            //await _userService.VerifyEmail(token);
+            await _userService.VerifyEmail(token);
 
             return NoContent();
         }

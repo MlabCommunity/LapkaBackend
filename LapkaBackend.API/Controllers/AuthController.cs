@@ -43,6 +43,19 @@ namespace LapkaBackend.API.Controllers
             return NoContent();
         }
         /// <summary>
+        ///     Potwierdzenie maila podanego przy rejestracji
+        /// </summary>
+        [HttpPost("confirmEmail{token}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> ConfirmEmail([FromRoute] string token)
+        {
+            await _authService.ConfirmEmail(token);
+
+            return NoContent();
+        }
+        /// <summary>
         ///     Logowanie schroniska
         /// </summary>
         [HttpPost("loginWeb")]
