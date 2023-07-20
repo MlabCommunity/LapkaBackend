@@ -317,13 +317,14 @@ namespace LapkaBackend.Application.Services
             string? email = VerifyToken(token);
             if (email == null)
             {
-                throw new Exception("token has expired or is not valid");
+                throw new BadRequestException("invalid_token", "Token is invalid");
             }
             if (resetPasswordRequest.Password != resetPasswordRequest.ConfirmPassword)
             {
-                throw new Exception("Passwords doesn't match");
+                throw new BadRequestException("invalid_password", "Passwords aren't matching");
             }
-            User user =  _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);
+
+            User user =  _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email)!;
 
             user.Password = resetPasswordRequest.Password;
 
@@ -332,8 +333,10 @@ namespace LapkaBackend.Application.Services
 
         public string CreateSetNewPasswordToken(string emailAddress)
         {
-            User user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == emailAddress) 
-                ?? throw new BadRequestException("invalid_email","There are no such email !");
+            User user = _dbContext.Users
+                .Include(u => u.Role)
+                .FirstOrDefault(x => x.Email == emailAddress) ?? throw new BadRequestException("invalid_email","There are no such email!");
+
             List<Claim> claims = new List<Claim>()
             {
                 new(ClaimTypes.Email, user.Email),

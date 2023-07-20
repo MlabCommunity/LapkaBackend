@@ -1,12 +1,10 @@
-﻿using Azure.Core;
-using Google.Apis.Auth;
+﻿using Google.Apis.Auth;
 using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace LapkaBackend.Application.Services;
@@ -44,7 +42,7 @@ public class ExternalAuthService : IExternalAuthService
                 {
                     AccessToken = _authService.CreateAccessToken(user),
                     RefreshToken = user.RefreshToken,
-                    Role = user.Role.RoleName
+                    Role = user.Role!.RoleName
                 };
             }
             // If user not exists create new user
@@ -80,7 +78,7 @@ public class ExternalAuthService : IExternalAuthService
     }
     
 
-    public async Task<LoginResultWithRoleDto> LoginUserByApple(string appleAccessToken, string firstName, string lastName)
+    public async Task<LoginResultWithRoleDto> LoginUserByApple(string? appleAccessToken, string? firstName, string? lastName)
     {
         // Validate and parse the access token.
         JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
@@ -108,8 +106,8 @@ public class ExternalAuthService : IExternalAuthService
 
         var newAppleUser = new User
         {
-            FirstName = firstName,
-            LastName = lastName,
+            FirstName = firstName!,
+            LastName = lastName!,
             Email = emailUser,
             CreatedAt = DateTime.UtcNow,
             RefreshToken = _authService.GenerateRefreshToken(),
