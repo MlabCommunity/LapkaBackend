@@ -119,7 +119,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> RevokeToken(TokenRequest request)
+        public async Task<ActionResult> RevokeToken([FromBody] TokenRequest request)
         {
             await _authService.RevokeToken(request);
             return NoContent();
@@ -129,7 +129,6 @@ namespace LapkaBackend.API.Controllers
         ///     Wysłanie maila z linkiem do zmiany hasła
         /// </summary>
         [HttpPost("resetPassword")]
-        //[Authorize (Roles = "User")] ???
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

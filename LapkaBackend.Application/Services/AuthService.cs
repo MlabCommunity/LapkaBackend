@@ -1,21 +1,18 @@
 ﻿using LapkaBackend.Application.Common;
-using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
-using LapkaBackend.Application.Helpter;
+using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
-using MailKit.Net.Smtp;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using LapkaBackend.Application.Enums;
 
 
 namespace LapkaBackend.Application.Services
@@ -42,7 +39,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_email", "User with this email already exists");
             }
 
-            var role = _dbContext.Roles.First(r => r.RoleName.ToUpper() == "USER");
+            var role = _dbContext.Roles.First(r => r.RoleName == RoleName.User.ToString());
 
             var newUser = new User()
             {
@@ -50,6 +47,7 @@ namespace LapkaBackend.Application.Services
                 LastName = request.LastName,
                 Email = request.Email,
                 Password = request.Password,
+                VerificationToken = CreateRandomToken(),
                 RefreshToken = GenerateRefreshToken(),
                 VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
                 CreatedAt = DateTime.Now,
@@ -89,7 +87,7 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_email", "User doesn't exists");
             }
-            
+
             if (result.VerifiedAt == null)
             {
                 throw new ForbiddenExcpetion("not_verified", "Not verified");
@@ -117,15 +115,11 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_mail", "User not found");
             }
-            if (result.VerifiedAt == null)
+            if (result.Role!.RoleName != RoleName.Shelter.ToString() && result.Role.RoleName.ToUpper() != RoleName.Worker.ToString())
             {
-                throw new ForbiddenExcpetion("not_verified", "Not verified");
+                throw new BadRequestException("", "You are not Shelter!");
             }
-            // if (result.Role!.RoleName.ToUpper() != "SHELTER" && result.Role.RoleName.ToUpper() != "WORKER" )
-            // {
-            //     throw new BadRequestException("","You are not Shelter!");
-            // }
-            // TODO replace with authorize
+            //TODO replace with authorize
 
             if (result.Password != request.Password)
             {
@@ -280,7 +274,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_email", "Shelter already exists");
             }
 
-            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName.ToUpper() == "SHELTER");
+            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == RoleName.Shelter.ToString());
             if (roleUser == null)
             {
                 roleUser = new Role
@@ -324,21 +318,21 @@ namespace LapkaBackend.Application.Services
 
         public async Task ResetPassword(string emailAddress)
         {
-            string baseUrl = "https://localhost:7214"; //""
+            string baseUrl = "https://localhost:7214";
             string token = CreateSetNewPasswordToken(emailAddress);
             string endpoint = $"/Auth/setPassword/{token}";
 
             string link = $"{baseUrl}{endpoint}";
 
-            Mailrequest mailrequest = new Mailrequest()
+            MailRequest mailRequest = new()
             {
                 ToEmail = emailAddress,
                 Subject = "Reset password",
-                Body = "Hello! <br><br> That is your link for changing password: <br> " + link
+                Body = "Link do zmiany hasła: " + link
 
             };
 
-            await _emailService.SendEmail(mailrequest);
+            await _emailService.SendEmail(mailRequest);
         }
 
         public async Task SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token)
@@ -406,9 +400,7 @@ namespace LapkaBackend.Application.Services
 
             try
             {
-
-                SecurityToken validatedToken;
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
 
                 var email = principal.FindFirst(ClaimTypes.Email)?.Value;
                 User? user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);

@@ -5,7 +5,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using LapkaBackend.Application;
 using LapkaBackend.Application.Exceptions;
-using LapkaBackend.Application.Helpter;
+using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Mappers;
 using LapkaBackend.Domain.Records;
@@ -98,7 +98,7 @@ internal class Program
 
         app.UseAuthorization();
 
-        //app.UseMiddleware<ErrorHandlerMiddleware>();
+        app.UseMiddleware<ErrorHandlerMiddleware>();
 
         app.MapControllers();
 
