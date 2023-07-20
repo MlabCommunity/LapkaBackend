@@ -106,7 +106,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> RevokeToken(TokenRequest request)
+        public async Task<ActionResult> RevokeToken([FromBody] TokenRequest request)
         {
             await _authService.RevokeToken(request);
             return NoContent();
