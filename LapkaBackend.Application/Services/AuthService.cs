@@ -49,7 +49,6 @@ namespace LapkaBackend.Application.Services
                 Password = request.Password,
                 VerificationToken = CreateRandomToken(),
                 RefreshToken = GenerateRefreshToken(),
-                VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
                 CreatedAt = DateTime.Now,
                 Role = role
             };
@@ -68,7 +67,7 @@ namespace LapkaBackend.Application.Services
 
             string link = $"{baseUrl}{endpoint}";
 
-            Mailrequest mailrequest = new Mailrequest()
+            MailRequest mailrequest = new MailRequest()
             {
                 ToEmail = emailAddress,
                 Subject = "email confirmation",
