@@ -7,16 +7,19 @@ using LapkaBackend.Application.Requests;
 using Microsoft.AspNetCore.Http;
 using LapkaBackend.Application.Dtos;
 using System.Security.Cryptography;
+using LapkaBackend.Application.Helpter;
 
 namespace LapkaBackend.Application.Services
 {
     public class UserService : IUserService
     {
         private readonly IDataContext _context;
+        private readonly IEmailService _emailService;
 
-        public UserService(IDataContext context)
+        public UserService(IDataContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         public async Task<List<User>> GetAllUsers()
@@ -44,19 +47,19 @@ namespace LapkaBackend.Application.Services
             return user;
         }
 
-        public async Task<User> UpdateUser(User user, Guid id)
+        public async Task<User> UpdateUser(UpdateUserDataRequest request, string id)
         {
-            //TODO: Zwracać DTO GetUserDataBuIdQueryResult
-            var result = await GetUserById(id);
+            var result = await GetUserById(new Guid(id));
 
             if (result is null)
             {
                 throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
-            result.FirstName = user.FirstName;
-            result.LastName = user.LastName;
-            result.Email = user.Email;
+            result.FirstName = request.FirstName;
+            result.LastName = request.LastName;
+            //TODO: odkomentować po dodaniu profilepicture
+            //result.ProfilePicture = request.ProfilePicture;
 
             _context.Users.Update(result);
 
@@ -126,7 +129,12 @@ namespace LapkaBackend.Application.Services
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            //TODO: Tu ma być wysyłanie linku do endpointa z tokenem.
+            await _emailService.SendEmail(new MailRequest
+            {
+                ToEmail = request.Email,
+                Subject = "Zmiana emaila",
+                Body = $"https://localhost:7214/User/ConfirmUpdatedEmail/{user.VerificationToken}"
+            });
         }
 
         //TODO: Do podmiany typ zwracany User na GetCurrentUserDataQueryResult po dodaniu loginProvider'a i profilePicture

@@ -116,7 +116,6 @@ namespace LapkaBackend.API.Controllers
         ///     Wysłanie maila z linkiem do zmiany hasła
         /// </summary>
         [HttpPost("resetPassword")]
-        //[Authorize (Roles = "User")] ???
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

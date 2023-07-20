@@ -1,18 +1,14 @@
 ﻿using LapkaBackend.Application.Common;
-using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Helpter;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
-using MailKit.Net.Smtp;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -50,6 +46,7 @@ namespace LapkaBackend.Application.Services
                 LastName = request.LastName,
                 Email = request.Email,
                 Password = request.Password,
+                VerificationToken = CreateRandomToken(),
                 RefreshToken = GenerateRefreshToken(),
                 CreatedAt = DateTime.Now,
                 Role = role
@@ -67,11 +64,11 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_email", "User doesn't exists");
             }
-            /*
+
             if (result.VerifiedAt == null)
             {
                 throw new ForbiddenExcpetion("not_verified", "Not verified");
-            }   */
+            }
 
             if (result.Password != request.Password)
             {
@@ -95,11 +92,11 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_mail", "User not found");
             }
-            // if (result.Role!.RoleName.ToUpper() != "SHELTER" && result.Role.RoleName.ToUpper() != "WORKER" )
-            // {
-            //     throw new BadRequestException("","You are not Shelter!");
-            // }
-            // TODO replace with authorize
+            if (result.Role!.RoleName.ToUpper() != "SHELTER" && result.Role.RoleName.ToUpper() != "WORKER")
+            {
+                throw new BadRequestException("", "You are not Shelter!");
+            }
+            //TODO replace with authorize
 
             if (result.Password != request.Password)
             {
@@ -295,21 +292,21 @@ namespace LapkaBackend.Application.Services
 
         public async Task ResetPassword(string emailAddress)
         {
-            string baseUrl = "https://localhost:7214"; //""
+            string baseUrl = "https://localhost:7214";
             string token = CreateSetNewPasswordToken(emailAddress);
             string endpoint = $"/Auth/setPassword/{token}";
 
             string link = $"{baseUrl}{endpoint}";
 
-            Mailrequest mailrequest = new Mailrequest()
+            MailRequest mailRequest = new()
             {
                 ToEmail = emailAddress,
                 Subject = "Reset password",
-                Body = "Hello! <br><br> That is your link for changing password: <br> " + link
+                Body = "Link do zmiany hasła: " + link
 
             };
 
-            await _emailService.SendEmail(mailrequest);
+            await _emailService.SendEmail(mailRequest);
         }
 
         public async Task SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token)
