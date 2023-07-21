@@ -13,6 +13,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using LapkaBackend.Domain.Enums;
+using System.Data;
 
 
 namespace LapkaBackend.Application.Services
@@ -363,7 +364,8 @@ namespace LapkaBackend.Application.Services
             {
                 new(ClaimTypes.Email, user.Email),
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Name, user.LastName) 
+                new(ClaimTypes.Name, user.LastName),
+                new(ClaimTypes.Role, user.Role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
