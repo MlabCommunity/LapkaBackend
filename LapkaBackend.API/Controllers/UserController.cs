@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
@@ -20,24 +21,23 @@ namespace LapkaBackend.API.Controllers
             _userService = userService;
         }
         
+        
         /// <summary>
-        ///     Informacje o użytkowniku o podanym id
+        ///     Informacje o zalogowanym użytkowniku.
         /// </summary>
-        [HttpGet("{id}")]
-        [Authorize (Roles = "User")]
-        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+        [HttpGet]
+        [Authorize(Roles = "User")]
+        [ProducesResponseType(typeof(GetCurrentUserDataQueryResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> GetUserById(Guid id)
+        public async Task<ActionResult> GetLoggedUser()
         {
-            var result = await _userService.GetUserById(id);
+            var result = await _userService.GetLoggedUser(HttpContext.User.FindFirstValue("userId")!);
 
             return Ok(result);
         }
 
-           
-        
         /// <summary>
         ///     Aktualizuj informacje o zalogowanym użytkowniku
         /// </summary>
@@ -49,8 +49,6 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UpdateUser(UpdateUserDataRequest request)
         {
-
-
             var result = await _userService.UpdateUser(request, HttpContext.User.FindFirstValue("userId")!);
 
             return Ok(result);
@@ -75,6 +73,7 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         ///     Aktualizuj hasło zalogowanego użytkownika.
         /// </summary>
+         /// <response code="403">Available only for user with Łapka login provider.</response>
         [HttpPatch("NewPassword")]
         [Authorize (Roles = "User")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -92,7 +91,8 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         ///     Aktualizuj email zalogowanego użytkownika.
         /// </summary>
-        [HttpPatch("Email")]
+        /// <response code="403">Available only for user with Łapka login provider.</response>
+        [HttpPatch("EmailAddress")]
         [Authorize(Roles = "User")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -107,24 +107,23 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        ///     Informacje o zalogowanym użytkowniku.
+        ///     Informacje o użytkowniku o podanym id
         /// </summary>
-        [HttpGet]
+        [HttpGet("{id}")]
         [Authorize(Roles = "User")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(GetUserDataByIdQueryResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> GetLoggedUser()
+        public async Task<ActionResult> GetUserById(Guid id)
         {
-            var result = await _userService.GetLoggedUser(HttpContext.User.FindFirstValue("userId")!);
+            var result = await _userService.GetUserById(id);
 
             return Ok(result);
-        }  
+        }
 
         /// <summary>
-        ///     Informacje o zalogowanym użytkowniku.
+        ///     Potwierdz edycje emaila.
         /// </summary>
         [HttpPut("ConfirmUpdatedEmail/{token}")]
         //[Authorize(Roles = "User")]

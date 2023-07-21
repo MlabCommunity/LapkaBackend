@@ -1,4 +1,6 @@
 ﻿using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Dtos.Result;
+using LapkaBackend.Application.Enums;
 using LapkaBackend.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -12,6 +14,6 @@ namespace LapkaBackend.Application.Interfaces
     {
         public Task AssignAdminRole(Guid userId);
         public Task RemoveAdminRole(Guid userId);
-        public Task<List<UserDto>> ListOfUsersWithTheSpecifiedRole(string role);
+        public Task<GetUsersByRoleQueryResult> ListOfUsersWithTheSpecifiedRole(Roles role);
     }
 }

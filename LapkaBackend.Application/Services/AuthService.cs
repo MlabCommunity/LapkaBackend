@@ -12,7 +12,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using LapkaBackend.Application.Enums;
 
 
 namespace LapkaBackend.Application.Services
@@ -34,18 +33,18 @@ namespace LapkaBackend.Application.Services
         public async Task RegisterUser(UserRegistrationRequest request)
         {
 
-            if (_dbContext.Users.Any(x => x.Email == request.Email))
+            if (_dbContext.Users.Any(x => x.Email == request.EmailAddress))
             {
                 throw new BadRequestException("invalid_email", "User with this email already exists");
             }
 
-            var role = _dbContext.Roles.First(r => r.RoleName == RoleName.User.ToString());
+            var role = _dbContext.Roles.First(r => r.RoleName.ToUpper() == "USER");
 
             var newUser = new User()
             {
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                Email = request.Email,
+                Email = request.EmailAddress,
                 Password = request.Password,
                 VerificationToken = CreateRandomToken(),
                 RefreshToken = GenerateRefreshToken(),
@@ -114,7 +113,7 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_mail", "User not found");
             }
-            if (result.Role!.RoleName != RoleName.Shelter.ToString() && result.Role.RoleName.ToUpper() != RoleName.Worker.ToString())
+            if (result.Role!.RoleName.ToUpper() != "SHELTER" && result.Role.RoleName.ToUpper() != "WORKER")
             {
                 throw new BadRequestException("", "You are not Shelter!");
             }
@@ -268,12 +267,12 @@ namespace LapkaBackend.Application.Services
 
         public async Task RegisterShelter(ShelterWithUserRegistrationRequest request)
         {
-            if (_dbContext.Users.Any(x => x.Email == request.UserRequest.Email))
+            if (_dbContext.Users.Any(x => x.Email == request.UserRequest.EmailAddress))
             {
                 throw new BadRequestException("invalid_email", "Shelter already exists");
             }
 
-            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == RoleName.Shelter.ToString());
+            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName.ToUpper() == "SHELTER");
             if (roleUser == null)
             {
                 roleUser = new Role
@@ -299,7 +298,7 @@ namespace LapkaBackend.Application.Services
                 {
                     FirstName = request.UserRequest.FirstName,
                     LastName = request.UserRequest.LastName,
-                    Email = request.UserRequest.Email,
+                    Email = request.UserRequest.EmailAddress,
                     Password = request.UserRequest.Password,
                     RefreshToken = GenerateRefreshToken(),
                     VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
@@ -315,17 +314,17 @@ namespace LapkaBackend.Application.Services
             }
         }
 
-        public async Task ResetPassword(string emailAddress)
+        public async Task ResetPassword(UserEmailRequest request)
         {
             string baseUrl = "https://localhost:7214";
-            string token = CreateSetNewPasswordToken(emailAddress);
+            string token = CreateSetNewPasswordToken(request.Email);
             string endpoint = $"/Auth/setPassword/{token}";
 
             string link = $"{baseUrl}{endpoint}";
 
             MailRequest mailRequest = new()
             {
-                ToEmail = emailAddress,
+                ToEmail = request.Email,
                 Subject = "Reset password",
                 Body = "Link do zmiany hasła: " + link
 
@@ -399,7 +398,8 @@ namespace LapkaBackend.Application.Services
 
             try
             {
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
+                SecurityToken validatedToken;
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
 
                 var email = principal.FindFirst(ClaimTypes.Email)?.Value;
                 User? user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);

@@ -1,4 +1,5 @@
-﻿using LapkaBackend.Application.Requests;
+﻿using LapkaBackend.Application.Dtos.Result;
+using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
 
 namespace LapkaBackend.Application.Interfaces
@@ -6,7 +7,7 @@ namespace LapkaBackend.Application.Interfaces
     public interface IUserService
     {
         Task<List<User>> GetAllUsers();
-        Task<User> GetUserById(Guid id);
+        Task<GetUserDataByIdQueryResult> GetUserById(Guid id);
         Task<User> AddUser(User user);
         Task<User> UpdateUser(UpdateUserDataRequest request, string id);
         Task DeleteUser(string id);
@@ -14,7 +15,7 @@ namespace LapkaBackend.Application.Interfaces
         Task<User> FindUserByEmail(string email);
         Task SetNewPassword(string id, UserPasswordRequest request);
         Task SetNewEmail(string id, UpdateUserEmailRequest request);
-        Task<User> GetLoggedUser(string id);
+        Task<GetCurrentUserDataQueryResult> GetLoggedUser(string id);
         Task VerifyEmail(string token);
 
     }

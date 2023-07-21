@@ -1,4 +1,6 @@
 ﻿using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Dtos.Result;
+using LapkaBackend.Application.Enums;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Services;
 using LapkaBackend.Domain.Entities;
@@ -18,7 +20,6 @@ namespace LapkaBackend.API.Controllers
             _managementService = managementService;
         }
 
-        //Auth
         /// <summary>
         ///     Nadanie użytkownikowi roli admina przez superadmina. Schronisko i pracownik nie mogą dostać tej roli
         /// </summary>
@@ -34,7 +35,6 @@ namespace LapkaBackend.API.Controllers
             return NoContent();
         }
 
-        //Auth
         /// <summary>
         ///     Odebranie adminowi roli przez superadmina
         /// </summary>
@@ -50,19 +50,18 @@ namespace LapkaBackend.API.Controllers
             return NoContent();
         }
 
-        //Auth
         /// <summary>
         ///     Lista użytkowników o wskazanej roli. Niedozwolony wybór ról: SuperAdmin, Undefined, User.
         /// </summary>
         [HttpGet("/Management")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetUsersByRoleQueryResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Management(string roleName)
+        public async Task<ActionResult> Management(Roles role)
         {
-            
-            return Ok(await _managementService.ListOfUsersWithTheSpecifiedRole(roleName));
+
+            return Ok(await _managementService.ListOfUsersWithTheSpecifiedRole(role));
         }
     }
 }

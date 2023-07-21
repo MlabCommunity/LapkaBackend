@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Enums;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
-using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Services
@@ -21,20 +21,26 @@ namespace LapkaBackend.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<List<UserDto>> ListOfUsersWithTheSpecifiedRole(string roleName)
+        public async Task<GetUsersByRoleQueryResult> ListOfUsersWithTheSpecifiedRole(Roles role)
         {
-            if (roleName == RoleName.SuperAdmin.ToString() || roleName == RoleName.Undefined.ToString() || roleName == RoleName.User.ToString())
+            var roleName = role.ToString();
+
+            if (roleName == Roles.SuperAdmin.ToString() || roleName == Roles.Undefined.ToString() || roleName == Roles.User.ToString())
             {
-                throw new BadRequestException("invalid_role","Role not found!");
+                throw new BadRequestException("invalid_role","Cannot choose SuperAdmin, Undefined, User");
             }
 
             var users = await _dbContext.Users
             .Where(u => u.Role!.RoleName == roleName)
             .ToListAsync();
 
-            var usersDtos = _mapper.Map<List<UserDto>>(users);
+            var result = new GetUsersByRoleQueryResult
+            {
+                Users = _mapper.Map<List<UserDto>>(users)
+            };
 
-            return usersDtos;
+
+            return result;
         }
 
         public async Task AssignAdminRole(Guid userId)
@@ -46,9 +52,9 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_user", "User not found!");
             }
 
-            if (userResult.Role!.RoleName != RoleName.Shelter.ToString() && userResult.Role.RoleName != RoleName.User.ToString())
+            if (userResult.Role!.RoleName != Roles.Shelter.ToString() && userResult.Role.RoleName != Roles.User.ToString())
             {
-                int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == RoleName.Admin.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
+                int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Admin.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
                 userResult.RoleId = searchedRoleId;
                 await _dbContext.SaveChangesAsync();
             }
@@ -68,7 +74,7 @@ namespace LapkaBackend.Application.Services
                 throw new ForbiddenExcpetion("invalid_user","User is not an admin!");
             }
 
-            int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == RoleName.Worker.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
+            int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Worker.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
             userResult.Role.Id = searchedRoleId;
             await _dbContext.SaveChangesAsync();
 

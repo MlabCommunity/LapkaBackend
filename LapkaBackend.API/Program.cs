@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using LapkaBackend.Application;
@@ -8,6 +9,7 @@ using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Mappers;
+using LapkaBackend.Domain.Entities;
 using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -40,6 +42,12 @@ internal class Program
                     return new BadRequestObjectResult(JsonSerializer.SerializeToElement(errorsWrapper));
                 };
             });
+        //Replacing Enum values to display names
+        builder.Services
+            .AddControllers()
+            .AddJsonOptions(options =>
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
         builder.Services.AddValidatorsFromAssembly(Assembly.Load("LapkaBackend.Application"));
         builder.Services.AddFluentValidationAutoValidation();
         builder.Services.AddTransient<IValidatorInterceptor, CustomIntercepter>();
@@ -59,6 +67,7 @@ internal class Program
                 Name = "Authorization",
                 Type = SecuritySchemeType.ApiKey
             });
+
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);

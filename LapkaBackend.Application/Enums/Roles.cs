@@ -1,10 +1,11 @@
 ﻿namespace LapkaBackend.Application.Enums;
-public enum RoleName
+
+public enum Roles
 {
     Undefined,
+    SuperAdmin,
+    Admin,
     User,
     Shelter,
-    Worker,
-    Admin,
-    SuperAdmin
+    Worker
 }

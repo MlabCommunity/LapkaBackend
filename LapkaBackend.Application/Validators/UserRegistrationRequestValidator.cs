@@ -17,7 +17,7 @@ public class UserRegistrationRequestValidator : AbstractValidator<UserRegistrati
             .MinimumLength(2)
             .MaximumLength(50)
             .WithErrorCode("invalid_last_name");
-        RuleFor(x => x.Email)
+        RuleFor(x => x.EmailAddress)
             .NotEmpty()
             .EmailAddress()
             .WithErrorCode("invalid_email");
