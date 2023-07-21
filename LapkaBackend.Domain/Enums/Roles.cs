@@ -1,4 +1,4 @@
-﻿namespace LapkaBackend.Application.Enums;
+﻿namespace LapkaBackend.Domain.Enums;
 
 public enum Roles
 {

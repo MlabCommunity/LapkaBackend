@@ -1,10 +1,6 @@
-﻿using LapkaBackend.Application.Dtos;
-using LapkaBackend.Application.Dtos.Result;
-using LapkaBackend.Application.Enums;
+﻿using LapkaBackend.Application.Dtos.Result;
+using LapkaBackend.Domain.Enums;
 using LapkaBackend.Application.Interfaces;
-using LapkaBackend.Application.Services;
-using LapkaBackend.Domain.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers

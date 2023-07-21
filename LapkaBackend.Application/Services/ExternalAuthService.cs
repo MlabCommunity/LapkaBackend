@@ -78,7 +78,7 @@ public class ExternalAuthService : IExternalAuthService
     
     public async Task<LoginResultWithRoleDto> LoginUserByFacebook(string? userFbId, string? fbAccessToken)
     {
-        bool isTokenValid = await ValidateFacebookAccessToken(userFbId, fbAccessToken);
+        bool isTokenValid = await ValidateFacebookAccessToken(userFbId!, fbAccessToken!);
         if (!isTokenValid)
         {
             throw new BadRequestException("invalid_facebook_access_token", "Facebook access token is invalid.");
@@ -171,7 +171,7 @@ public class ExternalAuthService : IExternalAuthService
         // Make an API call to Facebook to validate the access token
         var httpClient = new HttpClient();
         var appId = _configuration["Facebook:AppId"];
-        string appSecret = _configuration["Facebook:AppSecret"];
+        string appSecret = _configuration["Facebook:AppSecret"]!;
         string debugTokenUrl = $"https://graph.facebook.com/v15.0/debug_token?input_token={accessToken}&access_token={appId}|{appSecret}";
 
         HttpResponseMessage response = await httpClient.GetAsync(debugTokenUrl);

@@ -1,12 +1,5 @@
-﻿using LapkaBackend.Application.Dtos;
-using LapkaBackend.Application.Dtos.Result;
-using LapkaBackend.Application.Enums;
-using LapkaBackend.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LapkaBackend.Application.Dtos.Result;
+using LapkaBackend.Domain.Enums;
 
 namespace LapkaBackend.Application.Interfaces
 {
