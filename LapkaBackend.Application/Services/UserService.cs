@@ -139,7 +139,7 @@ namespace LapkaBackend.Application.Services
             {
                 ToEmail = request.Email,
                 Subject = "Zmiana emaila",
-                Body = $"https://localhost:7214/User/ConfirmUpdatedEmail/{user.VerificationToken}"
+                Template = Templates.ConfirmEmailChange
             });
         }
 

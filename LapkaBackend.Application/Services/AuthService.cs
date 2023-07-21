@@ -1,5 +1,6 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos.Result;
+using LapkaBackend.Application.Enums;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Interfaces;
@@ -8,6 +9,7 @@ using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -70,7 +72,7 @@ namespace LapkaBackend.Application.Services
             {
                 ToEmail = emailAddress,
                 Subject = "email confirmation",
-                Body = "Hello! <br><br> If you register in Lapka application Click in email confirmation link: <br> " + link
+                Template = Enums.Templates.Welcome
 
             };
 
@@ -257,12 +259,13 @@ namespace LapkaBackend.Application.Services
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.RefreshToken == request.RefreshToken);
 
-            if (result is not null)
+            if (result is null)
             {
+                throw new BadRequestException("invalid_token", "Refresh Token is invalid");
+            }
                 result.RefreshToken = "";
                 _dbContext.Users.Update(result);
                 await _dbContext.SaveChangesAsync();
-            }
         }
 
         public async Task RegisterShelter(ShelterWithUserRegistrationRequest request)
@@ -326,7 +329,7 @@ namespace LapkaBackend.Application.Services
             {
                 ToEmail = request.Email,
                 Subject = "Reset password",
-                Body = "Link do zmiany hasła: " + link
+                Template = Templates.PasswordChange
 
             };
 
