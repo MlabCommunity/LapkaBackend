@@ -29,11 +29,14 @@ namespace LapkaBackend.Infrastructure
 
         public static void Seed(this ModelBuilder modelBuilder)
         {
+            //TODO: Migracja do zrobienia :)
             modelBuilder.Entity<Role>().HasData(
-                    new Role() { Id =  1, RoleName = "SuperAdmin" },
-                    new Role() { Id =  2, RoleName = "Shelter" },
-                    new Role() { Id =  3, RoleName = "User" },
-                    new Role() { Id =  4, RoleName = "Worker" }
+                    new Role() { Id =  1, RoleName = "Undefined" },
+                    new Role() { Id =  2, RoleName = "SuperAdmin" },
+                    new Role() { Id =  3, RoleName = "Admin" },
+                    new Role() { Id =  4, RoleName = "User" },
+                    new Role() { Id =  5, RoleName = "Shelter" },
+                    new Role() { Id =  6, RoleName = "Worker" }
                 );
         }
     }

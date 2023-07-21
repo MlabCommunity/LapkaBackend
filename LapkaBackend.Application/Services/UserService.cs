@@ -6,6 +6,8 @@ using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Requests;
 using System.Security.Cryptography;
 using LapkaBackend.Application.Helper;
+using LapkaBackend.Application.Dtos.Result;
+using LapkaBackend.Domain.Enums;
 
 namespace LapkaBackend.Application.Services
 {
@@ -25,16 +27,22 @@ namespace LapkaBackend.Application.Services
             return await _context.Users.ToListAsync();
         }
 
-        public async Task<User> GetUserById(Guid id)
+        public async Task<GetUserDataByIdQueryResult> GetUserById(Guid id)
         {
-            var result = await _context.Users.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
 
-            if (result is null)
+            if (user is null)
             {
                 throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
-            return result;
+            return new GetUserDataByIdQueryResult
+            {
+                Id = user.Id,
+                Username = "xd",
+                FirstName = user.FirstName,
+                LastName = user.LastName
+            };
         }
 
         public async Task<User> AddUser(User user)
@@ -47,7 +55,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task<User> UpdateUser(UpdateUserDataRequest request, string id)
         {
-            var result = await GetUserById(new Guid(id));
+            var result = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
             if (result is null)
             {
@@ -68,7 +76,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task DeleteUser(string id)
         {
-            var result = await GetUserById(new Guid(id));
+            var result = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
             if (result is null)
             {
@@ -109,7 +117,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task SetNewPassword(string id, UserPasswordRequest request)
         {
-            var user = await GetUserById(new Guid(id));
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
             user.Password = request.NewPassword;
 
@@ -119,7 +127,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task SetNewEmail(string id, UpdateUserEmailRequest request)
         {
-            var user = await GetUserById(new Guid(id));
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
             user.Email = request.Email;
             user.VerifiedAt = null;
@@ -135,12 +143,20 @@ namespace LapkaBackend.Application.Services
             });
         }
 
-        //TODO: Do podmiany typ zwracany User na GetCurrentUserDataQueryResult po dodaniu loginProvider'a i profilePicture
-        public async Task<User> GetLoggedUser(string id)
+        public async Task<GetCurrentUserDataQueryResult> GetLoggedUser(string id)
         {
-            var user = await GetUserById(new Guid(id));
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
-            return user;
+            return new GetCurrentUserDataQueryResult
+            {
+                Id = user.Id,
+                Username = "xd",
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                Role = (Roles)user.Role!.Id
+            };
         }
 
         public async Task VerifyEmail(string token)

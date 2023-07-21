@@ -1,9 +1,6 @@
-﻿using LapkaBackend.Application.Dtos;
+﻿using LapkaBackend.Application.Dtos.Result;
+using LapkaBackend.Domain.Enums;
 using LapkaBackend.Application.Interfaces;
-using LapkaBackend.Application.Services;
-using LapkaBackend.Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers
@@ -18,7 +15,6 @@ namespace LapkaBackend.API.Controllers
         {
             _managementService = managementService;
         }
-
 
         /// <summary>
         ///     Nadanie użytkownikowi roli admina przez superadmina. Schronisko i pracownik nie mogą dostać tej roli
@@ -61,10 +57,10 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Management(string roleName)
+        public async Task<ActionResult> Management(Roles role)
         {
-            
-            return Ok(await _managementService.ListOfUsersWithTheSpecifiedRole(roleName));
+
+            return Ok(await _managementService.ListOfUsersWithTheSpecifiedRole(role));
         }
     }
 }

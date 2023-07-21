@@ -9,7 +9,7 @@ namespace LapkaBackend.Application.Requests
         [Required]
         public string LastName { get; set; } = string.Empty;
         [Required]
-        public string Email { get; set; } = null!;
+        public string EmailAddress { get; set; } = null!;
         [Required]
         public string Password { get; set; } = null!;
         [Required]
