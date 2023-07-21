@@ -2,6 +2,7 @@
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Services;
 using LapkaBackend.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,11 +19,12 @@ namespace LapkaBackend.API.Controllers
             _managementService = managementService;
         }
 
-        //Auth
+
         /// <summary>
         ///     Nadanie użytkownikowi roli admina przez superadmina. Schronisko i pracownik nie mogą dostać tej roli
         /// </summary>
         [HttpPost("assignAdminRole/{userId}")]
+        [Authorize(Roles = "SuperAdmin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -34,11 +36,11 @@ namespace LapkaBackend.API.Controllers
             return NoContent();
         }
 
-        //Auth
         /// <summary>
         ///     Odebranie adminowi roli przez superadmina
         /// </summary>
         [HttpPost("removeAdminRole/{userId}")]
+        [Authorize(Roles = "SuperAdmin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -50,11 +52,11 @@ namespace LapkaBackend.API.Controllers
             return NoContent();
         }
 
-        //Auth
         /// <summary>
         ///     Lista użytkowników o wskazanej roli. Niedozwolony wybór ról: SuperAdmin, Undefined, User.
         /// </summary>
         [HttpGet("/Management")]
+        [Authorize(Roles = "SuperAdmin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
