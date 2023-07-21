@@ -7,7 +7,7 @@ using LapkaBackend.Application.Requests;
 using System.Security.Cryptography;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Dtos.Result;
-using LapkaBackend.Application.Enums;
+using LapkaBackend.Domain.Enums;
 
 namespace LapkaBackend.Application.Services
 {

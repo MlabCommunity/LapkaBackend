@@ -1,6 +1,7 @@
 ﻿using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers
@@ -11,10 +12,11 @@ namespace LapkaBackend.API.Controllers
     {
         private readonly IAuthService _authService;
 
-        public AuthController(IAuthService authService) 
+        public AuthController(IAuthService authService)
         { 
             _authService = authService;
         }
+
         /// <summary>
         ///     Rejestracja użytkownika
         /// </summary>
@@ -42,10 +44,12 @@ namespace LapkaBackend.API.Controllers
 
             return NoContent();
         }
+
         /// <summary>
         ///     Potwierdzenie maila podanego przy rejestracji
         /// </summary>
         [HttpPost("confirmEmail{token}")]
+        [Authorize(Roles = "User, Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -55,6 +59,7 @@ namespace LapkaBackend.API.Controllers
 
             return NoContent();
         }
+
         /// <summary>
         ///     Logowanie schroniska
         /// </summary>
@@ -88,7 +93,7 @@ namespace LapkaBackend.API.Controllers
         ///     Odnawia access token na podstawie refresh token
         /// </summary>
         [HttpPost ("useToken")]
-        //[Authorize (Roles = "User")]
+        [Authorize (Roles = "User,Worker,Shelter,SuperAdmin,Admin")]
         [ProducesResponseType(typeof(UseRefreshTokenResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -114,7 +119,7 @@ namespace LapkaBackend.API.Controllers
         ///     Usuwa refresh token z bazy
         /// </summary>
         [HttpPost ("revokeToken")]
-        //[Authorize (Roles = "User")]
+        [Authorize(Roles = "User,Worker,Shelter,SuperAdmin,Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -129,6 +134,7 @@ namespace LapkaBackend.API.Controllers
         ///     Wysłanie maila z linkiem do zmiany hasła
         /// </summary>
         [HttpPost("resetPassword")]
+        [Authorize(Roles = "User,Worker,Shelter,SuperAdmin,Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -142,6 +148,7 @@ namespace LapkaBackend.API.Controllers
         ///     Ustawie nowego hasła.
         /// </summary>       
         [HttpPost("setPassword/{token}")]
+        [Authorize(Roles = "User,Worker,Shelter,SuperAdmin,Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

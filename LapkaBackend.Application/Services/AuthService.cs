@@ -14,6 +14,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using LapkaBackend.Domain.Enums;
+using System.Data;
 
 
 namespace LapkaBackend.Application.Services
@@ -40,7 +42,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_email", "User with this email already exists");
             }
 
-            var role = _dbContext.Roles.First(r => r.RoleName.ToUpper() == "USER");
+            var role = _dbContext.Roles.First(r => r.RoleName == Roles.User.ToString());
 
             var newUser = new User()
             {
@@ -59,8 +61,8 @@ namespace LapkaBackend.Application.Services
 
             await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
         }
-        
-        public async Task SendEmailToConfirmEmail(string emailAddress, string token)
+
+        private async Task SendEmailToConfirmEmail(string emailAddress, string token)
         {
             string baseUrl = "https://localhost:7214"; //""
             
@@ -68,7 +70,7 @@ namespace LapkaBackend.Application.Services
 
             string link = $"{baseUrl}{endpoint}";
 
-            MailRequest mailrequest = new MailRequest()
+            MailRequest mailRequest = new MailRequest()
             {
                 ToEmail = emailAddress,
                 Subject = "email confirmation",
@@ -76,7 +78,7 @@ namespace LapkaBackend.Application.Services
 
             };
 
-            await _emailService.SendEmail(mailrequest);
+            await _emailService.SendEmail(mailRequest);
         }
 
         public async Task<LoginResultDto> LoginUser(LoginRequest request)
@@ -135,15 +137,15 @@ namespace LapkaBackend.Application.Services
 
         public async Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request)
         {
-            var jwtAccesToken = new JwtSecurityToken(request.AccessToken);
+            var jwtAccessToken = new JwtSecurityToken(request.AccessToken);
 
-            if (jwtAccesToken == null)
+            if (jwtAccessToken == null)
             {
                 throw new BadRequestException("invalid_token", "Invalid token");
             }
 
             var user = await _dbContext.Users.FirstAsync(c =>
-                c.Email == jwtAccesToken.Claims.First(x => x.Type == ClaimTypes.Email).Value);
+                c.Email == jwtAccessToken.Claims.First(x => x.Type == ClaimTypes.Email).Value);
 
             if (user == null)
             {
@@ -218,7 +220,7 @@ namespace LapkaBackend.Application.Services
             return jwt;
         }
 
-        public string CreateRandomToken()
+        private string CreateRandomToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
         }
@@ -355,7 +357,7 @@ namespace LapkaBackend.Application.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public string CreateSetNewPasswordToken(string emailAddress)
+        private string CreateSetNewPasswordToken(string emailAddress)
         {
             User user = _dbContext.Users
                 .Include(u => u.Role)
@@ -365,7 +367,8 @@ namespace LapkaBackend.Application.Services
             {
                 new(ClaimTypes.Email, user.Email),
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Name, user.LastName) 
+                new(ClaimTypes.Name, user.LastName),
+                new(ClaimTypes.Role, user.Role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(

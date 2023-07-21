@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using LapkaBackend.Application.Common;
-using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Dtos; 
 using LapkaBackend.Application.Dtos.Result;
-using LapkaBackend.Application.Enums;
+using LapkaBackend.Domain.Enums;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
