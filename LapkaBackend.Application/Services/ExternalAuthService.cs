@@ -179,7 +179,7 @@ public class ExternalAuthService : IExternalAuthService
         {
             string responseContent = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<FacebookTokenValidationResult>(responseContent);
-            return result?.Data?.IsValid == true && result.Data.UserId == userId;
+            return result?.Data.IsValid == true && result.Data.UserId == userId;
         }
 
         return false;
@@ -188,11 +188,11 @@ public class ExternalAuthService : IExternalAuthService
 
 public class FacebookTokenValidationResult
 {
-    public FacebookTokenValidationData Data { get; set; }
+    public FacebookTokenValidationData Data { get; set; } = null!;
 }
 
 public class FacebookTokenValidationData
 {
-    public string UserId { get; set; }
+    public string UserId { get; set; } = null!;
     public bool IsValid { get; set; }
 }

@@ -1,8 +1,6 @@
-﻿using LapkaBackend.Application.Enums;
+﻿using LapkaBackend.Domain.Enums;
 using LapkaBackend.Application.Interfaces;
 using MimeKit;
-using MimeKit.Utils;
-using System.Runtime.CompilerServices;
 
 namespace LapkaBackend.Infrastructure.Email
 {
@@ -21,7 +19,7 @@ namespace LapkaBackend.Infrastructure.Email
 
             builder.LinkedResources.Add(Path.Combine(_filePath, "LappkaLogo.png"));
 
-            builder.HtmlBody = File.ReadAllText(Path.Combine(_filePath, template.ToString() + ".html"));
+            builder.HtmlBody = File.ReadAllText(Path.Combine(_filePath, template + ".html"));
 
             return builder;
         }

@@ -119,7 +119,7 @@ namespace LapkaBackend.Application.Services
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
-            user.Password = request.NewPassword;
+            user!.Password = request.NewPassword;
 
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
@@ -129,7 +129,7 @@ namespace LapkaBackend.Application.Services
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
-            user.Email = request.Email;
+            user!.Email = request.Email;
             user.VerifiedAt = null;
 
             _context.Users.Update(user);
@@ -149,7 +149,7 @@ namespace LapkaBackend.Application.Services
 
             return new GetCurrentUserDataQueryResult
             {
-                Id = user.Id,
+                Id = user!.Id,
                 Username = "xd",
                 FirstName = user.FirstName,
                 LastName = user.LastName,

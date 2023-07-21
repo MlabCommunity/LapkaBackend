@@ -3,7 +3,6 @@ using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using LapkaBackend.Application.Helper;
-using MimeKit.Utils;
 
 namespace LapkaBackend.Application.Services
 {

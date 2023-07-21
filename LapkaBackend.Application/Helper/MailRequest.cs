@@ -1,4 +1,4 @@
-﻿using LapkaBackend.Application.Enums;
+﻿using LapkaBackend.Domain.Enums;
 
 namespace LapkaBackend.Application.Helper
 {

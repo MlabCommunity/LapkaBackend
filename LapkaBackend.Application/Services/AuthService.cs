@@ -1,6 +1,6 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos.Result;
-using LapkaBackend.Application.Enums;
+using LapkaBackend.Domain.Enums;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Interfaces;
@@ -9,13 +9,10 @@ using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using LapkaBackend.Domain.Enums;
-using System.Data;
 
 
 namespace LapkaBackend.Application.Services
@@ -74,7 +71,7 @@ namespace LapkaBackend.Application.Services
             {
                 ToEmail = emailAddress,
                 Subject = "email confirmation",
-                Template = Enums.Templates.Welcome
+                Template = Templates.Welcome
 
             };
 
@@ -368,7 +365,7 @@ namespace LapkaBackend.Application.Services
                 new(ClaimTypes.Email, user.Email),
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new(ClaimTypes.Name, user.LastName),
-                new(ClaimTypes.Role, user.Role.RoleName)
+                new(ClaimTypes.Role, user.Role!.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
