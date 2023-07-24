@@ -4,6 +4,7 @@ using LapkaBackend.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230724073000_CreatePets")]
+    partial class CreatePets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,23 +97,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AnimalCategories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CategoryName = "Dog"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CategoryName = "Cat"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CategoryName = "rabbit"
-                        });
                 });
 
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Role", b =>
