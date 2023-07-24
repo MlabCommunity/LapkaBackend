@@ -5,11 +5,9 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using LapkaBackend.Application;
-using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Mappers;
-using LapkaBackend.Domain.Entities;
 using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -107,7 +105,7 @@ internal class Program
 
         app.UseAuthorization();
 
-        app.UseMiddleware<ErrorHandlerMiddleware>();
+        //app.UseMiddleware<ErrorHandlerMiddleware>();
 
         app.MapControllers();
 

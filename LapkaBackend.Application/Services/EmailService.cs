@@ -9,10 +9,11 @@ namespace LapkaBackend.Application.Services
     public class EmailService : IEmailService
     {
         private readonly EmailSettings _emailSettings;
-        public EmailService(IOptions<EmailSettings> options)
+        private readonly IEmailWrapper _emailWrapper;
+        public EmailService(IOptions<EmailSettings> options, IEmailWrapper emailWrapper)
         {
             _emailSettings = options.Value;
-
+            _emailWrapper = emailWrapper;
         }
 
         public async Task SendEmail(MailRequest mailRequest)
@@ -21,12 +22,9 @@ namespace LapkaBackend.Application.Services
             email.Sender = MailboxAddress.Parse(_emailSettings.Email);
             email.To.Add(MailboxAddress.Parse(mailRequest.ToEmail));
             email.Subject = mailRequest.Subject;
-            var builder = new BodyBuilder
-            {
-                HtmlBody = mailRequest.Body
-            };
-            email.Body = builder.ToMessageBody();
+            var builder = _emailWrapper.GetBuilder(mailRequest.Template);
 
+            email.Body = builder.ToMessageBody();
             using var smtp = new SmtpClient();
             await smtp.ConnectAsync(_emailSettings.Host, _emailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
             await smtp.AuthenticateAsync(_emailSettings.Email, _emailSettings.Password);
