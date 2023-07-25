@@ -1,4 +1,5 @@
-﻿using LapkaBackend.Application.Common;
+﻿using Azure.Storage.Blobs;
+using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Data;
@@ -17,7 +18,8 @@ namespace LapkaBackend.Infrastructure
         {
             services.AddTransient<IDataContext, DataContext>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
-
+            services.AddSingleton(_ =>
+                new BlobServiceClient(configuration.GetValue<string>("Azure:ConnectionString")));
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("MySql"));
@@ -35,7 +37,6 @@ namespace LapkaBackend.Infrastructure
 
         public static void Seed(this ModelBuilder modelBuilder)
         {
-            //TODO: Migracja do zrobienia :)
             modelBuilder.Entity<Role>().HasData(
                     new Role() { Id =  1, RoleName = "Undefined" },
                     new Role() { Id =  2, RoleName = "SuperAdmin" },
@@ -48,7 +49,7 @@ namespace LapkaBackend.Infrastructure
             modelBuilder.Entity<AnimalCategory>().HasData(
                     new AnimalCategory() { Id = 1, CategoryName = "Dog" },
                     new AnimalCategory() { Id = 2, CategoryName = "Cat" },
-                    new AnimalCategory() { Id = 3, CategoryName = "rabbit" }
+                    new AnimalCategory() { Id = 3, CategoryName = "Rabbit" }
                 );
         }
     }
