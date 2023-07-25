@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.Storage.Blobs;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using LapkaBackend.Application;

@@ -19,7 +19,7 @@ namespace LapkaBackend.Infrastructure
             services.AddTransient<IDataContext, DataContext>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
             services.AddSingleton(_ =>
-                new BlobServiceClient(configuration.GetValue<string>("Azure:ConnectionString")));
+                new BlobServiceClient(configuration.GetConnectionString("Azure")));
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("MySql"));
