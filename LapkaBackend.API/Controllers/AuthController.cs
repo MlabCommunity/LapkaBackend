@@ -49,7 +49,7 @@ namespace LapkaBackend.API.Controllers
         ///     Potwierdzenie maila podanego przy rejestracji
         /// </summary>
         [HttpPost("confirmEmail{token}")]
-        [Authorize(Roles = "User, Shelter")]
+
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -148,7 +148,6 @@ namespace LapkaBackend.API.Controllers
         ///     Ustawie nowego hasła.
         /// </summary>       
         [HttpPost("setPassword/{token}")]
-        [Authorize(Roles = "User,Worker,Shelter,SuperAdmin,Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

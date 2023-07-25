@@ -135,11 +135,18 @@ namespace LapkaBackend.Application.Services
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
+            string baseUrl = "https://localhost:7214";
+            string token = user.VerificationToken!;
+            string endpoint = $"/User/ConfirmUpdatedEmail/{token}";
+
+            string link = $"{baseUrl}{endpoint}";
+
             await _emailService.SendEmail(new MailRequest
             {
                 ToEmail = request.Email,
                 Subject = "Zmiana emaila",
-                Template = Templates.ConfirmEmailChange
+                Template = Templates.ConfirmEmailChange,
+                RedirectUrl = link
             });
         }
 

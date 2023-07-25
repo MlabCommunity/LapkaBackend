@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class CreatePets : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -119,6 +119,16 @@ namespace LapkaBackend.Infrastructure.Migrations
                         column: x => x.ShelterId,
                         principalTable: "Shelters",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.InsertData(
+                table: "AnimalCategories",
+                columns: new[] { "Id", "CategoryName" },
+                values: new object[,]
+                {
+                    { 1, "Dog" },
+                    { 2, "Cat" },
+                    { 3, "rabbit" }
                 });
 
             migrationBuilder.InsertData(

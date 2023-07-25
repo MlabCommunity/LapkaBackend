@@ -61,8 +61,7 @@ namespace LapkaBackend.Application.Services
 
         private async Task SendEmailToConfirmEmail(string emailAddress, string token)
         {
-            string baseUrl = "https://localhost:7214"; //""
-            
+            string baseUrl = "https://localhost:7214";            
             string endpoint = $"/Auth/confirmEmail/{token}";
 
             string link = $"{baseUrl}{endpoint}";
@@ -71,8 +70,8 @@ namespace LapkaBackend.Application.Services
             {
                 ToEmail = emailAddress,
                 Subject = "email confirmation",
-                Template = Templates.Welcome
-
+                Template = Templates.Welcome,
+                RedirectUrl = link
             };
 
             await _emailService.SendEmail(mailRequest);
@@ -328,8 +327,8 @@ namespace LapkaBackend.Application.Services
             {
                 ToEmail = request.Email,
                 Subject = "Reset password",
-                Template = Templates.PasswordChange
-
+                Template = Templates.PasswordChange,
+                RedirectUrl = link
             };
 
             await _emailService.SendEmail(mailRequest);
