@@ -63,5 +63,36 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(await _managementService.ListOfUsersWithTheSpecifiedRole(role));
         }
+        /*
+        /// <summary>
+        ///     Dodanie nowych pracowników do przestrzeni shroniska przez administratora
+        /// </summary>
+        [HttpGet("addWorker/{userId}")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> AddWorkerByAdmin(Roles role)
+        {
+
+            return Ok(await _managementService.AddWorkerByAdmin(role));
+        }
+
+        /// <summary>
+        ///     Usunięcie workera przez Admina
+        /// </summary>
+        [HttpGet("/Management/")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> RemoveWorkerByAdmin(Roles role)
+        {
+
+            return Ok(await _managementService.AddWorkerByAdmin(role));
+        }   */
+
     }
 }

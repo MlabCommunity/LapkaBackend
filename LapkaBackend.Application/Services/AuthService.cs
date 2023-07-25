@@ -275,12 +275,7 @@ namespace LapkaBackend.Application.Services
             }
 
             var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName.ToUpper() == "SHELTER");
-            if (roleUser == null)
-            {
-                roleUser = new Role
-                {
-                    RoleName = "Shelter"
-                };
+
                 var newShelter = new Shelter()
                 {
                     OrganizationName = request.ShelterRequest.OrganizationName,
@@ -313,7 +308,6 @@ namespace LapkaBackend.Application.Services
                 await _dbContext.SaveChangesAsync();
 
                 await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
-            }
         }
 
         public async Task ResetPassword(UserEmailRequest request)

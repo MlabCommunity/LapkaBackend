@@ -17,6 +17,7 @@ namespace LapkaBackend.Infrastructure
         {
             services.AddTransient<IDataContext, DataContext>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
+            
 
             services.AddDbContext<DataContext>(options =>
             {

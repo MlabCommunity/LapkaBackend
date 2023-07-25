@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Functions.Queries;
 using LapkaBackend.Domain.Entities;
 
 namespace LapkaBackend.Application.Mappers
@@ -10,5 +11,14 @@ namespace LapkaBackend.Application.Mappers
         {
             CreateMap<User, UserDto>().ReverseMap();
         }
+    }
+
+    public class ShelterMappingProfile:Profile
+    {
+        public ShelterMappingProfile()
+        {
+            CreateMap<Shelter, ShelterDto>().ReverseMap();
+        }
+
     }
 }
