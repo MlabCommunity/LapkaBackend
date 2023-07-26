@@ -58,3 +58,5 @@
 .vs/
 obj/
 bin/
+/LapkaBackend.API/appsettings.json
+/LapkaBackend.API/appsettings.json

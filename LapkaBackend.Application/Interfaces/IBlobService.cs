@@ -1,12 +1,13 @@
 ﻿using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace LapkaBackend.Application.Interfaces;
 
 public interface IBlobService
 {
-    //public Task UploadFileAsync(string filePath, string fileName);
-    // public Task DeleteFileAsync(string fileName);
-    public string GetFileUrlAsync(string fileName);
+    Task<string> UploadFileAsync(IFormFile file);
+    Task DeleteFileAsync(Guid id);
+    Task<string> GetFileUrlAsync(Guid id);
 }

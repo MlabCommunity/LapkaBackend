@@ -8,6 +8,8 @@ namespace LapkaBackend.Application.Common
         public DbSet<User> Users { get; }
         public DbSet<Shelter> Shelters { get; }
         public DbSet<Role> Roles { get; }
+        public DbSet<FileBlob> Blobs { get; }
+
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
