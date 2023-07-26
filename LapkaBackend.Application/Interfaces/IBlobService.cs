@@ -6,7 +6,7 @@ namespace LapkaBackend.Application.Interfaces;
 
 public interface IBlobService
 {
-    // public Task UploadFileAsync(string filePath, string fileName);
+    //public Task UploadFileAsync(string filePath, string fileName);
     // public Task DeleteFileAsync(string fileName);
     public string GetFileUrlAsync(string fileName);
 }

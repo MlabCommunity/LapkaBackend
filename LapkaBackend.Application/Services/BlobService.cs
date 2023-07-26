@@ -34,6 +34,10 @@ public class BlobService : IBlobService
         var sasToken = sasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential("lappka", _configuration.GetConnectionString("AzureKey"))).ToString();
         return blobClient.Uri.AbsoluteUri + "?" + sasToken;
         // url do pliku
+
+
+
+
     }
-    
+
 }
