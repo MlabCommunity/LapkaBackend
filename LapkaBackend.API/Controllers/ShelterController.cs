@@ -105,5 +105,21 @@ namespace LapkaBackend.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        ///     Dodanie karty zwierzaka do archiwum
+        /// </summary>
+        [HttpPost("/shelters/cards/archive/{petId}")]
+        //[Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> AddPetToArchive([FromRoute] Guid petId)
+        {
+            var query = new AddPetToArchiveCommand(petId);
+            await _mediator.Send(query);
+            return NoContent();
+        }
+
+        
+
     }
 }
