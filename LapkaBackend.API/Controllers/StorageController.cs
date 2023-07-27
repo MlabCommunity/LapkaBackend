@@ -1,6 +1,9 @@
 ﻿using LapkaBackend.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace LapkaBackend.API.Controllers;
 
@@ -15,7 +18,7 @@ public class StorageController : Controller
         _blobService = blobService;
     }
     /// <summary>
-    ///     Rejestracja użytkownika
+    ///     Pobieranie pliku na podstawie identyfikatora
     /// </summary>
     [HttpGet ("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -25,31 +28,79 @@ public class StorageController : Controller
     {
         return Ok(await _blobService.GetFileUrlAsync(id));
     }
-    
+
     /// <summary>
-    ///     Rejestracja użytkownika
+    ///     Dodawanie pliku 1GB i zwrócenie jego identyfikatora. Dostępne dla schroniska.
     /// </summary>
     [HttpPost]
+    //[Authorize(Roles = "Shelter")]
+    [RequestSizeLimit(1073741824)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFile(IFormFile file)
+    public async Task<ActionResult> SaveFileByShelter(IFormFile file)
     {
-        var result = await _blobService.UploadFileAsync(file);
-
-        return Ok(result);
+        return Ok(await _blobService.UploadFileAsShelterAsync(file, new Guid("0B9B21CE-717C-4F3A-A977-08DB8E7E7965")));
     }
 
     /// <summary>
-    ///     Rejestracja użytkownika
+    ///     Dodawanie zdjęcia do 5MB (.jpg, .jpeg, .bmp, .png) i zwrócenie jego identyfikatora. Dostępne dla zalogowanego użytkownika.
+    /// </summary>
+    [HttpPost("picture")]
+    //[Authorize(Roles = "User")]
+    [RequestSizeLimit(5242880)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> SaveFileByUser(IFormFile file)
+    {
+        return Ok(await _blobService.UploadFileAsUserAsync(file, new Guid(HttpContext.User.FindFirstValue("userId")!)));
+    }
+
+    /// <summary>
+    ///     Usuwanie pliku o wskazanym Id. Użytkownik może usuwać pliki tylko za pośrednictwem innych serwisów. 
     /// </summary>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> DeleteFile(Guid id)
     {
         await _blobService.DeleteFileAsync(id);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    ///     Zastąpienie pliku o wskazanym Id nowym plikiem do 1GB 
+    /// </summary>
+    [HttpPut("{id}")]
+    [RequestSizeLimit(1073741824)]
+    //[Authorize(Roles = "Shelter")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> UpdateFileShelter([Required]IFormFile file, [Required]Guid id)
+    {
+        await _blobService.UpdateFileAsShelterAsync(file, id);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    ///     Zastąpienie zdjęcia o wskazanym Id nowym plikiem do 5MB 
+    /// </summary>
+    [HttpPut("picture/{id}")]
+    [RequestSizeLimit(5242880)]
+    //[Authorize(Roles = "User")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> UpdateFileUser([Required] IFormFile file, [Required] Guid id)
+    {
+        await _blobService.UpdateFileAsUserAsync(file, id);
 
         return NoContent();
     }

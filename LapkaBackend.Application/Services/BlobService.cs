@@ -18,7 +18,6 @@ public class BlobService : IBlobService
     private readonly BlobServiceClient _blobServiceClient;
     private readonly IConfiguration _configuration;
     private readonly IDataContext _dbContext;
-    
 
     public BlobService(BlobServiceClient blobServiceClient, IConfiguration configuration, IDataContext dataContext)
     {
@@ -26,17 +25,20 @@ public class BlobService : IBlobService
         _configuration = configuration;
         _dbContext = dataContext;
     }
-    
+
     public async Task<string> GetFileUrlAsync(Guid id)
     {
-        var fileName = (await _dbContext.Blobs.FirstAsync(x => x.Id.Equals(id))).BlobName;
+        var file = await _dbContext.Blobs.FirstOrDefaultAsync(x => x.Id.Equals(id));
 
-        var searchingContainers = new List<Task<BlobClient>>();
-
-        foreach(var container in _blobServiceClient.GetBlobContainers()) 
+        if (file is null)
         {
-            searchingContainers.Add(Task.Run(() => SearchContainer(container.Name, fileName)));
+            throw new NotFoundException("invalid_id", "File does not exist");
         }
+
+        var fileName = file.BlobName;
+
+        var searchingContainers = _blobServiceClient.GetBlobContainers()
+            .Select(container => Task.Run(() => SearchContainer(container.Name, fileName))).ToList();
 
         var containers = await Task.WhenAll(searchingContainers);
 
@@ -47,7 +49,7 @@ public class BlobService : IBlobService
 
         var blobClient = containers.First(x => x is not null);
 
-        BlobSasBuilder sasBuilder = new BlobSasBuilder
+        var sasBuilder = new BlobSasBuilder
         {
             BlobContainerName = blobClient.BlobContainerName,
             BlobName = fileName,
@@ -59,11 +61,11 @@ public class BlobService : IBlobService
         sasBuilder.SetPermissions(BlobSasPermissions.Read);
 
         var sasToken = sasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(_blobServiceClient.AccountName, _configuration.GetConnectionString("AzureKey"))).ToString();
-        
+
         return blobClient.Uri.AbsoluteUri + "?" + sasToken;
     }
 
-    public async Task<string> UploadFileAsync(IFormFile file)
+    public async Task<string> UploadFileAsync(IFormFile file, Guid parentId, string containerName, Guid? updateId = null)
     {
         var fileStream = new MemoryStream();
 
@@ -73,18 +75,18 @@ public class BlobService : IBlobService
 
         FileBlob blob = new FileBlob()
         {
+            Id = updateId == null ? Guid.NewGuid() : (Guid)updateId,
             UploadName = file.FileName,
             BlobName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName),
             FileType = file.ContentType,
-            ParentEntityId = Guid.NewGuid()
-            //TODO: Podmienić na Shelter/Pets/User Id w przyszłości 
+            ParentEntityId = parentId
         };
-         
+
         await _dbContext.Blobs.AddAsync(blob);
         await _dbContext.SaveChangesAsync();
 
-        var blobContainer = _blobServiceClient.GetBlobContainerClient("lappka-img");
-        
+        var blobContainer = _blobServiceClient.GetBlobContainerClient(containerName);
+
         await blobContainer.UploadBlobAsync(blob.BlobName, fileStream);
 
         var blobClient = blobContainer.GetBlobClient(blob.BlobName);
@@ -97,16 +99,17 @@ public class BlobService : IBlobService
 
     public async Task DeleteFileAsync(Guid id)
     {
-        var file = await _dbContext.Blobs.FirstAsync(x => x.Id.Equals(id));
+        var file = await _dbContext.Blobs.FirstOrDefaultAsync(x => x.Id.Equals(id));
 
-        var searchedContainer = new List<Task<BlobClient>>();
-
-        foreach (var container in _blobServiceClient.GetBlobContainers())
+        if (file is null)
         {
-            searchedContainer.Add(Task.Run(() => SearchContainer(container.Name, file.BlobName)));
+            throw new NotFoundException("invalid_id", "File does not exist");
         }
 
-        var containers = await Task.WhenAll(searchedContainer);
+        var searchedContainers = _blobServiceClient.GetBlobContainers()
+             .Select(container => Task.Run(() => SearchContainer(container.Name, file.BlobName))).ToList();
+
+        var containers = await Task.WhenAll(searchedContainers);
 
         if (containers.All(x => x is null))
         {
@@ -120,6 +123,31 @@ public class BlobService : IBlobService
         await blobClient.DeleteAsync();
     }
 
+    public async Task<string> UploadFileAsUserAsync(IFormFile file, Guid parentId)
+    {
+        if (!PictureTypes.Contains(file.ContentType))
+        {
+            throw new BadRequestException("invalid_image", "Format of image is invalid");
+        }
+
+        return await UploadFileAsync(file, parentId, "lappka-img");
+    }
+
+    public async Task<string> UploadFileAsShelterAsync(IFormFile file, Guid parentId)
+    {
+        if (PictureTypes.Contains(file.ContentType))
+        {
+            if (file.Length >= 5242880)
+            {
+                throw new BadRequestException("invalid_image", "Image is too large (Exceeded 5MB)");
+            }
+
+            return await UploadFileAsync(file, parentId, "lappka-img");
+        }
+        return await UploadFileAsync(file, parentId, "lappka-others");
+
+    }
+
     private BlobClient SearchContainer(string containerName, string fileName)
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
@@ -127,4 +155,45 @@ public class BlobService : IBlobService
 
         return blobClient.Exists() ? blobClient : null!;
     }
+
+    public async Task UpdateFileAsUserAsync(IFormFile file, Guid id)
+    {
+        var oldFile = await _dbContext.Blobs.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (oldFile is null)
+        {
+            throw new NotFoundException("invalid_id", "File does not exists");
+        }
+
+        if (!PictureTypes.Contains(file.ContentType))
+        {
+            throw new BadRequestException("invalid_image", "Format of image is invalid");
+        }
+
+        await DeleteFileAsync(id);
+
+        await UploadFileAsync(file, oldFile.ParentEntityId, "lappka-img", id);
+    }
+
+    public async Task UpdateFileAsShelterAsync(IFormFile file, Guid id)
+    {
+        var oldFile = await _dbContext.Blobs.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (oldFile is null)
+        {
+            throw new NotFoundException("invalid_id", "File does not exists");
+        }
+
+        await DeleteFileAsync(id);
+
+        await UploadFileAsync(file, oldFile.ParentEntityId, "lappka-others", id);
+    }
+
+    private List<string> PictureTypes = new List<string>()
+    {
+        "image/gif",
+        "image/jpeg",
+        "image/png",
+        "image/bmp"
+    };
 }

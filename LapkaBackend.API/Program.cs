@@ -11,6 +11,7 @@ using LapkaBackend.Application.Mappers;
 using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -31,8 +32,17 @@ internal class Program
                 {
                     var errors = context.ModelState.Values
                         .SelectMany(v => v.Errors)
-                        .Select(e => JsonSerializer.Deserialize<Error>(e.ErrorMessage));
-                    //TODO try to work on error caused by wrong name of property
+                        .Select(e =>
+                        {
+                            try
+                            {
+                                return JsonSerializer.Deserialize<Error>(e.ErrorMessage);
+                            }
+                            catch (Exception)
+                            {
+                                return new Error("invalid_request", e.ErrorMessage);
+                            }
+                        });
                     var errorsWrapper = new
                     {
                         errors
@@ -53,6 +63,10 @@ internal class Program
         builder.Services.AddInfrasturcture(builder.Configuration);
         builder.Services.AddAutoMapper(typeof(UserMappingProfile));
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+        builder.Services.Configure<FormOptions>(options =>
+        {
+            options.MultipartBodyLengthLimit = 1073741824;
+        });
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();

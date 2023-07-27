@@ -270,16 +270,11 @@ namespace LapkaBackend.Application.Services
         {
             if (_dbContext.Users.Any(x => x.Email == request.UserRequest.EmailAddress))
             {
-                throw new BadRequestException("invalid_email", "Shelter already exists");
+                throw new BadRequestException("invalid_email", "Email already in use");
             }
 
-            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName.ToUpper() == "SHELTER");
-            if (roleUser == null)
-            {
-                roleUser = new Role
-                {
-                    RoleName = "Shelter"
-                };
+            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == Roles.Shelter.ToString());
+
                 var newShelter = new Shelter()
                 {
                     OrganizationName = request.ShelterRequest.OrganizationName,
@@ -312,8 +307,8 @@ namespace LapkaBackend.Application.Services
                 await _dbContext.SaveChangesAsync();
 
                 await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
-            }
         }
+       
 
         public async Task ResetPassword(UserEmailRequest request)
         {
