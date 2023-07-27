@@ -32,6 +32,7 @@ namespace LapkaBackend.Infrastructure
             RoleModelBuilder.BuildRoleModel(modelBuilder);
             AnimalModelBuilder.BuildAnimalModel(modelBuilder);
             AnimalCategoryModelBuilder.BuildAnimalCategoryModel(modelBuilder);
+            ReactionModelBuilder.BuildReactionModel(modelBuilder);
         }
 
         public static void Seed(this ModelBuilder modelBuilder)
@@ -49,7 +50,8 @@ namespace LapkaBackend.Infrastructure
             modelBuilder.Entity<AnimalCategory>().HasData(
                     new AnimalCategory() { Id = 1, CategoryName = "Dog" },
                     new AnimalCategory() { Id = 2, CategoryName = "Cat" },
-                    new AnimalCategory() { Id = 3, CategoryName = "rabbit" }
+                    new AnimalCategory() { Id = 3, CategoryName = "rabbit" },
+                    new AnimalCategory() { Id = 4, CategoryName = "Undefined" }
                 );
         }
     }

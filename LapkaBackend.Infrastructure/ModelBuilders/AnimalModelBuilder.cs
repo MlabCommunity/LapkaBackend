@@ -20,13 +20,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 a.Property(x => x.Name)
                 .IsRequired();
 
-                a.Property(x => x.Species)
-                .IsRequired();
-
                 a.Property(x => x.Gender)
-                .IsRequired();
-
-                a.Property(x => x.Marking)
                 .IsRequired();
 
                 a.Property(x => x.Weight)

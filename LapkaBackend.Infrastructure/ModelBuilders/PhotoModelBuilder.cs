@@ -14,7 +14,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
         {
             modelBuilder.Entity<Photo>(p =>
             {
-                p.Property(x => x.FilePath)
+                p.Property(x => x.Id)
                 .IsRequired();
 
                 p.HasOne(r => r.Animal)

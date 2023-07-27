@@ -15,13 +15,12 @@ namespace LapkaBackend.Domain.Entities
         public string Gender { get; set; } = string.Empty;
         public string Marking { get; set; } = string.Empty;
         public decimal Weight { get; set; }
-        public string ProfilePhoto { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public bool IsSterilized { get; set; }
         public bool IsVisible { get; set; }
         public int Months { get; set; }
+        public bool IsArchival { get; set; }
         [ForeignKey("AnimalCategory")]
-
         public int CategoryId { get; set; }
         public virtual AnimalCategory? AnimalCategory { get; set; }
 
@@ -29,6 +28,8 @@ namespace LapkaBackend.Domain.Entities
         public virtual Shelter? Shelter { get; set; }
 
         public virtual List<Photo>? Photos { get; set; }
+
+        public virtual List<Reaction>? Reactions { get; set; }
 
 
     }

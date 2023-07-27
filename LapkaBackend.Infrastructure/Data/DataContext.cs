@@ -24,6 +24,7 @@ namespace LapkaBackend.Infrastructure.Data
         public DbSet<Animal> Animals { get; set; }
         public DbSet<AnimalCategory> AnimalCategories { get; set; }
         public DbSet<Photo> Photos { get; set; }
+        public DbSet<Reaction> Reactions { get; set; }
 
 
     }

@@ -9,8 +9,8 @@ namespace LapkaBackend.Domain.Entities
 {
     public class Photo
     {
-        public int Id { get; set; }
-        public string FilePath { get; set; } = string.Empty;
+        public Guid Id { get; set; }
+        public bool IsProfilePhoto { get; set; }
 
         [ForeignKey("AnimalId")]
         public Guid? AnimalId { get; set; }

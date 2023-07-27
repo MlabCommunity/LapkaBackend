@@ -14,17 +14,25 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Functions.Posts
 {
-    public record CreateDogCartCommand:IRequest
+    public record CreateDogCardCommand:IRequest
     {
-        private DogCard dogCard;
-
-        public CreateDogCartCommand(DogCard dogCard)
+        public CreateDogCardCommand(DogCard dogCard)
         {
-            this.dogCard = dogCard;
+            Name = dogCard.Name;
+            ProfilePhoto = dogCard.ProfilePhoto;
+            Gender = dogCard.Gender;
+            Description = dogCard.Description;
+            IsVisible = dogCard.IsVisible;
+            Months = dogCard.Months;
+            IsSterilized = dogCard.IsSterilized;
+            Weight = dogCard.Weight;
+            DogColor = dogCard.DogColor;
+            DogBreed = dogCard.DogBreed;
+            Photos = dogCard.Photos;
+            ShelterId = dogCard.ShelterId;
         }
 
         public string Name { get; set; } = null!;
-        public string PetIdentifier { get; set; } = null!;
         public string ProfilePhoto { get; set; } = null!;
         public string Gender { get; set; } = null!;
         public string Description { get; set; } = null!;
@@ -35,30 +43,36 @@ namespace LapkaBackend.Application.Functions.Posts
         public string DogColor { get; set; } = null!;
         public string DogBreed { get; set; } = null!;
         public string[] Photos { get; set; } = null!;
+        public Guid ShelterId { get; set; }
     }
 
-    public class CreateDogCartCommandHandler : IRequestHandler<CreateDogCartCommand>
+    public class CreateDogCardCommandHandler : IRequestHandler<CreateDogCardCommand>
     {
         private readonly IDataContext _dbContext;
         private readonly IMapper _mapper;
 
-        public CreateDogCartCommandHandler(IDataContext dbContext, IMapper mapper)
+        public CreateDogCardCommandHandler(IDataContext dbContext, IMapper mapper)
         {
 
             _dbContext = dbContext;
             _mapper = mapper;
         }
 
-        public async Task Handle(CreateDogCartCommand request, CancellationToken cancellationToken)
+        public async Task Handle(CreateDogCardCommand request, CancellationToken cancellationToken)
         {
             var photosList = new List<Photo>();
-
             for (int i = 0; i < request.Photos.Length; i++)
             {
-                photosList.Add(new Photo { FilePath = request.Photos[i] });
+                photosList.Add(new Photo());//dodać zapisywanie zdjęć
             }
+            photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
 
             var animalCategory = _dbContext.AnimalCategories.First(r => r.CategoryName == AnimalCategories.Dog.ToString());
+            var Shelter = _dbContext.Shelters.FirstOrDefault(r => r.Id == request.ShelterId);
+            if (Shelter == null)
+            {
+                throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
+            }
 
             Animal newAnimal = new()
             {
@@ -67,25 +81,17 @@ namespace LapkaBackend.Application.Functions.Posts
                 Gender = request.Gender,
                 Marking = request.DogColor,
                 Weight = request.Weight,
-                ProfilePhoto = request.ProfilePhoto,
                 Description = request.Description,
                 IsSterilized = request.IsSterilized,
                 IsVisible = request.IsVisible,
                 Months = request.Months,
                 AnimalCategory = animalCategory,
                 Photos = photosList,
-
-
-
-
-
+                Shelter = Shelter
             };
 
-
-
             await _dbContext.Animals.AddAsync(newAnimal);
-            await _dbContext.SaveChangesAsync();
-
+            await _dbContext.SaveChangesAsync(); 
         }
     }
 
@@ -93,8 +99,6 @@ namespace LapkaBackend.Application.Functions.Posts
     {
         [Required]
         public string Name { get; set; } = null!;
-        [Required]
-        public string PetIdentifier { get; set; } = null!;
         [Required]
         public string ProfilePhoto { get; set; } = null!;
         [Required]
@@ -115,6 +119,9 @@ namespace LapkaBackend.Application.Functions.Posts
         public string DogBreed { get; set; } = null!;
         [Required]
         public string[] Photos { get; set; } = null!;
+        [Required]
+        public Guid ShelterId { get; set; }
+        
     }
 }
 

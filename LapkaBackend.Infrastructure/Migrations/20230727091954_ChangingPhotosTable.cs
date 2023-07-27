@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class CreatePets : Migration
+    public partial class ChangingPhotosTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -97,7 +97,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                     Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Marking = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Weight = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    PhotoName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsSterilized = table.Column<bool>(type: "bit", nullable: false),
                     IsVisible = table.Column<bool>(type: "bit", nullable: false),
@@ -119,6 +118,60 @@ namespace LapkaBackend.Infrastructure.Migrations
                         column: x => x.ShelterId,
                         principalTable: "Shelters",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Photos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsProfilePhoto = table.Column<bool>(type: "bit", nullable: false),
+                    AnimalId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Photos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Photos_Animals_AnimalId",
+                        column: x => x.AnimalId,
+                        principalTable: "Animals",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Reactions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NameOfReaction = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AnimalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reactions_Animals_AnimalId",
+                        column: x => x.AnimalId,
+                        principalTable: "Animals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Reactions_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AnimalCategories",
+                columns: new[] { "Id", "CategoryName" },
+                values: new object[,]
+                {
+                    { 1, "Dog" },
+                    { 2, "Cat" },
+                    { 3, "rabbit" }
                 });
 
             migrationBuilder.InsertData(
@@ -145,6 +198,21 @@ namespace LapkaBackend.Infrastructure.Migrations
                 column: "ShelterId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Photos_AnimalId",
+                table: "Photos",
+                column: "AnimalId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reactions_AnimalId",
+                table: "Reactions",
+                column: "AnimalId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reactions_UserId",
+                table: "Reactions",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_RoleId",
                 table: "Users",
                 column: "RoleId");
@@ -153,6 +221,12 @@ namespace LapkaBackend.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Photos");
+
+            migrationBuilder.DropTable(
+                name: "Reactions");
+
             migrationBuilder.DropTable(
                 name: "Animals");
 

@@ -13,10 +13,15 @@ namespace LapkaBackend.Domain.Entities
         public string RefreshToken { get; set; } = string.Empty;
         public string? VerificationToken { get; set; }
         public DateTime? VerifiedAt { get; set; }
-        public int? RoleId { get; set; }
+
         [ForeignKey("RoleId")]
+        public int? RoleId { get; set; }
         public virtual Role? Role { get; set; }
+
         public Guid ShelterId { get; set; }
+
+        public virtual List<Reaction>? Reactions { get; set; }
+
         public string LoginProvider { get; set; } = string.Empty;
         public string ProfilePicture { get; set; } = string.Empty;
         
