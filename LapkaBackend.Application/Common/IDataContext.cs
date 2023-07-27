@@ -8,6 +8,9 @@ namespace LapkaBackend.Application.Common
         public DbSet<User> Users { get; }
         public DbSet<Shelter> Shelters { get; }
         public DbSet<Role> Roles { get; }
+        public DbSet<Animal> Animals { get; }
+        public DbSet<AnimalCategory> AnimalCategories { get; }
+        public DbSet<Photo> Photos { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

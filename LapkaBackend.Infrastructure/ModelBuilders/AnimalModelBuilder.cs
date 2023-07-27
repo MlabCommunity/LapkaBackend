@@ -33,9 +33,6 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 .HasColumnType("decimal(5, 2)")
                 .IsRequired();
 
-                a.Property(x => x.PhotoName)
-                .IsRequired();
-
                 a.Property(x => x.Description)
                 .IsRequired();
 

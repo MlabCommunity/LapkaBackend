@@ -1,5 +1,7 @@
-﻿using LapkaBackend.Application.Functions.Queries;
+﻿using LapkaBackend.Application.Functions.Posts;
+using LapkaBackend.Application.Functions.Queries;
 using LapkaBackend.Application.Interfaces;
+using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -19,11 +21,40 @@ namespace LapkaBackend.API.Controllers
             _mediator = mediator;
         }
 
+
         /// <summary>
-        ///     Pobiera dane schroniska
+        ///     update shelter
+        /// </summary>
+        [HttpPut("/shelters{shelterId}")]
+        //[Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateShelter([FromRoute] Guid shelterId, UpdateShelterRequest request)
+        {
+            var query = new UpdateShelterCommand(request, shelterId);
+            await _mediator.Send(query);
+
+            return NoContent();
+        }
+
+        /// <summary>
+        ///     Zwrócenie listy schronisk
+        /// </summary>
+        [HttpGet("/shelters")]
+        //[Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetListOfShelters()
+        {
+            var query = new GetListOfSheltersQuery();
+            return Ok(await _mediator.Send(query));
+        }
+
+        /// <summary>
+        ///     Pobranie danych schroniska
         /// </summary>
         [HttpGet("/shelters/details/{shelterId}")]
-        //[Authorize(Roles = "SuperAdmin")]
+        //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetShelter([FromRoute] Guid shelterId)
@@ -31,5 +62,20 @@ namespace LapkaBackend.API.Controllers
             var query = new GetShelterQuery(shelterId);
             return Ok(await _mediator.Send(query)); 
         }
+
+        /// <summary>
+        ///     Utworzenie karty psa do shroniska
+        /// </summary>
+        [HttpGet("/shelters/cards/dog")]
+        //[Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> CreateDogCart(DogCard dogCard)
+        {
+            var query = new CreateDogCartCommand(dogCard);
+            await _mediator.Send(query);
+            return NoContent();
+        }
+
     }
 }
