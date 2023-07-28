@@ -90,7 +90,11 @@ internal class Program
             {
                 opt.SuppressMapClientErrors = true;
             });
+
+        builder.Services.AddHealthChecks();
         var app = builder.Build();
+
+        app.MapHealthChecks("/healthcheck");
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
