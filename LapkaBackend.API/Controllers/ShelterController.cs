@@ -119,7 +119,58 @@ namespace LapkaBackend.API.Controllers
             return NoContent();
         }
 
-        
+        // Endpointy do zwracania wyświetleń zwierząt, wyświetlenia będą się dodawać w endpoincie /shelters/cards/{petId}
+        ///// <summary>
+        /////     liczba wyświetleneń kat zwierząt pogrupowana wedłóg miesięcy w roku
+        ///// </summary>
+        //[HttpPost("/shelters/cards/archive/{petId}")]
+        ////[Authorize(Roles = "Shelter")]
+        //[ProducesResponseType(StatusCodes.Status204NoContent)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+        //public async Task<IActionResult> AddPetToArchive([FromRoute] Guid petId)
+        //{
+        //    var query = new AddPetToArchiveCommand(petId);
+        //    await _mediator.Send(query);
+        //    return NoContent();
+        //}
 
+        /// <summary>
+        ///     Update karty zwierzęcia
+        /// </summary>
+        [HttpPut("/shelters/cards")]
+        //[Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdatePet(UpdatePetCommand petToUpdateRequest)
+        {
+            await _mediator.Send(petToUpdateRequest);
+            return NoContent();
+        }
+
+        /// <summary>
+        ///     Wyświetlenie kart zwierząt danego schroniska z podziałem na strony
+        /// </summary>
+        [HttpGet("/shelters/cards")]
+        //[Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PetList(PetListQuery petListQuery)
+        {
+            await _mediator.Send(petListQuery);
+            return NoContent();
+        }
+
+        /// <summary>
+        ///     Usunięcie karty zwierzęcia
+        /// </summary>
+        [HttpDelete("/shelters/cards/{petId}")]
+        //[Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DeletePet([FromRoute] Guid petId)
+        {
+            var query = new AddPetToArchiveCommand(petId);
+            await _mediator.Send(query);
+            return NoContent();
+        }
     }
 }

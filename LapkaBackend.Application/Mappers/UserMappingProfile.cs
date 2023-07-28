@@ -30,4 +30,23 @@ namespace LapkaBackend.Application.Mappers
         }
 
     }
+
+    public class PetInListMappingProfile : Profile
+    {
+        public PetInListMappingProfile()
+        {
+            CreateMap<Animal, PetInListDto>()
+                .ForMember(a => a.Color, c => c.MapFrom(c => c.Marking))
+                .ForMember(a => a.ProfilePhoto, c => c.MapFrom(c => c.Species))
+                .ForMember(a => a.Photos, c => c.MapFrom(c => c.Species))
+  .ForMember(a => a.TotalPages,c=c.)
+            }
+                 //.ForMember(a=>a.TotalPages)
+                 //.ForMember(a=>a.TotalItemsCount)
+
+
+
+             }
+
+    }
 }

@@ -14,9 +14,16 @@ namespace LapkaBackend.Application.Functions.Posts
 {
     public record AddPetToArchiveCommand : IRequest
     {
+        private string petId;
+
         public AddPetToArchiveCommand(Guid petId)
         {
             PetId = petId;
+        }
+
+        public AddPetToArchiveCommand(string petId)
+        {
+            this.petId = petId;
         }
 
         public Guid PetId { get; set; }

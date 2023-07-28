@@ -16,6 +16,7 @@ namespace LapkaBackend.Domain.Entities
         public string Marking { get; set; } = string.Empty;
         public decimal Weight { get; set; }
         public string Description { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
         public bool IsSterilized { get; set; }
         public bool IsVisible { get; set; }
         public int Months { get; set; }

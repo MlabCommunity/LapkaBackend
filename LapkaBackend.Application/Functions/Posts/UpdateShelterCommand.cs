@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Functions.Posts
 {
+    //public record DupaRecord(int x, string y, float z) : IRequest;
+    //var x = _dbContext.Animals.OrderBy(x => x.Name).Skip(100).Take(20).ToList();
     public record UpdateShelterCommand:IRequest
     {
 
@@ -59,7 +61,9 @@ namespace LapkaBackend.Application.Functions.Posts
         }
 
         public async Task Handle(UpdateShelterCommand request, CancellationToken cancellationToken)
-        {           
+        {
+            
+
             var result = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == request.ShelterId);
 
             if (result is null)
