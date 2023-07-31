@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using LapkaBackend.Application.Common;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
@@ -26,16 +28,32 @@ namespace LapkaBackend.Application.Functions.Queries
 
         public async Task<List<PetInListDto>> Handle(PetListQuery request, CancellationToken cancellationToken)
         {
-            
-            //elements / request.pageSize = numberOfPages
-            var FoundAnimals = _dbContext.Animals.OrderBy(x => x.Name).Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize).ToList();
-            //var PetInListDto = _mapper.Map<List<PetInListDto>>(FoundAnimals);
-            mapper.Map<Source, Dest>(src, opt => {
-                opt.BeforeMap((src, dest) => src.Value = src.Value + i);
-                opt.AfterMap((src, dest) => dest.Name = HttpContext.Current.Identity.Name);
+            int totalItemsCount = _dbContext.Animals.Count();
+            int numberOfPages =  (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
-                var PetInListDto = _mapper.Map<List<PetInListDto>>(FoundAnimals, opts => opts.AfterMap => PetInListDto. = HttpContext.Current.Identity.Name = request.PageNumber);
-            return PetInListDto;
+            var FoundAnimals =  _dbContext.Animals.Include(a => a.Photos).OrderBy(x => x.Name).Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize).ToList();
+
+            var PetsList = FoundAnimals.Select(p => new PetInListDto()
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Type = p.Species,
+                Gender = p.Gender,
+                Breed = p.Species,
+                Color = p.Marking,
+                Weight = (float)p.Weight,
+                //ProfilePhoto = p.Photos.FirstOrDefault(p => p.IsProfilePhoto = true),
+                //Photos = p.Photos.FindAll(p => p.IsProfilePhoto != true)
+                Months = p.Months,
+                CreatedAt = p.CreatedAt,
+                IsSterilized = p.IsSterilized,
+                Description = p.Description,
+                TotalPages = numberOfPages,
+                TotalItemsCount = totalItemsCount
+
+            });
+
+            return PetsList.ToList();
         }
     }
 

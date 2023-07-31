@@ -32,6 +32,6 @@ namespace LapkaBackend.Domain.Entities
 
         public virtual List<Reaction>? Reactions { get; set; }
 
-
+        public int Views { get; set; }
     }
 }

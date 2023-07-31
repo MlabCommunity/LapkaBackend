@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
+using LapkaBackend.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -13,16 +14,8 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Functions.Posts
 {
-    public record DeletePetCommand:IRequest
-    {
-        [Required]
-        public string PetId { get; set; } = string.Empty;
+    public record DeletePetCommand(string PetId) :IRequest;
 
-       public  DeletePetCommand(string Id)
-       {
-            PetId = Id;
-       }
-    }
 
     public class DeletePetCommandHandler : IRequestHandler<DeletePetCommand>
     {
@@ -44,8 +37,10 @@ namespace LapkaBackend.Application.Functions.Posts
                 if (result is null)
                 {
                     throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
-                    
                 }
+
+                var animalPhotos = _dbContext.Photos.Where(p => p.AnimalId == result.Id).ToList();
+                _dbContext.Photos.RemoveRange(animalPhotos);
 
                 _dbContext.Animals.Remove(result);
                 await _dbContext.SaveChangesAsync();
