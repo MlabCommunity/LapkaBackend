@@ -48,7 +48,7 @@ public class StorageController : Controller
     ///     Dodawanie zdjęcia do 5MB (.jpg, .jpeg, .bmp, .png) i zwrócenie jego identyfikatora. Dostępne dla zalogowanego użytkownika.
     /// </summary>
     [HttpPost("picture")]
-    //[Authorize(Roles = "User")]
+    [Authorize(Roles = "User")]
     [RequestSizeLimit(5242880)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -101,6 +101,36 @@ public class StorageController : Controller
     public async Task<ActionResult> UpdateFileUser([Required] IFormFile file, [Required] Guid id)
     {
         await _blobService.UpdateFileAsUserAsync(file, id);
+
+        return NoContent();
+    }
+    
+    /// <summary>
+    ///     Edytowanie nazwy plikuu o wskazanym Id 
+    /// </summary>
+    [HttpPatch("name/{id}")]
+    [Authorize(Roles = "User, Shelter")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> UpdateFileName([Required] string newName, [Required] Guid id)
+    {
+        await _blobService.UpdateFileName(id, newName ,new Guid(HttpContext.User.FindFirstValue("userId")!));
+
+        return NoContent();
+    }
+
+    /// <summary>
+    ///     Usuwanie listy plików o wskazanych Id.
+    /// </summary>
+    [HttpDelete]
+    [Authorize(Roles = "Shelter")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> DeleteListOfFiles([Required][FromBody] List<string> filesIds)
+    {
+        await _blobService.DeleteListOfFiles(filesIds);
 
         return NoContent();
     }

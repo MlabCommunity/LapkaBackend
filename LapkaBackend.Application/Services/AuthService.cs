@@ -38,19 +38,17 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_email", "User with this email already exists");
             }
-
-            var role = _dbContext.Roles.First(r => r.RoleName == Roles.User.ToString());
-
-            var newUser = new User()
+            
+            var newUser = new User
             {
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Email = request.EmailAddress,
                 Password = request.Password,
                 VerificationToken = CreateRandomToken(),
-                RefreshToken = GenerateRefreshToken(),
+                RefreshToken = CreateRefreshToken(),
                 CreatedAt = DateTime.Now,
-                Role = role
+                Role = _dbContext.Roles.First(r => r.RoleName == Roles.User.ToString())
             };
 
             await _dbContext.Users.AddAsync(newUser);
@@ -99,7 +97,7 @@ namespace LapkaBackend.Application.Services
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),
-                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : GenerateRefreshToken()
+                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : CreateRefreshToken()
             };
         }
 
@@ -111,9 +109,9 @@ namespace LapkaBackend.Application.Services
 
             if (result == null)
             {
-                throw new BadRequestException("invalid_mail", "User not found");
+                throw new BadRequestException("invalid_email", "User not found");
             }
-            if (result.Role!.RoleName.ToUpper() != "SHELTER" && result.Role.RoleName.ToUpper() != "WORKER")
+            if (result.Role!.RoleName != Roles.Shelter.ToString() && result.Role.RoleName != Roles.Worker.ToString())
             {
                 throw new BadRequestException("", "You are not Shelter!");
             }
@@ -127,7 +125,7 @@ namespace LapkaBackend.Application.Services
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),
-                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : GenerateRefreshToken()
+                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : CreateRefreshToken()
             };
         }
 
@@ -145,12 +143,12 @@ namespace LapkaBackend.Application.Services
 
             if (user == null)
             {
-                throw new BadRequestException("", "User doesn't exists");
+                throw new BadRequestException("invalid_email", "User doesn't exists");
             }
 
             var role = await _dbContext.Roles.FirstAsync(x => x.Id == user.RoleId);
 
-            List<Claim> claims = new List<Claim>()
+            List<Claim> claims = new List<Claim>
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
@@ -199,7 +197,7 @@ namespace LapkaBackend.Application.Services
             return jwt;
         }
 
-        public string GenerateRefreshToken()
+        public string CreateRefreshToken()
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration.GetSection("AppSettings:Token").Value!));
@@ -219,22 +217,6 @@ namespace LapkaBackend.Application.Services
         private string CreateRandomToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
-        }
-
-        public async Task SaveRefreshToken(LoginRequest request, string newRefreshToken)
-        {
-            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
-
-            if (result is null)
-            {
-                throw new BadRequestException("invalid_email", "User doesn't exists");
-            }
-
-            result.RefreshToken = newRefreshToken;
-
-            _dbContext.Users.Update(result);
-
-            await _dbContext.SaveChangesAsync();
         }
 
         public bool IsTokenValid(string token)
@@ -261,9 +243,9 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_token", "Refresh Token is invalid");
             }
-                result.RefreshToken = "";
-                _dbContext.Users.Update(result);
-                await _dbContext.SaveChangesAsync();
+            result.RefreshToken = "";
+            _dbContext.Users.Update(result);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task RegisterShelter(ShelterWithUserRegistrationRequest request)
@@ -275,48 +257,48 @@ namespace LapkaBackend.Application.Services
 
             var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == Roles.Shelter.ToString());
 
-                var newShelter = new Shelter()
-                {
-                    OrganizationName = request.ShelterRequest.OrganizationName,
-                    Longtitude = request.ShelterRequest.Longitude,
-                    Latitude = request.ShelterRequest.Latitude,
-                    City = request.ShelterRequest.City,
-                    Street = request.ShelterRequest.Street,
-                    ZipCode = request.ShelterRequest.ZipCode,
-                    Nip = request.ShelterRequest.Nip,
-                    Krs = request.ShelterRequest.Krs,
-                    PhoneNumber = request.ShelterRequest.PhoneNumber,
-                };
+            var newShelter = new Shelter
+            {
+                OrganizationName = request.ShelterRequest.OrganizationName,
+                Longtitude = request.ShelterRequest.Longitude,
+                Latitude = request.ShelterRequest.Latitude,
+                City = request.ShelterRequest.City,
+                Street = request.ShelterRequest.Street,
+                ZipCode = request.ShelterRequest.ZipCode,
+                Nip = request.ShelterRequest.Nip,
+                Krs = request.ShelterRequest.Krs,
+                PhoneNumber = request.ShelterRequest.PhoneNumber,
+            };
 
-                await _dbContext.Shelters.AddAsync(newShelter);
+            await _dbContext.Shelters.AddAsync(newShelter);
 
-                var newUser = new User()
-                {
-                    FirstName = request.UserRequest.FirstName,
-                    LastName = request.UserRequest.LastName,
-                    Email = request.UserRequest.EmailAddress,
-                    Password = request.UserRequest.Password,
-                    RefreshToken = GenerateRefreshToken(),
-                    VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
-                    CreatedAt = DateTime.Now,
-                    Role = roleUser,
-                    ShelterId = newShelter.Id
-                };
+            var newUser = new User
+            {
+                FirstName = request.UserRequest.FirstName,
+                LastName = request.UserRequest.LastName,
+                Email = request.UserRequest.EmailAddress,
+                Password = request.UserRequest.Password,
+                RefreshToken = CreateRefreshToken(),
+                VerificationToken = CreateRandomToken(),
+                CreatedAt = DateTime.Now,
+                Role = roleUser,
+                ShelterId = newShelter.Id
+            };
 
-                await _dbContext.Users.AddAsync(newUser);
-                await _dbContext.SaveChangesAsync();
+            await _dbContext.Users.AddAsync(newUser);
+            await _dbContext.SaveChangesAsync();
 
-                await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
+            await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
         }
        
 
         public async Task ResetPassword(UserEmailRequest request)
         {
-            string baseUrl = "https://localhost:7214";
-            string token = CreateSetNewPasswordToken(request.Email);
-            string endpoint = $"/Auth/setPassword/{token}";
+            var baseUrl = "https://localhost:7214";
+            var token = CreateSetNewPasswordToken(request.Email);
+            var endpoint = $"/Auth/setPassword/{token}";
 
-            string link = $"{baseUrl}{endpoint}";
+            var link = $"{baseUrl}{endpoint}";
 
             MailRequest mailRequest = new()
             {
@@ -331,7 +313,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token)
         {
-            string? email = VerifyToken(token);
+            var email = VerifyToken(token);
             if (email == null)
             {
                 throw new BadRequestException("invalid_token", "Token is invalid");
@@ -395,17 +377,11 @@ namespace LapkaBackend.Application.Services
 
             try
             {
-                SecurityToken validatedToken;
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
 
                 var email = principal.FindFirst(ClaimTypes.Email)?.Value;
                 User? user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);
-                if (user == null)
-                {
-                    return null;
-                }
-
-                return email;
+                return user == null ? null : email;
             }
             catch
             {

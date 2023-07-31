@@ -17,6 +17,7 @@ namespace LapkaBackend.Application.Interfaces
         Task SetNewEmail(string id, UpdateUserEmailRequest request);
         Task<GetCurrentUserDataQueryResult> GetLoggedUser(string id);
         Task VerifyEmail(string token);
+        Task DeleteProfilePicture(string id);
 
     }
 }

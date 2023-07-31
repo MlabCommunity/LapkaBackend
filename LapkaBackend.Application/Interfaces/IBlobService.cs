@@ -12,6 +12,10 @@ public interface IBlobService
     Task<string> UploadFileAsShelterAsync(IFormFile file, Guid parentId);
     Task DeleteFileAsync(Guid id);
     Task<string> GetFileUrlAsync(Guid id);
-    Task UpdateFileAsUserAsync(IFormFile file, Guid id);
+    Task UpdateFileAsUserAsync(IFormFile file, Guid pictureId);
     Task UpdateFileAsShelterAsync(IFormFile file, Guid id);
+    Task DeleteListOfFiles(List<string> ids);
+    Task UpdateFileName(Guid id, string newName, Guid userId);
+
+    public Task<FormFile> ConvertByte64ToFile(string fileString, string fileName);
 }

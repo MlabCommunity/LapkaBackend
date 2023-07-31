@@ -15,11 +15,13 @@ namespace LapkaBackend.Application.Services
     {
         private readonly IDataContext _dbContext;
         private readonly IEmailService _emailService;
+        private readonly IBlobService _blobService;
 
-        public UserService(IDataContext context, IEmailService emailService)
+        public UserService(IDataContext context, IEmailService emailService, IBlobService blobService)
         {
             _dbContext = context;
             _emailService = emailService;
+            _blobService = blobService;
         }
 
         public async Task<List<User>> GetAllUsers()
@@ -64,9 +66,13 @@ namespace LapkaBackend.Application.Services
 
             result.FirstName = request.FirstName;
             result.LastName = request.LastName;
-            //TODO: odkomentować po dodaniu profilepicture
-            //result.ProfilePicture = request.ProfilePicture;
+            if (request.ProfilePicture is not null)
+            {
+                var fileName = (await _dbContext.Blobs.FirstAsync(x => x.Id.ToString().Equals(result.ProfilePicture))).UploadName;
+                var newFile = await _blobService.ConvertByte64ToFile(request.ProfilePicture!, fileName.Split(".")[0]);
+                await _blobService.UpdateFileAsUserAsync(newFile, new Guid(result.ProfilePicture));
 
+            }
             _dbContext.Users.Update(result);
 
             await _dbContext.SaveChangesAsync();
@@ -178,6 +184,28 @@ namespace LapkaBackend.Application.Services
             user.VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
             user.VerifiedAt = DateTime.Now;
             _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+        }
+        
+        public async Task DeleteProfilePicture(string id)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+
+            if (user is null)
+            {
+                throw new BadRequestException("invalid_user","User doesn't exists");
+            }
+
+            var file = await _dbContext.Blobs.FirstOrDefaultAsync(x => x.Id.ToString().Equals(user.ProfilePicture));
+
+            if (file is null)
+            {
+                throw new BadRequestException("invalid_file","User doesn't have profile picture");
+            }
+            
+            user.ProfilePicture = String.Empty;
+            _dbContext.Users.Update(user);
+            await _blobService.DeleteFileAsync(file.Id);
             await _dbContext.SaveChangesAsync();
         }
     }

@@ -6,6 +6,7 @@ using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
+using LapkaBackend.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
@@ -39,7 +40,7 @@ public class ExternalAuthService : IExternalAuthService
             var user = _dbContext.Users.FirstOrDefault(u => u.Email == payload.Email);
             if (user != null)
             {
-                user.RefreshToken = _authService.GenerateRefreshToken();
+                user.RefreshToken = _authService.CreateRefreshToken();
                 _dbContext.Users.Update(user);
                 await _dbContext.SaveChangesAsync();
                 return new LoginResultWithRoleDto
@@ -56,8 +57,8 @@ public class ExternalAuthService : IExternalAuthService
                 LastName = payload.FamilyName,
                 Email = payload.Email,
                 CreatedAt = DateTime.UtcNow,
-                RefreshToken = _authService.GenerateRefreshToken(),
-                Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "User")!
+                RefreshToken = _authService.CreateRefreshToken(),
+                Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == Roles.User.ToString())!
             };
             _dbContext.Users.Add(newGoogleUser);
             await _dbContext.SaveChangesAsync();
@@ -88,7 +89,7 @@ public class ExternalAuthService : IExternalAuthService
         var user = _dbContext.Users.FirstOrDefault(u => u.Email == jwtToken.Claims.FirstOrDefault(x => x.Type == "email")!.Value);
         if (user != null)
         {
-            user.RefreshToken = _authService.GenerateRefreshToken();
+            user.RefreshToken = _authService.CreateRefreshToken();
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
             return new LoginResultWithRoleDto
@@ -104,8 +105,8 @@ public class ExternalAuthService : IExternalAuthService
             LastName = jwtToken.Claims.FirstOrDefault(x => x.Type == "last_name")!.Value,
             Email = jwtToken.Claims.FirstOrDefault(x => x.Type == "email")!.Value,
             CreatedAt = DateTime.UtcNow,
-            RefreshToken = _authService.GenerateRefreshToken(),
-            Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "User")!
+            RefreshToken = _authService.CreateRefreshToken(),
+            Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == Roles.User.ToString())!
         };
         _dbContext.Users.Add(newFacebookUser);
         await _dbContext.SaveChangesAsync();
@@ -139,8 +140,8 @@ public class ExternalAuthService : IExternalAuthService
             return new LoginResultWithRoleDto()
             {
                 AccessToken = _authService.CreateAccessToken(foundUser),
-                RefreshToken = _authService.GenerateRefreshToken(),
-                Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "User")!.RoleName
+                RefreshToken = _authService.CreateRefreshToken(),
+                Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == Roles.User.ToString())!.RoleName
             };
         }
 
@@ -150,8 +151,8 @@ public class ExternalAuthService : IExternalAuthService
             LastName = lastName!,
             Email = emailUser,
             CreatedAt = DateTime.UtcNow,
-            RefreshToken = _authService.GenerateRefreshToken(),
-            Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "User")!
+            RefreshToken = _authService.CreateRefreshToken(),
+            Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == Roles.User.ToString())!
         };
 
         await _dbContext.Users.AddAsync(newAppleUser);
@@ -161,7 +162,7 @@ public class ExternalAuthService : IExternalAuthService
         {
             AccessToken = _authService.CreateAccessToken(newAppleUser),
             RefreshToken = newAppleUser.RefreshToken,
-            Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == "User")!.RoleName
+            Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == Roles.User.ToString())!.RoleName
         };
     }
     
