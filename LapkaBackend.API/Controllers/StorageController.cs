@@ -1,7 +1,6 @@
 ﻿using LapkaBackend.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
@@ -33,7 +32,7 @@ public class StorageController : Controller
     ///     Dodawanie pliku 1GB i zwrócenie jego identyfikatora. Dostępne dla schroniska.
     /// </summary>
     [HttpPost]
-    //[Authorize(Roles = "Shelter")]
+    [Authorize(Roles = "Shelter")]
     [RequestSizeLimit(1073741824)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -77,8 +76,8 @@ public class StorageController : Controller
     ///     Zastąpienie pliku o wskazanym Id nowym plikiem do 1GB 
     /// </summary>
     [HttpPut("{id}")]
+    [Authorize(Roles = "Shelter")]
     [RequestSizeLimit(1073741824)]
-    //[Authorize(Roles = "Shelter")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -93,8 +92,8 @@ public class StorageController : Controller
     ///     Zastąpienie zdjęcia o wskazanym Id nowym plikiem do 5MB 
     /// </summary>
     [HttpPut("picture/{id}")]
+    [Authorize(Roles = "User")]
     [RequestSizeLimit(5242880)]
-    //[Authorize(Roles = "User")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -106,7 +105,7 @@ public class StorageController : Controller
     }
     
     /// <summary>
-    ///     Edytowanie nazwy plikuu o wskazanym Id 
+    ///     Edytowanie nazwy pliku o wskazanym Id 
     /// </summary>
     [HttpPatch("name/{id}")]
     [Authorize(Roles = "User, Shelter")]

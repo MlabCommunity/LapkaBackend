@@ -19,7 +19,6 @@ public class ExternalAuth : Controller
     /// </summary>
     /// <response code="403">Available only for user with Google login provider.</response>
     [HttpPost("google")]
-    //[Authorize (Roles = "User")]
     [ProducesResponseType(typeof(LoginResultWithRoleDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -35,7 +34,6 @@ public class ExternalAuth : Controller
     /// </summary>
     /// <response code="403">Available only for user with Facebook login provider.</response>
     [HttpPost("facebook")]
-    //[Authorize (Roles = "User")]
     [ProducesResponseType(typeof(LoginResultWithRoleDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -51,7 +49,6 @@ public class ExternalAuth : Controller
     /// </summary>
     /// <response code="403">Available only for user with Apple login provider.</response>
     [HttpPost("apple")]
-    //[Authorize (Roles = "User")]
     [ProducesResponseType(typeof(LoginResultWithRoleDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
