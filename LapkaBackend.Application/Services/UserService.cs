@@ -55,7 +55,7 @@ namespace LapkaBackend.Application.Services
             return user;
         }
 
-        public async Task<User> UpdateUser(UpdateUserDataRequest request, string id)
+        public async Task UpdateUser(UpdateUserDataRequest request, string id)
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
@@ -66,18 +66,11 @@ namespace LapkaBackend.Application.Services
 
             result.FirstName = request.FirstName;
             result.LastName = request.LastName;
-            if (request.ProfilePicture is not null)
-            {
-                var fileName = (await _dbContext.Blobs.FirstAsync(x => x.Id.ToString().Equals(result.ProfilePicture))).UploadName;
-                var newFile = await _blobService.ConvertByte64ToFile(request.ProfilePicture!, fileName.Split(".")[0]);
-                await _blobService.UpdateFileAsUserAsync(newFile, new Guid(result.ProfilePicture));
-
-            }
+            await _blobService.UpdateFileAsUserAsync(request.ProfilePicture!, new Guid(result.ProfilePicture));
             _dbContext.Users.Update(result);
 
             await _dbContext.SaveChangesAsync();
 
-            return result;
         }
 
         public async Task DeleteUser(string id)

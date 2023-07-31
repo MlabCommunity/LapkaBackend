@@ -46,11 +46,12 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> UpdateUser(UpdateUserDataRequest request)
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> UpdateUser([FromForm]UpdateUserDataRequest request)
         {
-            var result = await _userService.UpdateUser(request, HttpContext.User.FindFirstValue("userId")!);
+            await _userService.UpdateUser(request, HttpContext.User.FindFirstValue("userId")!);
 
-            return Ok(result);
+            return NoContent();
         }
 
         /// <summary>

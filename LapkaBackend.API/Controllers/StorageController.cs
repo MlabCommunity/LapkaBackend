@@ -27,37 +27,23 @@ public class StorageController : Controller
     {
         return Ok(await _blobService.GetFileUrlAsync(id));
     }
-
+    
     /// <summary>
-    ///     Dodawanie pliku 1GB i zwrócenie jego identyfikatora. Dostępne dla schroniska.
+    ///     Zastąpienie pliku o wskazanym Id nowym plikiem do 15MB 
     /// </summary>
-    [HttpPost]
+    [HttpPut("{id}")]
     [Authorize(Roles = "Shelter")]
-    [RequestSizeLimit(1073741824)]
+    [RequestSizeLimit(15728640)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByShelter(IFormFile file)
+    public async Task<ActionResult> UpdateFileShelter([Required]IFormFile file, [Required]Guid id)
     {
-        return Ok(await _blobService.UploadFileAsShelterAsync(file, new Guid("0B9B21CE-717C-4F3A-A977-08DB8E7E7965")));
-    }
+        await _blobService.UpdateFileAsShelterAsync(file, id);
 
-    /// <summary>
-    ///     Dodawanie zdjęcia do 5MB (.jpg, .jpeg, .bmp, .png) i zwrócenie jego identyfikatora. Dostępne dla zalogowanego użytkownika.
-    /// </summary>
-    [HttpPost("picture")]
-    [Authorize(Roles = "User")]
-    [RequestSizeLimit(5242880)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByUser(IFormFile file)
-    {
-        return Ok(await _blobService.UploadFileAsUserAsync(file, new Guid(HttpContext.User.FindFirstValue("userId")!)));
+        return NoContent();
     }
-
+    
     /// <summary>
     ///     Usuwanie pliku o wskazanym Id. Użytkownik może usuwać pliki tylko za pośrednictwem innych serwisów. 
     /// </summary>
@@ -73,19 +59,31 @@ public class StorageController : Controller
     }
 
     /// <summary>
-    ///     Zastąpienie pliku o wskazanym Id nowym plikiem do 1GB 
+    ///     Dodawanie pliku 15MB i zwrócenie jego identyfikatora. Dostępne dla schroniska.
     /// </summary>
-    [HttpPut("{id}")]
+    [HttpPost]
     [Authorize(Roles = "Shelter")]
-    [RequestSizeLimit(1073741824)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [RequestSizeLimit(15728640)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> UpdateFileShelter([Required]IFormFile file, [Required]Guid id)
+    public async Task<ActionResult> SaveFileByShelter(IFormFile file)
     {
-        await _blobService.UpdateFileAsShelterAsync(file, id);
+        return Ok(await _blobService.UploadFileAsShelterAsync(file, new Guid("0B9B21CE-717C-4F3A-A977-08DB8E7E7965")));
+    }
 
-        return NoContent();
+    /// <summary>
+    ///     Dodawanie zdjęcia do 5MB (.jpg, .jpeg, .bmp, .png) i zwrócenie jego identyfikatora. Dostępne dla zalogowanego użytkownika.
+    /// </summary>
+    [HttpPost("picture")]
+    [Authorize(Roles = "User")]
+    [RequestSizeLimit(5242880)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> SaveFileByUser(IFormFile file)
+    {
+        return Ok(await _blobService.UploadFileAsUserAsync(file, new Guid(HttpContext.User.FindFirstValue("userId")!)));
     }
 
     /// <summary>

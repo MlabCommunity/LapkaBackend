@@ -9,7 +9,7 @@ namespace LapkaBackend.Application.Interfaces
         Task<List<User>> GetAllUsers();
         Task<GetUserDataByIdQueryResult> GetUserById(Guid id);
         Task<User> AddUser(User user);
-        Task<User> UpdateUser(UpdateUserDataRequest request, string id);
+        Task UpdateUser(UpdateUserDataRequest request, string id);
         Task DeleteUser(string id);
         Task<User> FindUserByRefreshToken(TokenRequest request);
         Task<User> FindUserByEmail(string email);

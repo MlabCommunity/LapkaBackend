@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace LapkaBackend.Application.Requests
 {
@@ -9,6 +10,6 @@ namespace LapkaBackend.Application.Requests
         [Required]
         public string LastName { get; set; } = null!;
         [Required]
-        public string? ProfilePicture { get; set; }
+        public IFormFile ProfilePicture { get; set; } = null!;
     }
 }
