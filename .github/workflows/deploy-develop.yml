@@ -50,5 +50,5 @@ jobs:
         with:
           app-name: 'lapka-api-dev'
           slot-name: 'production'
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_1234 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_984BB73F58364D7DA4BE6627BBC62AAD }}
           package: .
