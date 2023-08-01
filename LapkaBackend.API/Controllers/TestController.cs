@@ -25,7 +25,6 @@ public class TestController : ControllerBase
     {
         var role = new Role
         {
-            Id = -1,
             RoleName = "test"
         };
 
