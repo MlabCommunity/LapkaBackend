@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers;
 
+[Route("[controller]")]
+[ApiController]
 public class TestController : ControllerBase
 {
     private readonly IConfiguration _configuration;
