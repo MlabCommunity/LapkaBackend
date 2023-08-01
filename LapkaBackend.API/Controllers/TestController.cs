@@ -17,10 +17,6 @@ public class TestController : ControllerBase
         _context = context;
     }
 
-    [HttpGet("api/test/conn-string")]
-    public async Task<IActionResult> GetConnectionString()
-        => Ok(_configuration.GetConnectionString("MySql"));
-
     [HttpGet("api/test/db-health-check")]
     public async Task<IActionResult> DataBaseHealthCheck()
     {

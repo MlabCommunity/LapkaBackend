@@ -10,8 +10,10 @@ using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Mappers;
 using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
+using LapkaBackend.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
@@ -93,6 +95,12 @@ internal class Program
 
         builder.Services.AddHealthChecks();
         var app = builder.Build();
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+            db.Database.MigrateAsync();
+        }
 
         app.MapHealthChecks("/healthcheck");
 
