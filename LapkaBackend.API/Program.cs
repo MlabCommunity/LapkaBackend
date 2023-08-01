@@ -99,7 +99,7 @@ internal class Program
         using (var scope = app.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-            db.Database.MigrateAsync();
+            db.Database.Migrate();
         }
 
         app.MapHealthChecks("/healthcheck");
