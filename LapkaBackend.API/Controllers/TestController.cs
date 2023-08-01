@@ -1,4 +1,5 @@
 ﻿using Azure.Identity;
+using Azure.Storage;
 using Azure.Storage.Blobs;
 using LapkaBackend.Application.Common;
 using LapkaBackend.Domain.Entities;
@@ -39,8 +40,13 @@ public class TestController : ControllerBase
     [HttpGet("api/test/storage-health-check")]
     public async Task<IActionResult> StorageHealthCheck()
     {
-        var containerEndpoint = $"https://{_configuration["StorageName"]}.blob.core.windows.net/test";
-        var container = new BlobContainerClient(new Uri(containerEndpoint), new DefaultAzureCredential());
+        var sharedKeyCredential = new StorageSharedKeyCredential(
+            _configuration["Storage:Name"],
+            _configuration["Storage:Key"]);
+        
+        var containerEndpoint = $"https://{_configuration["Storage:Name"]}.blob.core.windows.net/test";
+        
+        var container = new BlobContainerClient(new Uri(containerEndpoint), sharedKeyCredential);
 
         return Ok(await container.ExistsAsync());
     }
