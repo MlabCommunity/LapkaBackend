@@ -34,3 +34,5 @@ jobs:
         push: true
         tags: mobidev.azurecr.io/mlab-lapka-backend:${{ github.sha }}
         file: Dockerfile
+      env:
+        ConnectionStrings.MySql: ${{ secrets.SQL_CONNECTION_STRING_DEV}}
