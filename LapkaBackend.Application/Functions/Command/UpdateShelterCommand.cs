@@ -11,10 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LapkaBackend.Application.Functions.Posts
+namespace LapkaBackend.Application.Functions.Command
 {
-    //public record DupaRecord(int x, string y, float z) : IRequest;
-    //var x = _dbContext.Animals.OrderBy(x => x.Name).Skip(100).Take(20).ToList();
     public record UpdateShelterCommand:IRequest
     {
 

@@ -33,6 +33,7 @@ namespace LapkaBackend.Infrastructure
             AnimalModelBuilder.BuildAnimalModel(modelBuilder);
             AnimalCategoryModelBuilder.BuildAnimalCategoryModel(modelBuilder);
             ReactionModelBuilder.BuildReactionModel(modelBuilder);
+            AnimalViewsModelBuilder.BuildAnimalViewModel(modelBuilder);
         }
 
         public static void Seed(this ModelBuilder modelBuilder)

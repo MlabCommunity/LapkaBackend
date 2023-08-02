@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class ChangingPhotosTable : Migration
+    public partial class NewTableAnimalViews : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -98,9 +98,11 @@ namespace LapkaBackend.Infrastructure.Migrations
                     Marking = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Weight = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsSterilized = table.Column<bool>(type: "bit", nullable: false),
                     IsVisible = table.Column<bool>(type: "bit", nullable: false),
                     Months = table.Column<int>(type: "int", nullable: false),
+                    IsArchival = table.Column<bool>(type: "bit", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     ShelterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
@@ -118,6 +120,32 @@ namespace LapkaBackend.Infrastructure.Migrations
                         column: x => x.ShelterId,
                         principalTable: "Shelters",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AnimalViews",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AnimalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ViewDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AnimalViews", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AnimalViews_Animals_AnimalId",
+                        column: x => x.AnimalId,
+                        principalTable: "Animals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AnimalViews_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -171,7 +199,8 @@ namespace LapkaBackend.Infrastructure.Migrations
                 {
                     { 1, "Dog" },
                     { 2, "Cat" },
-                    { 3, "rabbit" }
+                    { 3, "rabbit" },
+                    { 4, "Undefined" }
                 });
 
             migrationBuilder.InsertData(
@@ -198,6 +227,16 @@ namespace LapkaBackend.Infrastructure.Migrations
                 column: "ShelterId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AnimalViews_AnimalId",
+                table: "AnimalViews",
+                column: "AnimalId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AnimalViews_UserId",
+                table: "AnimalViews",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Photos_AnimalId",
                 table: "Photos",
                 column: "AnimalId");
@@ -221,6 +260,9 @@ namespace LapkaBackend.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AnimalViews");
+
             migrationBuilder.DropTable(
                 name: "Photos");
 

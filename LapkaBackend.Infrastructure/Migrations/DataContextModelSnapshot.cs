@@ -120,6 +120,30 @@ namespace LapkaBackend.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("LapkaBackend.Domain.Entities.AnimalView", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AnimalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ViewDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnimalId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AnimalViews");
+                });
+
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Photo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -340,6 +364,25 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.Navigation("Shelter");
                 });
 
+            modelBuilder.Entity("LapkaBackend.Domain.Entities.AnimalView", b =>
+                {
+                    b.HasOne("LapkaBackend.Domain.Entities.Animal", "Animal")
+                        .WithMany("AnimalViews")
+                        .HasForeignKey("AnimalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LapkaBackend.Domain.Entities.User", "User")
+                        .WithMany("AnimalViews")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Animal");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Photo", b =>
                 {
                     b.HasOne("LapkaBackend.Domain.Entities.Animal", "Animal")
@@ -379,6 +422,8 @@ namespace LapkaBackend.Infrastructure.Migrations
 
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Animal", b =>
                 {
+                    b.Navigation("AnimalViews");
+
                     b.Navigation("Photos");
 
                     b.Navigation("Reactions");
@@ -401,6 +446,8 @@ namespace LapkaBackend.Infrastructure.Migrations
 
             modelBuilder.Entity("LapkaBackend.Domain.Entities.User", b =>
                 {
+                    b.Navigation("AnimalViews");
+
                     b.Navigation("Reactions");
                 });
 #pragma warning restore 612, 618

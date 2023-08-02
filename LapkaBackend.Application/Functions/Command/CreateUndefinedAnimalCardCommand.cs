@@ -12,27 +12,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LapkaBackend.Application.Functions.Posts
+namespace LapkaBackend.Application.Functions.Command
 {
-    public record CreateDogCardCommand:IRequest
+    public record CreateUndefinedAnimalCardCommand : IRequest
     {
-        public CreateDogCardCommand(DogCard dogCard)
+        public CreateUndefinedAnimalCardCommand(UndefinedAnimalCard UndefinedAnimalCard)
         {
-            Name = dogCard.Name;
-            ProfilePhoto = dogCard.ProfilePhoto;
-            Gender = dogCard.Gender;
-            Description = dogCard.Description;
-            IsVisible = dogCard.IsVisible;
-            Months = dogCard.Months;
-            IsSterilized = dogCard.IsSterilized;
-            Weight = dogCard.Weight;
-            DogColor = dogCard.DogColor;
-            DogBreed = dogCard.DogBreed;
-            Photos = dogCard.Photos;
-            ShelterId = dogCard.ShelterId;
+            Name = UndefinedAnimalCard.Name;
+            ProfilePhoto = UndefinedAnimalCard.ProfilePhoto;
+            Gender = UndefinedAnimalCard.Gender;
+            Description = UndefinedAnimalCard.Description;
+            IsVisible = UndefinedAnimalCard.IsVisible;
+            Months = UndefinedAnimalCard.Months;
+            IsSterilized = UndefinedAnimalCard.IsSterilized;
+            Weight = UndefinedAnimalCard.Weight;
+            Photos = UndefinedAnimalCard.Photos;
+            ShelterId = UndefinedAnimalCard.ShelterId;
         }
 
         public string Name { get; set; } = null!;
+        public string PetIdentifier { get; set; } = null!;
         public string ProfilePhoto { get; set; } = null!;
         public string Gender { get; set; } = null!;
         public string Description { get; set; } = null!;
@@ -40,25 +39,23 @@ namespace LapkaBackend.Application.Functions.Posts
         public int Months { get; set; }
         public bool IsSterilized { get; set; }
         public decimal Weight { get; set; }
-        public string DogColor { get; set; } = null!;
-        public string DogBreed { get; set; } = null!;
         public string[] Photos { get; set; } = null!;
         public Guid ShelterId { get; set; }
     }
 
-    public class CreateDogCardCommandHandler : IRequestHandler<CreateDogCardCommand>
+    public class CreateUndefinedAnimalCardCommandHandler : IRequestHandler<CreateUndefinedAnimalCardCommand>
     {
         private readonly IDataContext _dbContext;
         private readonly IMapper _mapper;
 
-        public CreateDogCardCommandHandler(IDataContext dbContext, IMapper mapper)
+        public CreateUndefinedAnimalCardCommandHandler(IDataContext dbContext, IMapper mapper)
         {
 
             _dbContext = dbContext;
             _mapper = mapper;
         }
 
-        public async Task Handle(CreateDogCardCommand request, CancellationToken cancellationToken)
+        public async Task Handle(CreateUndefinedAnimalCardCommand request, CancellationToken cancellationToken)
         {
             var photosList = new List<Photo>();
             for (int i = 0; i < request.Photos.Length; i++)
@@ -67,7 +64,7 @@ namespace LapkaBackend.Application.Functions.Posts
             }
             photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
 
-            var animalCategory = _dbContext.AnimalCategories.First(r => r.CategoryName == AnimalCategories.Dog.ToString());
+            var animalCategory = _dbContext.AnimalCategories.First(r => r.CategoryName == AnimalCategories.Undefined.ToString());
             var Shelter = _dbContext.Shelters.FirstOrDefault(r => r.Id == request.ShelterId);
             if (Shelter == null)
             {
@@ -77,9 +74,7 @@ namespace LapkaBackend.Application.Functions.Posts
             Animal newAnimal = new()
             {
                 Name = request.Name,
-                Species = request.DogBreed,
                 Gender = request.Gender,
-                Marking = request.DogColor,
                 Weight = request.Weight,
                 Description = request.Description,
                 IsSterilized = request.IsSterilized,
@@ -91,11 +86,11 @@ namespace LapkaBackend.Application.Functions.Posts
             };
 
             await _dbContext.Animals.AddAsync(newAnimal);
-            await _dbContext.SaveChangesAsync(); 
+            await _dbContext.SaveChangesAsync();
         }
     }
 
-    public class DogCard
+    public class UndefinedAnimalCard
     {
         [Required]
         public string Name { get; set; } = null!;
@@ -114,15 +109,15 @@ namespace LapkaBackend.Application.Functions.Posts
         [Required]
         public decimal Weight { get; set; }
         [Required]
-        public string DogColor { get; set; } = null!;
-        [Required]
-        public string DogBreed { get; set; } = null!;
+        public string CatColor { get; set; } = null!;
         [Required]
         public string[] Photos { get; set; } = null!;
         [Required]
         public Guid ShelterId { get; set; }
-        
+
     }
 }
 
-    
+
+
+

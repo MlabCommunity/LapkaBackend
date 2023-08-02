@@ -2,6 +2,8 @@
 using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Functions.Queries;
 using LapkaBackend.Domain.Entities;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System.Drawing;
 
 namespace LapkaBackend.Application.Mappers
 {
@@ -31,24 +33,5 @@ namespace LapkaBackend.Application.Mappers
 
     }
 
-    /*
-    public class PetInListMappingProfile : Profile
-    {
-        public PetInListMappingProfile()
-        {
-            CreateMap<Animal, PetInListDto>()
-                .ForMember(a => a.Color, c => c.MapFrom(c => c.Marking))
-                .ForMember(a => a.ProfilePhoto, c => c.MapFrom(c => c.Species))
-                .ForMember(a => a.Photos, c => c.MapFrom(c => c.Species))
-                //.ForMember(a => a.TotalPages,c=>c.MapFrom)
-            }
-                 //.ForMember(a=>a.TotalPages)
-                 //.ForMember(a=>a.TotalItemsCount)
-
-
-
-             } 
-
-    } */
 
 }

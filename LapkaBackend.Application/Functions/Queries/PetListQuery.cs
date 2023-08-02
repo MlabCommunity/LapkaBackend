@@ -31,13 +31,18 @@ namespace LapkaBackend.Application.Functions.Queries
             int totalItemsCount = _dbContext.Animals.Count();
             int numberOfPages =  (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
-            var FoundAnimals =  _dbContext.Animals.Include(a => a.Photos).OrderBy(x => x.Name).Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize).ToList();
+            var FoundAnimals =  _dbContext.Animals
+                .Include(a => a.Photos).Include(a => a.AnimalCategory)
+                .Where(a => a.IsVisible)
+                .OrderBy(x => x.Name)
+                .Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize)
+                .ToList();
 
             var PetsList = FoundAnimals.Select(p => new PetInListDto()
             {
                 Id = p.Id,
                 Name = p.Name,
-                Type = p.Species,
+                Type = p.AnimalCategory.CategoryName,
                 Gender = p.Gender,
                 Breed = p.Species,
                 Color = p.Marking,

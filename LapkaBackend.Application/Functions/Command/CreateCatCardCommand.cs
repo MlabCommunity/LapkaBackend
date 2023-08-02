@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LapkaBackend.Application.Functions.Posts
+namespace LapkaBackend.Application.Functions.Command
 {
     public record CreateCatCardCommand : IRequest
     {

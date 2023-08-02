@@ -24,6 +24,7 @@ namespace LapkaBackend.Domain.Entities
 
         public string LoginProvider { get; set; } = string.Empty;
         public string ProfilePicture { get; set; } = string.Empty;
-        
+
+        public virtual List<AnimalView>? AnimalViews { get; set; }
     }
 }
