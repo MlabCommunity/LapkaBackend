@@ -48,14 +48,14 @@ public class BlobService : IBlobService
         {
             Id = updateId ?? Guid.NewGuid(),
             UploadName = file.FileName,
-            BlobName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName),
+            BlobName = Guid.NewGuid() + Path.GetExtension(file.FileName),
             FileType = file.ContentType,
             ParentEntityId = parentId
         };
 
         await _dbContext.Blobs.AddAsync(blob);
         await _dbContext.SaveChangesAsync();
-        await _storageContext.UploadFileAsync(file, parentId, containerName, blob.BlobName);
+        await _storageContext.UploadFileAsync(file, containerName, blob.BlobName);
 
         return blob.Id.ToString();
     }
@@ -83,25 +83,19 @@ public class BlobService : IBlobService
         await _storageContext.DeleteFileAsync(file);
     }
 
-    public async Task<string> UploadFileAsUserAsync(IFormFile file, Guid parentId)
+    public async Task<string> UploadFileAsUserAsync(IFormFile file)
     {
         if (file.Length > _imageFileMaxSize)
         {
             throw new BadRequestException("invalid_file", "File too large, Exceeded 5MB");
         }
-        var user = await _dbContext.Users.FirstAsync(x => x.Id == parentId);
 
         if (!_pictureTypes.Contains(file.ContentType))
         {
             throw new BadRequestException("invalid_image", "Format of image is invalid");
         }
-
-        var pictureId = await UploadFileAsync(file, parentId, "lappka-img");
-        user.ProfilePicture = pictureId;
-
-        _dbContext.Users.Update(user);
-        await _dbContext.SaveChangesAsync();
-        return pictureId;
+        
+        return await UploadFileAsync(file, Guid.Empty, "lappka-img");
     }
 
     public async Task<string> UploadFileAsShelterAsync(IFormFile file, Guid parentId)

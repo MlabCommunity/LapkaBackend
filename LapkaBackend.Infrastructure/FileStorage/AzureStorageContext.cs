@@ -50,7 +50,7 @@ public class AzureStorageContext : IAzureStorageContext
         return blobClient.Uri.AbsoluteUri + "?" + sasToken;
     }
     
-    public async Task UploadFileAsync(IFormFile file, Guid parentId, string containerName, string fileName, Guid? updateId = null)
+    public async Task UploadFileAsync(IFormFile file, string containerName, string fileName)
     {
         var fileStream = new MemoryStream();
 

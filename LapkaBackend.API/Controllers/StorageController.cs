@@ -96,7 +96,7 @@ public class StorageController : Controller
             throw new UnauthorizezdException("invalid_token", "Invalid token");
         }
         
-        return Ok(await _blobService.UploadFileAsUserAsync(file, new Guid(user)));
+        return Ok(await _blobService.UploadFileAsUserAsync(file));
     }
 
     /// <summary>

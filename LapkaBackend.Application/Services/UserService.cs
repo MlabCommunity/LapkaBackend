@@ -64,9 +64,20 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
+            if (request.ProfilePicture is not null && request.ProfilePicture != result.ProfilePicture)
+            {
+                if (result.ProfilePicture is not "")
+                {
+                    await _blobService.DeleteFileAsync(new Guid(result.ProfilePicture));     
+                }
+                result.ProfilePicture = request.ProfilePicture;
+                var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePicture));
+                file.ParentEntityId = result.Id;
+
+            }
+
             result.FirstName = request.FirstName;
             result.LastName = request.LastName;
-            await _blobService.UpdateFileAsUserAsync(request.ProfilePicture!, new Guid(result.ProfilePicture));
             _dbContext.Users.Update(result);
 
             await _dbContext.SaveChangesAsync();

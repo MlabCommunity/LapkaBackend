@@ -26,8 +26,8 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UserRegister(UserRegistrationRequest request)
         {
-            
             await _authService.RegisterUser(request);
+            
             return NoContent();
         }
 
@@ -99,15 +99,9 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> RefreshAccesToken(UseRefreshTokenRequest request)
         {
-            //  TODO: Wyrzucić ify do Service na Exception
             if (_authService.IsTokenValid(request.AccessToken))
             {
                 return Ok(request.AccessToken);
-            }
-
-            if (!_authService.IsTokenValid(request.RefreshToken))
-            {
-                return Unauthorized("Token expired.");
             }
 
             var token = await _authService.RefreshAccessToken(request);

@@ -6,6 +6,6 @@ namespace LapkaBackend.Application.Common;
 public interface IAzureStorageContext
 {
     Task<string> GetFileUrlAsync(string fileName);
-    Task UploadFileAsync(IFormFile file, Guid parentId, string containerName, string fileName, Guid? updateId = null);
+    Task UploadFileAsync(IFormFile file, string containerName, string fileName);
     Task DeleteFileAsync(FileBlob file);
 }

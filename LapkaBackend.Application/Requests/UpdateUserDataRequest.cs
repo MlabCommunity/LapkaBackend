@@ -9,7 +9,6 @@ namespace LapkaBackend.Application.Requests
         public string FirstName { get; set; } = null!;
         [Required]
         public string LastName { get; set; } = null!;
-        [Required]
-        public IFormFile ProfilePicture { get; set; } = null!;
+        public string? ProfilePicture { get; set; }
     }
 }
