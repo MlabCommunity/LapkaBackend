@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -13,9 +14,9 @@ namespace LapkaBackend.Domain.Entities
         public string NameOfReaction { get; set; } = string.Empty;
 
         public Guid UserId { get; set; }
-        public virtual User User { get; set; }
+        public virtual required User User { get; set; }
 
         public Guid AnimalId { get; set; }
-        public virtual Animal Animal { get; set; }
+        public virtual required Animal Animal { get; set; }
     }
 }

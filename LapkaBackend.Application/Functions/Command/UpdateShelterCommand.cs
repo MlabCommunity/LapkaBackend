@@ -16,7 +16,7 @@ namespace LapkaBackend.Application.Functions.Command
     public record UpdateShelterCommand:IRequest
     {
 
-        public UpdateShelterCommand(UpdateShelterRequest request, Guid id)
+        public UpdateShelterCommand(UpdateShelterRequest request, string id)
         {
             OrganizationName = request.OrganizationName;
             Longitude = request.Longitude;
@@ -41,7 +41,7 @@ namespace LapkaBackend.Application.Functions.Command
         public string Krs { get; set; } = null!;
         public string PhoneNumber { get; set; } = null!;
 
-        public Guid ShelterId { get; set; }
+        public string ShelterId { get; set; }
     }
 
     
@@ -60,9 +60,9 @@ namespace LapkaBackend.Application.Functions.Command
 
         public async Task Handle(UpdateShelterCommand request, CancellationToken cancellationToken)
         {
-            
+            Guid shelterId = new Guid(request.ShelterId);
 
-            var result = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == request.ShelterId);
+            var result = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == shelterId);
 
             if (result is null)
             {

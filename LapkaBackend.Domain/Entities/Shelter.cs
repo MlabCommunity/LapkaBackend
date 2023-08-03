@@ -4,7 +4,7 @@
     {
         public Guid Id { get; set; }
         public string OrganizationName { get; set; } = null!;
-        public float Longtitude { get; set; } 
+        public float Longitude { get; set; } 
         public float Latitude { get; set; }
         public string City { get; set; } = null!;
         public string Street { get; set; } = null!;
@@ -13,5 +13,6 @@
         public string Krs { get; set; } = null!;
         public string PhoneNumber { get; set; } = null!;
         public virtual List<Animal>? Animals { get; set; }
+        public ShelterVolunteering? ShelterVolunteering { get; set; }
     }
 }

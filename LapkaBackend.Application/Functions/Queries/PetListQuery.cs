@@ -14,12 +14,12 @@ namespace LapkaBackend.Application.Functions.Queries
 {
     public record PetListQuery(int PageNumber, int PageSize) : IRequest<List<PetInListDto>>;
 
-    public class PetListCommandHandler : IRequestHandler<PetListQuery, List<PetInListDto>>
+    public class PetListQueryHandler : IRequestHandler<PetListQuery, List<PetInListDto>>
     {
         private readonly IDataContext _dbContext;
         private readonly IMapper _mapper;
 
-        public PetListCommandHandler(IDataContext dbContext, IMapper mapper)
+        public PetListQueryHandler(IDataContext dbContext, IMapper mapper)
         {
 
             _dbContext = dbContext;

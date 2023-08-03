@@ -13,6 +13,7 @@ namespace LapkaBackend.Application.Common
         public DbSet<Photo> Photos { get; }
         public DbSet<Reaction> Reactions { get; }
         public DbSet<AnimalView> AnimalViews { get; }
+        public DbSet<ShelterVolunteering> SheltersVolunteering { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

@@ -31,7 +31,7 @@ namespace LapkaBackend.API.Controllers
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateShelter([FromRoute] Guid shelterId, UpdateShelterRequest request)
+        public async Task<IActionResult> UpdateShelter([FromRoute] string shelterId, UpdateShelterRequest request)
         {
             var query = new UpdateShelterCommand(request, shelterId);
             await _mediator.Send(query);
@@ -258,19 +258,46 @@ namespace LapkaBackend.API.Controllers
             return NoContent();
         }
 
-        /*
+        /// <summary>
+        ///     Update danych dot. wolontariatu schroniska
+        /// </summary>
+        [HttpPut("/shelters/volunteering/update")]
+        //[Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateShelterVolunteering( UpdateShelterVolunteeringCommand updateShelterVolunteeringCommand)
+        {
+            await _mediator.Send(updateShelterVolunteeringCommand);
+            return NoContent();
+        }
+
+        /// <summary>
+        ///     Pobranie danych dot. wolontariatu schroniska
+        /// </summary>
+        [HttpGet("/shelters/volunteering/get/{shelterId}")]
+        //[Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetShelterVolunteering([FromRoute] string shelterId)
+        {
+            var query = new GetShelterVolunteeringQuery(shelterId);
+
+            return Ok(await _mediator.Send(query));
+        }
+
+        
         /// <summary>
         ///     Zwrócenie listy schronisk na podstawie długości i szerokości geograficznej
         /// </summary>
-        [HttpGet("/shelters/volunteers/{longitude}{latitude}")]
+        [HttpGet("/shelters/volunteers/")]
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetShelterByPosition([FromRoute] string longitude, [FromRoute] string latitude)
+        public async Task<IActionResult> GetShelterByPosition(GetShelterByPositionQuery getShelterByPositionQuery)
         {
-            var query = new GetShelterByPositionQuery(longitude, latitude);
+            //var query = new GetShelterByPositionQuery(longitude, latitude);
 
-            return Ok(await _mediator.Send(query));
-        }   */
+            return Ok(await _mediator.Send(getShelterByPositionQuery));
+        }   
 
     }
 }

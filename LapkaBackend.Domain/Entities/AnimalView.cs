@@ -13,11 +13,11 @@ namespace LapkaBackend.Domain.Entities
 
         [ForeignKey("AnimalId")]
         public Guid AnimalId { get; set; }
-        public virtual Animal Animal { get; set; }
+        public virtual required Animal Animal { get; set; }
 
         [ForeignKey("UserId")]
         public Guid UserId { get; set; }
-        public virtual User User { get; set; }
+        public virtual User? User { get; set; }
 
         public DateTime ViewDate { get; set; }
     }
