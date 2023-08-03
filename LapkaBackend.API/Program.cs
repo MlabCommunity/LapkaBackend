@@ -64,10 +64,6 @@ internal class Program
         builder.Services.AddInfrasturcture(builder.Configuration);
         builder.Services.AddAutoMapper(typeof(UserMappingProfile));
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-        builder.Services.Configure<FormOptions>(options =>
-        {
-            options.MultipartBodyLengthLimit = 1073741824;
-        });
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -105,6 +101,7 @@ internal class Program
             {
                 opt.SuppressMapClientErrors = true;
             });
+        
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

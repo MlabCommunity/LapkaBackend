@@ -4,6 +4,7 @@ using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Data;
 using LapkaBackend.Infrastructure.Email;
+using LapkaBackend.Infrastructure.FileStorage;
 using LapkaBackend.Infrastructure.ModelBuilders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,9 +18,8 @@ namespace LapkaBackend.Infrastructure
         public static void AddInfrasturcture(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddTransient<IDataContext, DataContext>();
+            services.AddTransient<IAzureStorageContext, AzureStorageContext>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
-            services.AddSingleton(_ =>
-                new BlobServiceClient(configuration.GetConnectionString("Azure")));
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("MySql"));

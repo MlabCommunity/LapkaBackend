@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using LapkaBackend.Application.Exceptions;
 
 namespace LapkaBackend.API.Controllers;
 
@@ -32,7 +33,7 @@ public class StorageController : Controller
     ///     Zastąpienie pliku o wskazanym Id nowym plikiem do 15MB 
     /// </summary>
     [HttpPut("{id}")]
-    [Authorize(Roles = "Shelter")]
+    [Authorize(Roles = "Shelter, SuperAdmin")]
     [RequestSizeLimit(15728640)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -62,35 +63,47 @@ public class StorageController : Controller
     ///     Dodawanie pliku 15MB i zwrócenie jego identyfikatora. Dostępne dla schroniska.
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Shelter")]
+    [Authorize(Roles = "Shelter, SuperAdmin")]
     [RequestSizeLimit(15728640)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> SaveFileByShelter(IFormFile file)
     {
-        return Ok(await _blobService.UploadFileAsShelterAsync(file, new Guid("0B9B21CE-717C-4F3A-A977-08DB8E7E7965")));
+        var user = HttpContext.User.FindFirstValue("userId");
+        if (user is null)
+        {
+            throw new UnauthorizezdException("invalid_token", "Invalid token");
+        }
+        
+        return Ok(await _blobService.UploadFileAsShelterAsync(file, new Guid(user)));
     }
 
     /// <summary>
     ///     Dodawanie zdjęcia do 5MB (.jpg, .jpeg, .bmp, .png) i zwrócenie jego identyfikatora. Dostępne dla zalogowanego użytkownika.
     /// </summary>
     [HttpPost("picture")]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User, Shelter, Admin, SuperAdmin, Worker")]
     [RequestSizeLimit(5242880)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> SaveFileByUser(IFormFile file)
     {
-        return Ok(await _blobService.UploadFileAsUserAsync(file, new Guid(HttpContext.User.FindFirstValue("userId")!)));
+        var user = HttpContext.User.FindFirstValue("userId");
+        if (user is null)
+        {
+            throw new UnauthorizezdException("invalid_token", "Invalid token");
+        }
+        
+        return Ok(await _blobService.UploadFileAsUserAsync(file, new Guid(user)));
     }
 
     /// <summary>
     ///     Zastąpienie zdjęcia o wskazanym Id nowym plikiem do 5MB 
     /// </summary>
     [HttpPut("picture/{id}")]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User, Shelter, Admin, SuperAdmin, Worker")]
     [RequestSizeLimit(5242880)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -106,13 +119,19 @@ public class StorageController : Controller
     ///     Edytowanie nazwy pliku o wskazanym Id 
     /// </summary>
     [HttpPatch("name/{id}")]
-    [Authorize(Roles = "User, Shelter")]
+    [Authorize(Roles = "User, Shelter, Admin, SuperAdmin, Worker")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UpdateFileName([Required] string newName, [Required] Guid id)
     {
-        await _blobService.UpdateFileName(id, newName ,new Guid(HttpContext.User.FindFirstValue("userId")!));
+        var user = HttpContext.User.FindFirstValue("userId");
+        if (user is null)
+        {
+            throw new UnauthorizezdException("invalid_token", "Invalid token");
+        }
+        
+        await _blobService.UpdateFileName(id, newName ,new Guid(user));
 
         return NoContent();
     }
@@ -121,7 +140,7 @@ public class StorageController : Controller
     ///     Usuwanie listy plików o wskazanych Id.
     /// </summary>
     [HttpDelete]
-    [Authorize(Roles = "Shelter")]
+    [Authorize(Roles = "Shelter, SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
