@@ -11,9 +11,11 @@ using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Mappers;
 using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
+using LapkaBackend.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
@@ -101,8 +103,18 @@ internal class Program
             {
                 opt.SuppressMapClientErrors = true;
             });
-        
+      
+        builder.Services.AddHealthChecks();
+
         var app = builder.Build();
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+            db.Database.Migrate();
+        }
+
+        app.MapHealthChecks("/healthcheck");
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
