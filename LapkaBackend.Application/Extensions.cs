@@ -14,6 +14,8 @@ namespace LapkaBackend.Application
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IManagementService, ManagementService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IBlobService, BlobService>();
+
         }
     }
 }

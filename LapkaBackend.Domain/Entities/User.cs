@@ -18,7 +18,7 @@ namespace LapkaBackend.Domain.Entities
         public virtual Role? Role { get; set; }
         public Guid ShelterId { get; set; }
         public string LoginProvider { get; set; } = string.Empty;
-        public string ProfilePicture { get; set; } = string.Empty;
+        public string? ProfilePicture { get; set; } = string.Empty;
         
     }
 }

@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using LapkaBackend.Application;
+using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Mappers;
@@ -12,6 +13,7 @@ using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
 using LapkaBackend.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -33,8 +35,17 @@ internal class Program
                 {
                     var errors = context.ModelState.Values
                         .SelectMany(v => v.Errors)
-                        .Select(e => JsonSerializer.Deserialize<Error>(e.ErrorMessage));
-                    //TODO try to work on error caused by wrong name of property
+                        .Select(e =>
+                        {
+                            try
+                            {
+                                return JsonSerializer.Deserialize<Error>(e.ErrorMessage);
+                            }
+                            catch (Exception)
+                            {
+                                return new Error("invalid_request", e.ErrorMessage);
+                            }
+                        });
                     var errorsWrapper = new
                     {
                         errors
@@ -92,8 +103,9 @@ internal class Program
             {
                 opt.SuppressMapClientErrors = true;
             });
-
+      
         builder.Services.AddHealthChecks();
+
         var app = builder.Build();
 
         using (var scope = app.Services.CreateScope())
@@ -116,6 +128,8 @@ internal class Program
         app.UseAuthentication();
 
         app.UseAuthorization();
+
+        // app.UseMiddleware<ErrorHandlerMiddleware>();
 
         app.MapControllers();
 

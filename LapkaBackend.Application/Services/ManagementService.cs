@@ -74,7 +74,7 @@ namespace LapkaBackend.Application.Services
                 throw new ForbiddenExcpetion("invalid_user","User is not an admin!");
             }
 
-            int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Worker.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
+            var searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Worker.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
             userResult.Role.Id = searchedRoleId;
             await _dbContext.SaveChangesAsync();
 

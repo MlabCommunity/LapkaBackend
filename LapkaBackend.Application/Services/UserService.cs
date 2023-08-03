@@ -13,23 +13,25 @@ namespace LapkaBackend.Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly IDataContext _context;
+        private readonly IDataContext _dbContext;
         private readonly IEmailService _emailService;
+        private readonly IBlobService _blobService;
 
-        public UserService(IDataContext context, IEmailService emailService)
+        public UserService(IDataContext context, IEmailService emailService, IBlobService blobService)
         {
-            _context = context;
+            _dbContext = context;
             _emailService = emailService;
+            _blobService = blobService;
         }
 
         public async Task<List<User>> GetAllUsers()
         {
-            return await _context.Users.ToListAsync();
+            return await _dbContext.Users.ToListAsync();
         }
 
         public async Task<GetUserDataByIdQueryResult> GetUserById(Guid id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _dbContext.Users.FindAsync(id);
 
             if (user is null)
             {
@@ -47,52 +49,60 @@ namespace LapkaBackend.Application.Services
 
         public async Task<User> AddUser(User user)
         {
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
+            await _dbContext.Users.AddAsync(user);
+            await _dbContext.SaveChangesAsync();
 
             return user;
         }
 
-        public async Task<User> UpdateUser(UpdateUserDataRequest request, string id)
+        public async Task UpdateUser(UpdateUserDataRequest request, string id)
         {
-            var result = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
             if (result is null)
             {
                 throw new BadRequestException("invalid_user","User doesn't exists");
+            }
+
+            if (request.ProfilePicture is not null && request.ProfilePicture != result.ProfilePicture)
+            {
+                if (result.ProfilePicture is not "")
+                {
+                    await _blobService.DeleteFileAsync(new Guid(result.ProfilePicture));     
+                }
+                result.ProfilePicture = request.ProfilePicture;
+                var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePicture));
+                file.ParentEntityId = result.Id;
+
             }
 
             result.FirstName = request.FirstName;
             result.LastName = request.LastName;
-            //TODO: odkomentować po dodaniu profilepicture
-            //result.ProfilePicture = request.ProfilePicture;
+            _dbContext.Users.Update(result);
 
-            _context.Users.Update(result);
+            await _dbContext.SaveChangesAsync();
 
-            await _context.SaveChangesAsync();
-
-            return result;
         }
 
         public async Task DeleteUser(string id)
         {
-            var result = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
             if (result is null)
             {
                 throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
-            _context.Users.Remove(result);
-            await _context.SaveChangesAsync();
+            _dbContext.Users.Remove(result);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<User> FindUserByRefreshToken(TokenRequest request)
         {
-            var result = await _context.Users
+            var result = await _dbContext.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
-
+                
             if (result is null)
             {
                 throw new BadRequestException("invalid_user","User doesn't exists");
@@ -103,7 +113,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task<User> FindUserByEmail(string email)
         {
-            var result = await _context.Users
+            var result = await _dbContext.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Email == email);
 
@@ -117,23 +127,23 @@ namespace LapkaBackend.Application.Services
 
         public async Task SetNewPassword(string id, UserPasswordRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
             user!.Password = request.NewPassword;
 
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task SetNewEmail(string id, UpdateUserEmailRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
             user!.Email = request.Email;
             user.VerifiedAt = null;
 
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
 
             string baseUrl = "https://localhost:7214";
             string token = user.VerificationToken!;
@@ -152,7 +162,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task<GetCurrentUserDataQueryResult> GetLoggedUser(string id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
             return new GetCurrentUserDataQueryResult
             {
@@ -168,7 +178,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task VerifyEmail(string token)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
             
             if(user is null)
             {
@@ -177,8 +187,30 @@ namespace LapkaBackend.Application.Services
 
             user.VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
             user.VerifiedAt = DateTime.Now;
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+        }
+        
+        public async Task DeleteProfilePicture(string id)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+
+            if (user is null)
+            {
+                throw new BadRequestException("invalid_user","User doesn't exists");
+            }
+
+            var file = await _dbContext.Blobs.FirstOrDefaultAsync(x => x.Id.ToString().Equals(user.ProfilePicture));
+
+            if (file is null)
+            {
+                throw new BadRequestException("invalid_file","User doesn't have profile picture");
+            }
+            
+            user.ProfilePicture = String.Empty;
+            _dbContext.Users.Update(user);
+            await _blobService.DeleteFileAsync(file.Id);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

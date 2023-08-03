@@ -46,11 +46,11 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> UpdateUser(UpdateUserDataRequest request)
+        public async Task<ActionResult> UpdateUser([FromBody]UpdateUserDataRequest request)
         {
-            var result = await _userService.UpdateUser(request, HttpContext.User.FindFirstValue("userId")!);
+            await _userService.UpdateUser(request, HttpContext.User.FindFirstValue("userId")!);
 
-            return Ok(result);
+            return NoContent();
         }
 
         /// <summary>
@@ -131,6 +131,24 @@ namespace LapkaBackend.API.Controllers
         public async Task<ActionResult> ConfirmEmail(string token)
         {
             await _userService.VerifyEmail(token);
+
+            return NoContent();
+        }
+        
+        /// <summary>
+        ///     Usuń zdjęcie profilowe zalogowanego użytkownika.
+        /// </summary>
+        /// <response code="403">Available only for user with Łapka login provider.</response>
+        [HttpDelete("picture")]
+        [Authorize (Roles = "User,Worker,Shelter,Admin,SuperAdmin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> DeleteProfilePicture()
+        {
+            await _userService.DeleteProfilePicture(HttpContext.User.FindFirstValue("userId")!);
 
             return NoContent();
         }

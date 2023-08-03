@@ -1,8 +1,10 @@
-﻿using LapkaBackend.Application.Common;
+﻿using Azure.Storage.Blobs;
+using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Data;
 using LapkaBackend.Infrastructure.Email;
+using LapkaBackend.Infrastructure.FileStorage;
 using LapkaBackend.Infrastructure.ModelBuilders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,8 +18,8 @@ namespace LapkaBackend.Infrastructure
         public static void AddInfrasturcture(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddTransient<IDataContext, DataContext>();
+            services.AddTransient<IAzureStorageContext, AzureStorageContext>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
-
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("MySql"));
@@ -35,7 +37,6 @@ namespace LapkaBackend.Infrastructure
 
         public static void Seed(this ModelBuilder modelBuilder)
         {
-            //TODO: Migracja do zrobienia :)
             modelBuilder.Entity<Role>().HasData(
                     new Role() { Id =  1, RoleName = "Undefined" },
                     new Role() { Id =  2, RoleName = "SuperAdmin" },
@@ -48,7 +49,7 @@ namespace LapkaBackend.Infrastructure
             modelBuilder.Entity<AnimalCategory>().HasData(
                     new AnimalCategory() { Id = 1, CategoryName = "Dog" },
                     new AnimalCategory() { Id = 2, CategoryName = "Cat" },
-                    new AnimalCategory() { Id = 3, CategoryName = "rabbit" }
+                    new AnimalCategory() { Id = 3, CategoryName = "Rabbit" }
                 );
         }
     }
