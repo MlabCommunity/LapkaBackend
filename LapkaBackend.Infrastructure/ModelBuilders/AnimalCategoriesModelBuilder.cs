@@ -1,10 +1,6 @@
 ﻿using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using LapkaBackend.Infrastructure.Data;
 
 namespace LapkaBackend.Infrastructure.ModelBuilders
 {
@@ -22,5 +18,22 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
             });
         }
         
+        public static void SeedAnimalCategories(DbContextOptions<DataContext> options)
+        {
+            var dbContext = new DataContext(options);
+
+            if (!dbContext.AnimalCategories.Any())
+            {
+                var animalCategoriesList = new List<AnimalCategory>()
+                {
+                    new () { CategoryName = "Dog" },
+                    new () { CategoryName = "Cat" },
+                    new () { CategoryName = "Rabbit" }
+                };
+
+                dbContext.AnimalCategories.AddRange(animalCategoriesList);
+                dbContext.SaveChanges();
+            }
+        }
     }
 }

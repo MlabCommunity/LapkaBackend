@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Domain.Enums;
+using Microsoft.Extensions.Configuration;
 
 namespace LapkaBackend.Application.Services
 {
@@ -15,12 +16,14 @@ namespace LapkaBackend.Application.Services
     {
         private readonly IDataContext _dbContext;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
         private readonly IBlobService _blobService;
 
-        public UserService(IDataContext context, IEmailService emailService, IBlobService blobService)
+        public UserService(IDataContext context, IEmailService emailService, IConfiguration configuration, IBlobService blobService)
         {
             _dbContext = context;
             _emailService = emailService;
+            _configuration = configuration;
             _blobService = blobService;
         }
 
@@ -66,7 +69,7 @@ namespace LapkaBackend.Application.Services
 
             if (request.ProfilePicture is not null && request.ProfilePicture != result.ProfilePicture)
             {
-                if (result.ProfilePicture is not "")
+                if (result.ProfilePicture != string.Empty && result.ProfilePicture is not null)
                 {
                     await _blobService.DeleteFileAsync(new Guid(result.ProfilePicture));     
                 }
@@ -133,6 +136,20 @@ namespace LapkaBackend.Application.Services
 
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
+            
+            var baseUrl = _configuration.GetValue<string>("Domain");
+            var endpoint = $"/User/ConfirmUpdatedEmail/{user.VerificationToken}";
+
+            var link = $"{baseUrl}{endpoint}";
+
+            await _emailService.SendEmail(new MailRequest
+            {
+                ToEmail = user.Email,
+                Subject = "Zmiana emaila",
+                Template = Templates.PasswordChange,
+                RedirectUrl = link
+            });
+            
         }
 
         public async Task SetNewEmail(string id, UpdateUserEmailRequest request)
@@ -145,11 +162,10 @@ namespace LapkaBackend.Application.Services
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
 
-            string baseUrl = "https://localhost:7214";
-            string token = user.VerificationToken!;
-            string endpoint = $"/User/ConfirmUpdatedEmail/{token}";
+            var baseUrl = _configuration.GetValue<string>("Domain");
+            var endpoint = $"/User/ConfirmUpdatedEmail/{user.VerificationToken}";
 
-            string link = $"{baseUrl}{endpoint}";
+            var link = $"{baseUrl}{endpoint}";
 
             await _emailService.SendEmail(new MailRequest
             {
@@ -172,7 +188,9 @@ namespace LapkaBackend.Application.Services
                 LastName = user.LastName,
                 Email = user.Email,
                 CreatedAt = user.CreatedAt,
-                Role = (Roles)user.Role!.Id
+                ProfilePicture = user.ProfilePicture,
+                Role = (Roles)user.Role!.Id,
+                LoginProvider = user.LoginProvider
             };
         }
 
@@ -186,7 +204,7 @@ namespace LapkaBackend.Application.Services
             }
 
             user.VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
-            user.VerifiedAt = DateTime.Now;
+            user.VerifiedAt = DateTime.UtcNow;
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
         }
@@ -207,7 +225,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_file","User doesn't have profile picture");
             }
             
-            user.ProfilePicture = String.Empty;
+            user.ProfilePicture = string.Empty;
             _dbContext.Users.Update(user);
             await _blobService.DeleteFileAsync(file.Id);
             await _dbContext.SaveChangesAsync();

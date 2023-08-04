@@ -2,7 +2,7 @@
 
 namespace LapkaBackend.Domain.Entities
 {
-    public class User
+    public sealed class User
     {
         public Guid Id { get; set; }
         public string FirstName { get; set; } = string.Empty;
@@ -15,7 +15,7 @@ namespace LapkaBackend.Domain.Entities
         public DateTime? VerifiedAt { get; set; }
         public int? RoleId { get; set; }
         [ForeignKey("RoleId")]
-        public virtual Role? Role { get; set; }
+        public Role? Role { get; set; }
         public Guid ShelterId { get; set; }
         public string LoginProvider { get; set; } = string.Empty;
         public string? ProfilePicture { get; set; } = string.Empty;

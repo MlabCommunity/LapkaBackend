@@ -1,8 +1,6 @@
-﻿using Azure.Core;
-using LapkaBackend.Application.Dtos.Result;
+﻿using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
-using LapkaBackend.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

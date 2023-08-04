@@ -4,8 +4,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using LapkaBackend.API.Middlewares;
 using LapkaBackend.Application;
-using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Mappers;
@@ -13,12 +13,12 @@ using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
 using LapkaBackend.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
+using Extensions = LapkaBackend.Infrastructure.Extensions;
 
 namespace LapkaBackend.API;
 
@@ -53,7 +53,6 @@ internal class Program
                     return new BadRequestObjectResult(JsonSerializer.SerializeToElement(errorsWrapper));
                 };
             });
-        //Replacing Enum values to display names
         builder.Services
             .AddControllers()
             .AddJsonOptions(options =>
@@ -63,7 +62,7 @@ internal class Program
         builder.Services.AddFluentValidationAutoValidation();
         builder.Services.AddTransient<IValidatorInterceptor, CustomIntercepter>();
         builder.Services.AddApplication();
-        builder.Services.AddInfrasturcture(builder.Configuration);
+        builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddAutoMapper(typeof(UserMappingProfile));
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
@@ -110,8 +109,13 @@ internal class Program
 
         using (var scope = app.Services.CreateScope())
         {
+            var options = new DbContextOptionsBuilder<DataContext>()
+                .UseSqlServer(builder.Configuration.GetConnectionString("MySql"))
+                .Options;
+            
             var db = scope.ServiceProvider.GetRequiredService<DataContext>();
             db.Database.Migrate();
+            Extensions.Seed(options);
         }
 
         app.MapHealthChecks("/healthcheck");
@@ -128,7 +132,7 @@ internal class Program
         app.UseAuthentication();
 
         app.UseAuthorization();
-
+        
         app.UseMiddleware<ErrorHandlerMiddleware>();
 
         app.MapControllers();

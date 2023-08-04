@@ -94,23 +94,32 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AnimalCategories");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CategoryName = "Dog"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CategoryName = "Cat"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CategoryName = "rabbit"
-                        });
+            modelBuilder.Entity("LapkaBackend.Domain.Entities.FileBlob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BlobName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ParentEntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UploadName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Blobs");
                 });
 
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Role", b =>
@@ -128,38 +137,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            RoleName = "Undefined"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            RoleName = "SuperAdmin"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            RoleName = "Admin"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            RoleName = "User"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            RoleName = "Shelter"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            RoleName = "Worker"
-                        });
                 });
 
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Shelter", b =>
@@ -182,7 +159,7 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("real");
 
-                    b.Property<float>("Longtitude")
+                    b.Property<float>("Longitude")
                         .HasMaxLength(255)
                         .HasColumnType("real");
 
@@ -246,7 +223,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProfilePicture")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")

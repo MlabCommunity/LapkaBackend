@@ -1,4 +1,6 @@
-﻿using LapkaBackend.Domain.Entities;
+﻿using System.Security.Cryptography;
+using LapkaBackend.Domain.Entities;
+using LapkaBackend.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Infrastructure.ModelBuilders
@@ -15,6 +17,29 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 .Property(u => u.Email)
                 .HasMaxLength(255)
                 .IsRequired();
+        }
+        
+        public static void SeedUser(DbContextOptions<DataContext> options)
+        {
+            var dbContext = new DataContext(options);
+
+            if (!dbContext.Users.Any())
+            {
+                var userList = new List<User>()
+                {
+                    new () { 
+                        FirstName = "Super", 
+                        LastName = "Admin", 
+                        Email = "lappka2k23@gmail.com", 
+                        Password = "zaq1@WSX", 
+                        RoleId = 2, 
+                        VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
+                        VerifiedAt = DateTime.UtcNow}
+                };
+
+                dbContext.Users.AddRange(userList);
+                dbContext.SaveChanges();
+            }
         }
     }
 }

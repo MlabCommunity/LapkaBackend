@@ -68,15 +68,15 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByShelter(IFormFile file)
+    public async Task<ActionResult> SaveFileByShelter(params IFormFile[] files)
     {
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
         {
-            throw new UnauthorizezdException("invalid_token", "Invalid token");
+            throw new UnauthorizedException("invalid_token", "Invalid token");
         }
         
-        return Ok(await _blobService.UploadFileAsShelterAsync(file, new Guid(user)));
+        return Ok(await _blobService.UploadFilesAsShelterAsync(files, new Guid(user)));
     }
 
     /// <summary>
@@ -88,15 +88,15 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByUser(IFormFile file)
+    public async Task<ActionResult> SaveFileByUser(params IFormFile[] files)
     {
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
         {
-            throw new UnauthorizezdException("invalid_token", "Invalid token");
+            throw new UnauthorizedException("invalid_token", "Invalid token");
         }
         
-        return Ok(await _blobService.UploadFileAsUserAsync(file));
+        return Ok(await _blobService.UploadFilesAsUserAsync(files));
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ public class StorageController : Controller
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
         {
-            throw new UnauthorizezdException("invalid_token", "Invalid token");
+            throw new UnauthorizedException("invalid_token", "Invalid token");
         }
         
         await _blobService.UpdateFileName(id, newName ,new Guid(user));
