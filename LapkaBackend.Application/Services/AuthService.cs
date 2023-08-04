@@ -13,6 +13,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 
 
 namespace LapkaBackend.Application.Services
@@ -22,13 +24,16 @@ namespace LapkaBackend.Application.Services
         private readonly IDataContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public AuthService(IDataContext dbContext, IConfiguration configuration, IEmailService emailService)
+        public AuthService(IDataContext dbContext, IConfiguration configuration, 
+            IEmailService emailService, IHttpContextAccessor contextAccessor)
         {
 
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
+            _contextAccessor = contextAccessor;
         }
 
         public async Task RegisterUser(UserRegistrationRequest request)
@@ -44,10 +49,10 @@ namespace LapkaBackend.Application.Services
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Email = request.EmailAddress,
-                Password = request.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 VerificationToken = CreateRandomToken(),
                 RefreshToken = CreateRefreshToken(),
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 Role = _dbContext.Roles.First(r => r.RoleName == Roles.User.ToString())
             };
 
@@ -59,12 +64,13 @@ namespace LapkaBackend.Application.Services
 
         private async Task SendEmailToConfirmEmail(string emailAddress, string token)
         {
-            string baseUrl = "https://localhost:7214";            
-            string endpoint = $"/Auth/confirmEmail/{token}";
+            var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
+            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;          
+            var endpoint = $"/Auth/confirmEmail/{token}";
 
-            string link = $"{baseUrl}{endpoint}";
+            var link = $"{baseUrl}{endpoint}";
 
-            MailRequest mailRequest = new MailRequest()
+            var mailRequest = new MailRequest()
             {
                 ToEmail = emailAddress,
                 Subject = "email confirmation",
@@ -86,18 +92,32 @@ namespace LapkaBackend.Application.Services
 
             if (result.VerifiedAt == null)
             {
-                throw new ForbiddenExcpetion("not_verified", "Not verified");
+                throw new ForbiddenException("not_verified", "Not verified");
             }
-
-            if (result.Password != request.Password)
+            
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
             {
                 throw new BadRequestException("invalid_password", "Wrong password");
             }
 
+            string refreshToken;
+            
+            if (IsTokenValid(result.RefreshToken))
+            {
+                refreshToken = result.RefreshToken;
+            }
+            else
+            {
+                refreshToken = CreateRefreshToken();
+                result.RefreshToken = refreshToken;
+                _dbContext.Users.Update(result);
+                await _dbContext.SaveChangesAsync();
+            }
+            
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),
-                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : CreateRefreshToken()
+                RefreshToken = refreshToken
             };
         }
 
@@ -115,9 +135,8 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("", "You are not Shelter!");
             }
-            //TODO replace with authorize
 
-            if (result.Password != request.Password)
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
             {
                 throw new BadRequestException("invalid_password", "Wrong password");
             }
@@ -125,7 +144,7 @@ namespace LapkaBackend.Application.Services
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),
-                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : CreateRefreshToken()
+                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : result.RefreshToken = CreateRefreshToken()
             };
         }
 
@@ -148,7 +167,7 @@ namespace LapkaBackend.Application.Services
 
             var role = await _dbContext.Roles.FirstAsync(x => x.Id == user.RoleId);
 
-            List<Claim> claims = new List<Claim>
+            var claims = new List<Claim>()
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
@@ -158,12 +177,12 @@ namespace LapkaBackend.Application.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration.GetSection("AppSettings:Token").Value!));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(5),
-                signingCredentials: creds
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: credentials
             );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
@@ -175,7 +194,7 @@ namespace LapkaBackend.Application.Services
 
             var role = _dbContext.Roles.First(x => x.Id == user.RoleId);
 
-            List<Claim> claims = new List<Claim>()
+            var claims = new List<Claim>()
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
@@ -185,12 +204,12 @@ namespace LapkaBackend.Application.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration.GetSection("AppSettings:Token").Value!));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(5),
-                signingCredentials: creds
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: credentials
             );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
@@ -202,11 +221,11 @@ namespace LapkaBackend.Application.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration.GetSection("AppSettings:Token").Value!));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
-                expires: DateTime.Now.AddDays(7),
-                signingCredentials: creds
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: credentials
             );
 
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
@@ -214,7 +233,7 @@ namespace LapkaBackend.Application.Services
             return jwt;
         }
 
-        private string CreateRandomToken()
+        private static string CreateRandomToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
         }
@@ -260,7 +279,7 @@ namespace LapkaBackend.Application.Services
             var newShelter = new Shelter
             {
                 OrganizationName = request.ShelterRequest.OrganizationName,
-                Longtitude = request.ShelterRequest.Longitude,
+                Longitude = request.ShelterRequest.Longitude,
                 Latitude = request.ShelterRequest.Latitude,
                 City = request.ShelterRequest.City,
                 Street = request.ShelterRequest.Street,
@@ -272,15 +291,15 @@ namespace LapkaBackend.Application.Services
 
             await _dbContext.Shelters.AddAsync(newShelter);
 
-            var newUser = new User
+            var newUser = new User()
             {
                 FirstName = request.UserRequest.FirstName,
                 LastName = request.UserRequest.LastName,
                 Email = request.UserRequest.EmailAddress,
-                Password = request.UserRequest.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.UserRequest.Password),
                 RefreshToken = CreateRefreshToken(),
                 VerificationToken = CreateRandomToken(),
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 Role = roleUser,
                 ShelterId = newShelter.Id
             };
@@ -290,13 +309,12 @@ namespace LapkaBackend.Application.Services
 
             await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
         }
-       
 
         public async Task ResetPassword(UserEmailRequest request)
         {
-            var baseUrl = "https://localhost:7214";
-            var token = CreateSetNewPasswordToken(request.Email);
-            var endpoint = $"/Auth/setPassword/{token}";
+            var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
+            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;  
+            var endpoint = $"/Auth/setPassword/{CreateSetNewPasswordToken(request.Email)}";
 
             var link = $"{baseUrl}{endpoint}";
 
@@ -323,7 +341,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_password", "Passwords aren't matching");
             }
 
-            User user =  _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email)!;
+            var user =  _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email)!;
 
             user.Password = resetPasswordRequest.Password;
 
@@ -332,11 +350,11 @@ namespace LapkaBackend.Application.Services
 
         private string CreateSetNewPasswordToken(string emailAddress)
         {
-            User user = _dbContext.Users
+            var user = _dbContext.Users
                 .Include(u => u.Role)
                 .FirstOrDefault(x => x.Email == emailAddress) ?? throw new BadRequestException("invalid_email","There are no such email!");
 
-            List<Claim> claims = new List<Claim>()
+            var claims = new List<Claim>()
             {
                 new(ClaimTypes.Email, user.Email),
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -347,12 +365,12 @@ namespace LapkaBackend.Application.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration.GetSection("AppSettings:Token").Value!));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
                     claims: claims,
-                    expires: DateTime.Now.AddMinutes(5),
-                    signingCredentials: creds
+                    expires: DateTime.UtcNow.AddMinutes(5),
+                    signingCredentials: credentials
                 );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
@@ -380,7 +398,7 @@ namespace LapkaBackend.Application.Services
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
 
                 var email = principal.FindFirst(ClaimTypes.Email)?.Value;
-                User? user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);
+                var user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);
                 return user == null ? null : email;
             }
             catch
@@ -399,12 +417,9 @@ namespace LapkaBackend.Application.Services
             }
 
             user.VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
-            user.VerifiedAt = DateTime.Now;
+            user.VerifiedAt = DateTime.UtcNow;
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
         }
-
-
     }
-
 }

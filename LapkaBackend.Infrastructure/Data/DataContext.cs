@@ -6,7 +6,6 @@ namespace LapkaBackend.Infrastructure.Data
 {
     public class DataContext : DbContext, IDataContext
     {
-        
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
         }
@@ -15,7 +14,6 @@ namespace LapkaBackend.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.AddModels();
-            modelBuilder.Seed();
 
         }
         public DbSet<User> Users { get; set; }

@@ -8,6 +8,9 @@ using System.Security.Cryptography;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Domain.Enums;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.Configuration;
 
 namespace LapkaBackend.Application.Services
 {
@@ -15,13 +18,20 @@ namespace LapkaBackend.Application.Services
     {
         private readonly IDataContext _dbContext;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
         private readonly IBlobService _blobService;
+        private readonly IHttpContextAccessor _contextAccessor;
+        
 
-        public UserService(IDataContext context, IEmailService emailService, IBlobService blobService)
+        public UserService(IDataContext context, IEmailService emailService, 
+            IConfiguration configuration, IBlobService blobService,
+            IHttpContextAccessor contextAccessor)
         {
             _dbContext = context;
             _emailService = emailService;
+            _configuration = configuration;
             _blobService = blobService;
+            _contextAccessor = contextAccessor;
         }
 
         public async Task<List<User>> GetAllUsers()
@@ -66,7 +76,7 @@ namespace LapkaBackend.Application.Services
 
             if (request.ProfilePicture is not null && request.ProfilePicture != result.ProfilePicture)
             {
-                if (result.ProfilePicture is not "")
+                if (result.ProfilePicture != string.Empty && result.ProfilePicture is not null)
                 {
                     await _blobService.DeleteFileAsync(new Guid(result.ProfilePicture));     
                 }
@@ -127,9 +137,14 @@ namespace LapkaBackend.Application.Services
 
         public async Task SetNewPassword(string id, UserPasswordRequest request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var user = await _dbContext.Users.
+                FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
-            user!.Password = request.NewPassword;
+            if (user is not null && !BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+            {
+                throw new BadRequestException("invalid_request", "User not found");
+            }
+            user!.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
 
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
@@ -145,11 +160,11 @@ namespace LapkaBackend.Application.Services
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
 
-            string baseUrl = "https://localhost:7214";
-            string token = user.VerificationToken!;
-            string endpoint = $"/User/ConfirmUpdatedEmail/{token}";
+            var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
+            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;
+            var endpoint = $"/User/ConfirmUpdatedEmail/{user.VerificationToken}";
 
-            string link = $"{baseUrl}{endpoint}";
+            var link = $"{baseUrl}{endpoint}";
 
             await _emailService.SendEmail(new MailRequest
             {
@@ -172,7 +187,9 @@ namespace LapkaBackend.Application.Services
                 LastName = user.LastName,
                 Email = user.Email,
                 CreatedAt = user.CreatedAt,
-                Role = (Roles)user.Role!.Id
+                ProfilePicture = user.ProfilePicture,
+                Role = (Roles)user.Role!.Id,
+                LoginProvider = user.LoginProvider
             };
         }
 
@@ -186,7 +203,7 @@ namespace LapkaBackend.Application.Services
             }
 
             user.VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
-            user.VerifiedAt = DateTime.Now;
+            user.VerifiedAt = DateTime.UtcNow;
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
         }
@@ -207,7 +224,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_file","User doesn't have profile picture");
             }
             
-            user.ProfilePicture = String.Empty;
+            user.ProfilePicture = string.Empty;
             _dbContext.Users.Update(user);
             await _blobService.DeleteFileAsync(file.Id);
             await _dbContext.SaveChangesAsync();

@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace LapkaBackend.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -24,6 +22,21 @@ namespace LapkaBackend.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AnimalCategories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Blobs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UploadName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BlobName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FileType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ParentEntityId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Blobs", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -45,7 +58,7 @@ namespace LapkaBackend.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OrganizationName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Longtitude = table.Column<float>(type: "real", maxLength: 255, nullable: false),
+                    Longitude = table.Column<float>(type: "real", maxLength: 255, nullable: false),
                     Latitude = table.Column<float>(type: "real", maxLength: 255, nullable: false),
                     City = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Street = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
@@ -75,7 +88,7 @@ namespace LapkaBackend.Infrastructure.Migrations
                     RoleId = table.Column<int>(type: "int", nullable: true),
                     ShelterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     LoginProvider = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ProfilePicture = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    ProfilePicture = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -121,29 +134,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                         principalColumn: "Id");
                 });
 
-            migrationBuilder.InsertData(
-                table: "AnimalCategories",
-                columns: new[] { "Id", "CategoryName" },
-                values: new object[,]
-                {
-                    { 1, "Dog" },
-                    { 2, "Cat" },
-                    { 3, "rabbit" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Roles",
-                columns: new[] { "Id", "RoleName" },
-                values: new object[,]
-                {
-                    { 1, "Undefined" },
-                    { 2, "SuperAdmin" },
-                    { 3, "Admin" },
-                    { 4, "User" },
-                    { 5, "Shelter" },
-                    { 6, "Worker" }
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Animals_CategoryId",
                 table: "Animals",
@@ -165,6 +155,9 @@ namespace LapkaBackend.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Animals");
+
+            migrationBuilder.DropTable(
+                name: "Blobs");
 
             migrationBuilder.DropTable(
                 name: "Users");

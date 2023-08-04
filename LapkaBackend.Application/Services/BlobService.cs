@@ -1,16 +1,10 @@
-﻿using System.Text.RegularExpressions;
-using Azure.Storage;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using Azure.Storage.Sas;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using MimeTypes;
 
 
 namespace LapkaBackend.Application.Services;
@@ -83,30 +77,41 @@ public class BlobService : IBlobService
         await _storageContext.DeleteFileAsync(file);
     }
 
-    public async Task<string> UploadFileAsUserAsync(IFormFile file)
+    public async Task<List<string>> UploadFilesAsUserAsync(List<IFormFile> files)
     {
-        if (file.Length > _imageFileMaxSize)
+        if (files.Any((x => x.Length > _imageFileMaxSize)))
         {
             throw new BadRequestException("invalid_file", "File too large, Exceeded 5MB");
         }
 
-        if (!_pictureTypes.Contains(file.ContentType))
+        if (files.Any(x => !_pictureTypes.Contains(x.ContentType)))
         {
             throw new BadRequestException("invalid_image", "Format of image is invalid");
         }
         
-        return await UploadFileAsync(file, Guid.Empty, "lappka-img");
+        var idFileList = new List<string>();
+        foreach (var file in files)
+        {
+            idFileList.Add(await UploadFileAsync(file, Guid.Empty, "lappka-img"));
+        }
+
+        return idFileList;
     }
 
-    public async Task<string> UploadFileAsShelterAsync(IFormFile file, Guid parentId)
+    public async Task<List<string>> UploadFilesAsShelterAsync(List<IFormFile> files, Guid parentId)
     {
-        if (file.Length > _otherFileMaxSize)
+        if (files.Any(x => x.Length > _otherFileMaxSize))
         {
-            throw new BadRequestException("invalid_file", "File too large, Exceeded 15MB");
+            throw new BadRequestException("invalid_file", "One of the files is too large, Exceeded 15MB");
         }
-        
-        return await UploadFileAsync(file, parentId, "lappka-others");
 
+        var idFileList = new List<string>();
+        foreach (var file in files)
+        {
+            idFileList.Add(await UploadFileAsync(file, parentId, "lappka-others"));
+        }
+
+        return idFileList;
     }
 
     public async Task UpdateFileAsUserAsync(IFormFile file, Guid pictureId)
@@ -162,7 +167,7 @@ public class BlobService : IBlobService
 
         if (!(blobFile.ParentEntityId == userId))
         {
-            throw new ForbiddenExcpetion("invalid_user", "You are not allowed to modify this file");
+            throw new ForbiddenException("invalid_user", "You are not allowed to modify this file");
         }
 
         blobFile.UploadName = newName + Path.GetExtension(blobFile.UploadName);

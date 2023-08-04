@@ -2,6 +2,7 @@
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers
@@ -56,7 +57,7 @@ namespace LapkaBackend.API.Controllers
         public async Task<ActionResult> ConfirmEmail([FromRoute] string token)
         {
             await _authService.ConfirmEmail(token);
-
+            
             return NoContent();
         }
 
@@ -85,7 +86,7 @@ namespace LapkaBackend.API.Controllers
           public async Task<ActionResult> UserLogin(LoginRequest request)
           { 
               var result = await _authService.LoginUser(request);
-
+              
               return Ok(result);
           }
 
@@ -128,7 +129,6 @@ namespace LapkaBackend.API.Controllers
         ///     Wysłanie maila z linkiem do zmiany hasła
         /// </summary>
         [HttpPost("resetPassword")]
-        [Authorize(Roles = "User,Worker,Shelter,SuperAdmin,Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

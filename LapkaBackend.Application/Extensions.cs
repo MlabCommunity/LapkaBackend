@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Interfaces;
+﻿using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 

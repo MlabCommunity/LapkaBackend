@@ -1,5 +1,4 @@
-﻿using Azure.Identity;
-using Azure.Storage;
+﻿using Azure.Storage;
 using Azure.Storage.Blobs;
 using LapkaBackend.Application.Common;
 using LapkaBackend.Domain.Entities;

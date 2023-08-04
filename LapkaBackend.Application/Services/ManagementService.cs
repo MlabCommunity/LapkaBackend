@@ -16,7 +16,6 @@ namespace LapkaBackend.Application.Services
 
         public ManagementService(IDataContext dbContext, IMapper mapper)
         {
-
             _dbContext = dbContext;
             _mapper = mapper;
         }
@@ -25,7 +24,9 @@ namespace LapkaBackend.Application.Services
         {
             var roleName = role.ToString();
 
-            if (roleName == Roles.SuperAdmin.ToString() || roleName == Roles.Undefined.ToString() || roleName == Roles.User.ToString())
+            if (roleName == Roles.SuperAdmin.ToString() ||
+                roleName == Roles.Undefined.ToString() || 
+                roleName == Roles.User.ToString())
             {
                 throw new BadRequestException("invalid_role","Cannot choose SuperAdmin, Undefined, User");
             }
@@ -45,16 +46,19 @@ namespace LapkaBackend.Application.Services
 
         public async Task AssignAdminRole(Guid userId)
         {
-            var userResult = await _dbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(x => x.Id == userId);
+            var userResult = await _dbContext.Users.Include(u => u.Role)
+                .FirstOrDefaultAsync(x => x.Id == userId);
 
             if (userResult is null)
             {
                 throw new BadRequestException("invalid_user", "User not found!");
             }
 
-            if (userResult.Role!.RoleName != Roles.Shelter.ToString() && userResult.Role.RoleName != Roles.User.ToString())
+            if (userResult.Role!.RoleName != Roles.Shelter.ToString() && 
+                userResult.Role.RoleName != Roles.User.ToString())
             {
-                int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Admin.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
+                var searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Admin.ToString())
+                    .Select(r => r.Id).FirstOrDefaultAsync();
                 userResult.RoleId = searchedRoleId;
                 await _dbContext.SaveChangesAsync();
             }
@@ -62,7 +66,8 @@ namespace LapkaBackend.Application.Services
 
         public async Task RemoveAdminRole(Guid userId)
         {
-            var userResult = await _dbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(x => x.Id == userId);
+            var userResult = await _dbContext.Users.Include(u => u.Role)
+                .FirstOrDefaultAsync(x => x.Id == userId);
 
             if (userResult is null)
             {
@@ -71,10 +76,12 @@ namespace LapkaBackend.Application.Services
 
             if (userResult.Role!.RoleName != "Admin")
             {
-                throw new ForbiddenExcpetion("invalid_user","User is not an admin!");
+                throw new ForbiddenException("invalid_user","User is not an admin!");
             }
 
-            var searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Worker.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
+            var searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Worker.ToString())
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync();
             userResult.Role.Id = searchedRoleId;
             await _dbContext.SaveChangesAsync();
 

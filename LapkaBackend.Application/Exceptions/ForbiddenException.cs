@@ -1,9 +1,9 @@
 ﻿namespace LapkaBackend.Application.Exceptions;
 
-public class NotFoundException : Exception
+public class ForbiddenException : Exception
 {
     public string Code { get; }
-    public NotFoundException(string code, string message) : base(message)
+    public ForbiddenException(string code, string message) : base(message)
     {
         this.Code = code;
     }

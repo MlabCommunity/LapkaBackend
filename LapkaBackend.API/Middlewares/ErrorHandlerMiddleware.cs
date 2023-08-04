@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Text.Json;
+﻿using System.Text.Json;
+using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Domain.Records;
 
-
-namespace LapkaBackend.Application.Exceptions
+namespace LapkaBackend.API.Middlewares
 {
     public class ErrorHandlerMiddleware
     {
@@ -26,25 +25,21 @@ namespace LapkaBackend.Application.Exceptions
 
                 switch (error)
                 {
-                    case BadRequestException:
+                    case BadRequestException badRequestException:
                         context.Response.StatusCode = 400;
-                        var badRequestException = (BadRequestException)error;
-                        errors.Add(new Error(badRequestException.Code, error.Message));
+                        errors.Add(new Error(badRequestException.Code, badRequestException.Message));
                         break;
-                    case UnauthorizezdException:
+                    case UnauthorizedException unauthorizedException:
                         context.Response.StatusCode = 401;
-                        var unauthorizedException = (UnauthorizezdException)error;
-                        errors.Add(new Error(unauthorizedException.Code, error.Message));
+                        errors.Add(new Error(unauthorizedException.Code, unauthorizedException.Message));
                         break;
-                    case ForbiddenExcpetion:
+                    case ForbiddenException forbiddenException:
                         context.Response.StatusCode = 403;
-                        var forbiddenException = (ForbiddenExcpetion)error;
-                        errors.Add(new Error(forbiddenException.Code, error.Message));
+                        errors.Add(new Error(forbiddenException.Code, forbiddenException.Message));
                         break;
-                    case NotFoundException:
+                    case NotFoundException notFoundException:
                         context.Response.StatusCode = 404;
-                        var notFoundException = (NotFoundException)error;
-                        errors.Add(new Error(notFoundException.Code, error.Message));
+                        errors.Add(new Error(notFoundException.Code, notFoundException.Message));
                         break;
                     default:
                         context.Response.StatusCode = 500;

@@ -24,7 +24,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> GetFile(Guid id)
+    public async Task<ActionResult> GetFile([Required]Guid id)
     {
         return Ok(await _blobService.GetFileUrlAsync(id));
     }
@@ -52,7 +52,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> DeleteFile(Guid id)
+    public async Task<ActionResult> DeleteFile([Required]Guid id)
     {
         await _blobService.DeleteFileAsync(id);
 
@@ -60,7 +60,7 @@ public class StorageController : Controller
     }
 
     /// <summary>
-    ///     Dodawanie pliku 15MB i zwrócenie jego identyfikatora. Dostępne dla schroniska.
+    ///     Dodawanie plików 15MB i zwrócenie ich identyfikatorów. Dostępne dla schroniska.
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Shelter, SuperAdmin")]
@@ -68,19 +68,19 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByShelter(IFormFile file)
+    public async Task<ActionResult> SaveFileByShelter([Required]List<IFormFile> files)
     {
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
         {
-            throw new UnauthorizezdException("invalid_token", "Invalid token");
+            throw new UnauthorizedException("invalid_token", "Invalid token");
         }
         
-        return Ok(await _blobService.UploadFileAsShelterAsync(file, new Guid(user)));
+        return Ok(await _blobService.UploadFilesAsShelterAsync(files, new Guid(user)));
     }
 
     /// <summary>
-    ///     Dodawanie zdjęcia do 5MB (.jpg, .jpeg, .bmp, .png) i zwrócenie jego identyfikatora. Dostępne dla zalogowanego użytkownika.
+    ///     Dodawanie zdjęć do 5MB (.jpg, .jpeg, .bmp, .png) i zwrócenie ich identyfikatorów. Dostępne dla zalogowanego użytkownika.
     /// </summary>
     [HttpPost("picture")]
     [Authorize(Roles = "User, Shelter, Admin, SuperAdmin, Worker")]
@@ -88,15 +88,15 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByUser(IFormFile file)
+    public async Task<ActionResult> SaveFileByUser([Required]List<IFormFile> files)
     {
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
         {
-            throw new UnauthorizezdException("invalid_token", "Invalid token");
+            throw new UnauthorizedException("invalid_token", "Invalid token");
         }
         
-        return Ok(await _blobService.UploadFileAsUserAsync(file));
+        return Ok(await _blobService.UploadFilesAsUserAsync(files));
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ public class StorageController : Controller
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
         {
-            throw new UnauthorizezdException("invalid_token", "Invalid token");
+            throw new UnauthorizedException("invalid_token", "Invalid token");
         }
         
         await _blobService.UpdateFileName(id, newName ,new Guid(user));
