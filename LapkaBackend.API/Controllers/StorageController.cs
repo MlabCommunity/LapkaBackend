@@ -24,7 +24,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> GetFile(Guid id)
+    public async Task<ActionResult> GetFile([Required]Guid id)
     {
         return Ok(await _blobService.GetFileUrlAsync(id));
     }
@@ -52,7 +52,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> DeleteFile(Guid id)
+    public async Task<ActionResult> DeleteFile([Required]Guid id)
     {
         await _blobService.DeleteFileAsync(id);
 
@@ -68,7 +68,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByShelter(params IFormFile[] files)
+    public async Task<ActionResult> SaveFileByShelter([Required]params IFormFile[] files)
     {
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
@@ -88,7 +88,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByUser(params IFormFile[] files)
+    public async Task<ActionResult> SaveFileByUser([Required]params IFormFile[] files)
     {
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
