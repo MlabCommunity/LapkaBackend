@@ -92,7 +92,7 @@ public class BlobService : IBlobService
         var idFileList = new List<string>();
         foreach (var file in files)
         {
-            idFileList.Add(await UploadFileAsync(file, Guid.Empty, "lappka-others"));
+            idFileList.Add(await UploadFileAsync(file, Guid.Empty, "lappka-img"));
         }
 
         return idFileList;

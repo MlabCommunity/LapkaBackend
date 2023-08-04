@@ -60,7 +60,7 @@ public class StorageController : Controller
     }
 
     /// <summary>
-    ///     Dodawanie pliku 15MB i zwrócenie jego identyfikatora. Dostępne dla schroniska.
+    ///     Dodawanie plików 15MB i zwrócenie ich identyfikatorów. Dostępne dla schroniska.
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Shelter, SuperAdmin")]
@@ -80,7 +80,7 @@ public class StorageController : Controller
     }
 
     /// <summary>
-    ///     Dodawanie zdjęcia do 5MB (.jpg, .jpeg, .bmp, .png) i zwrócenie jego identyfikatora. Dostępne dla zalogowanego użytkownika.
+    ///     Dodawanie zdjęć do 5MB (.jpg, .jpeg, .bmp, .png) i zwrócenie ich identyfikatorów. Dostępne dla zalogowanego użytkownika.
     /// </summary>
     [HttpPost("picture")]
     [Authorize(Roles = "User, Shelter, Admin, SuperAdmin, Worker")]
