@@ -47,6 +47,7 @@ namespace LapkaBackend.API.Controllers
         public async Task<ActionResult> UpdateUser([FromBody]UpdateUserDataRequest request)
         {
             await _userService.UpdateUser(request, HttpContext.User.FindFirstValue("userId")!);
+            HttpContext.Request.Host.Value.ToString();
 
             return NoContent();
         }

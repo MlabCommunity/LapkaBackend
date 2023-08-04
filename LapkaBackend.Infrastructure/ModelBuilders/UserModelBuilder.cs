@@ -31,7 +31,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                         FirstName = "Super", 
                         LastName = "Admin", 
                         Email = "lappka2k23@gmail.com", 
-                        Password = "zaq1@WSX", 
+                        Password = "$2a$12$T2jq9LwWyKjGZ5k8u.eNz..NIWCeTTc7p3vykFrRjoy9vX7VMo47O", 
                         RoleId = 2, 
                         VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
                         VerifiedAt = DateTime.UtcNow}

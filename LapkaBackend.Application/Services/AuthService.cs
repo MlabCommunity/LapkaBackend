@@ -49,7 +49,7 @@ namespace LapkaBackend.Application.Services
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Email = request.EmailAddress,
-                Password = request.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 VerificationToken = CreateRandomToken(),
                 RefreshToken = CreateRefreshToken(),
                 CreatedAt = DateTime.UtcNow,
@@ -94,8 +94,8 @@ namespace LapkaBackend.Application.Services
             {
                 throw new ForbiddenException("not_verified", "Not verified");
             }
-
-            if (result.Password != request.Password)
+            
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
             {
                 throw new BadRequestException("invalid_password", "Wrong password");
             }
@@ -136,7 +136,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("", "You are not Shelter!");
             }
 
-            if (result.Password != request.Password)
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
             {
                 throw new BadRequestException("invalid_password", "Wrong password");
             }
@@ -296,7 +296,7 @@ namespace LapkaBackend.Application.Services
                 FirstName = request.UserRequest.FirstName,
                 LastName = request.UserRequest.LastName,
                 Email = request.UserRequest.EmailAddress,
-                Password = request.UserRequest.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.UserRequest.Password),
                 RefreshToken = CreateRefreshToken(),
                 VerificationToken = CreateRandomToken(),
                 CreatedAt = DateTime.UtcNow,

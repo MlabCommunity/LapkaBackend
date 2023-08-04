@@ -138,14 +138,13 @@ namespace LapkaBackend.Application.Services
         public async Task SetNewPassword(string id, UserPasswordRequest request)
         {
             var user = await _dbContext.Users.
-                FirstOrDefaultAsync(x => x.Id == new Guid(id) &&
-                                    x.Password == request.CurrentPassword);
+                FirstOrDefaultAsync(x => x.Id == new Guid(id));
 
-            if (user is null)
+            if (user is not null && !BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
             {
                 throw new BadRequestException("invalid_request", "User not found");
             }
-            user!.Password = request.NewPassword;
+            user!.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
 
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
