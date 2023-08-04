@@ -13,6 +13,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 
 
 namespace LapkaBackend.Application.Services
@@ -22,13 +24,16 @@ namespace LapkaBackend.Application.Services
         private readonly IDataContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public AuthService(IDataContext dbContext, IConfiguration configuration, IEmailService emailService)
+        public AuthService(IDataContext dbContext, IConfiguration configuration, 
+            IEmailService emailService, IHttpContextAccessor contextAccessor)
         {
 
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
+            _contextAccessor = contextAccessor;
         }
 
         public async Task RegisterUser(UserRegistrationRequest request)
@@ -59,7 +64,8 @@ namespace LapkaBackend.Application.Services
 
         private async Task SendEmailToConfirmEmail(string emailAddress, string token)
         {
-            var baseUrl = _configuration.GetValue<string>("Domain");            
+            var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
+            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;          
             var endpoint = $"/Auth/confirmEmail/{token}";
 
             var link = $"{baseUrl}{endpoint}";
@@ -306,7 +312,8 @@ namespace LapkaBackend.Application.Services
 
         public async Task ResetPassword(UserEmailRequest request)
         {
-            var baseUrl = _configuration.GetValue<string>("Domain");
+            var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
+            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;  
             var endpoint = $"/Auth/setPassword/{CreateSetNewPasswordToken(request.Email)}";
 
             var link = $"{baseUrl}{endpoint}";

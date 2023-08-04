@@ -65,6 +65,7 @@ internal class Program
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddAutoMapper(typeof(UserMappingProfile));
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+        builder.Services.AddHttpContextAccessor();
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();

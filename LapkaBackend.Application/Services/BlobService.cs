@@ -77,7 +77,7 @@ public class BlobService : IBlobService
         await _storageContext.DeleteFileAsync(file);
     }
 
-    public async Task<List<string>> UploadFilesAsUserAsync(IFormFile[] files)
+    public async Task<List<string>> UploadFilesAsUserAsync(List<IFormFile> files)
     {
         if (files.Any((x => x.Length > _imageFileMaxSize)))
         {
@@ -98,7 +98,7 @@ public class BlobService : IBlobService
         return idFileList;
     }
 
-    public async Task<List<string>> UploadFilesAsShelterAsync(IFormFile[] files, Guid parentId)
+    public async Task<List<string>> UploadFilesAsShelterAsync(List<IFormFile> files, Guid parentId)
     {
         if (files.Any(x => x.Length > _otherFileMaxSize))
         {

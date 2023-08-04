@@ -147,7 +147,7 @@ namespace LapkaBackend.API.Controllers
         public async Task<ActionResult> DeleteProfilePicture()
         {
             await _userService.DeleteProfilePicture(HttpContext.User.FindFirstValue("userId")!);
-
+            
             return NoContent();
         }
 

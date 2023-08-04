@@ -24,7 +24,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Migrations\" />
+      <None Remove="Email\Account\style.css" />
     </ItemGroup>
+
+
 
 </Project>

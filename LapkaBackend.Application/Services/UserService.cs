@@ -8,6 +8,8 @@ using System.Security.Cryptography;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Domain.Enums;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 
 namespace LapkaBackend.Application.Services
@@ -18,13 +20,18 @@ namespace LapkaBackend.Application.Services
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly IBlobService _blobService;
+        private readonly IHttpContextAccessor _contextAccessor;
+        
 
-        public UserService(IDataContext context, IEmailService emailService, IConfiguration configuration, IBlobService blobService)
+        public UserService(IDataContext context, IEmailService emailService, 
+            IConfiguration configuration, IBlobService blobService,
+            IHttpContextAccessor contextAccessor)
         {
             _dbContext = context;
             _emailService = emailService;
             _configuration = configuration;
             _blobService = blobService;
+            _contextAccessor = contextAccessor;
         }
 
         public async Task<List<User>> GetAllUsers()
@@ -130,26 +137,18 @@ namespace LapkaBackend.Application.Services
 
         public async Task SetNewPassword(string id, UserPasswordRequest request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var user = await _dbContext.Users.
+                FirstOrDefaultAsync(x => x.Id == new Guid(id) &&
+                                    x.Password == request.CurrentPassword);
 
+            if (user is null)
+            {
+                throw new BadRequestException("invalid_request", "User not found");
+            }
             user!.Password = request.NewPassword;
 
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
-            
-            var baseUrl = _configuration.GetValue<string>("Domain");
-            var endpoint = $"/User/ConfirmUpdatedEmail/{user.VerificationToken}";
-
-            var link = $"{baseUrl}{endpoint}";
-
-            await _emailService.SendEmail(new MailRequest
-            {
-                ToEmail = user.Email,
-                Subject = "Zmiana emaila",
-                Template = Templates.PasswordChange,
-                RedirectUrl = link
-            });
-            
         }
 
         public async Task SetNewEmail(string id, UpdateUserEmailRequest request)
@@ -162,7 +161,8 @@ namespace LapkaBackend.Application.Services
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
 
-            var baseUrl = _configuration.GetValue<string>("Domain");
+            var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
+            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;
             var endpoint = $"/User/ConfirmUpdatedEmail/{user.VerificationToken}";
 
             var link = $"{baseUrl}{endpoint}";

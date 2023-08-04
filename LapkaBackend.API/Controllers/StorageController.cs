@@ -68,7 +68,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByShelter([Required]params IFormFile[] files)
+    public async Task<ActionResult> SaveFileByShelter([Required]List<IFormFile> files)
     {
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
@@ -88,7 +88,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByUser([Required]params IFormFile[] files)
+    public async Task<ActionResult> SaveFileByUser([Required]List<IFormFile> files)
     {
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
