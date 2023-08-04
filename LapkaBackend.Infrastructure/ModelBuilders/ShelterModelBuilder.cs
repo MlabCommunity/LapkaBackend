@@ -23,7 +23,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 .IsRequired();
 
             modelBuilder.Entity<Shelter>()
-                .Property(u => u.Longtitude)
+                .Property(u => u.Longitude)
                 .HasMaxLength(255)
                 .IsRequired();
 

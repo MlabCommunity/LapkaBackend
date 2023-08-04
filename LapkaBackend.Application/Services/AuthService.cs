@@ -279,7 +279,7 @@ namespace LapkaBackend.Application.Services
                 var newShelter = new Shelter()
                 {
                     OrganizationName = request.ShelterRequest.OrganizationName,
-                    Longtitude = request.ShelterRequest.Longitude,
+                    Longitude = request.ShelterRequest.Longitude,
                     Latitude = request.ShelterRequest.Latitude,
                     City = request.ShelterRequest.City,
                     Street = request.ShelterRequest.Street,

@@ -72,7 +72,7 @@ namespace LapkaBackend.Application.Functions.Command
             result.City = request.City;
             result.Krs = request.Krs;
             result.Latitude = request.Latitude;
-            result.Longtitude = request.Longitude;
+            result.Longitude = request.Longitude;
             result.Nip = request.Nip;
             result.OrganizationName = request.OrganizationName;
             result.PhoneNumber = request.PhoneNumber;

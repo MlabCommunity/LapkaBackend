@@ -19,6 +19,7 @@ namespace LapkaBackend.Domain.Entities
         public virtual Role? Role { get; set; }
 
         public Guid ShelterId { get; set; }
+        public virtual Shelter? Shelter { get; set; }
 
         public virtual List<Reaction>? Reactions { get; set; }
 
