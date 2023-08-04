@@ -4,6 +4,7 @@ using LapkaBackend.Application.Helper;
 using LapkaBackend.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Utilities.IO.Pem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +13,9 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record GetShelterByPositionQuery(float Longitude,float Latitude, int RadiusKm, int PageNumber, int PageSize) : IRequest<List<Shelter>>;
+    public record GetShelterByPositionQuery(float Longitude,float Latitude, int RadiusKm, int PageNumber, int PageSize) : IRequest<Response>;
     
-    public class GetShelterByPositionQueryHandler : IRequestHandler<GetShelterByPositionQuery, List<Shelter>>
+    public class GetShelterByPositionQueryHandler : IRequestHandler<GetShelterByPositionQuery, Response>
     {
         private readonly IDataContext _dbContext;
         private readonly IMapper _mapper;
@@ -26,7 +27,7 @@ namespace LapkaBackend.Application.Functions.Queries
             _mapper = mapper;
         }
         
-        public async Task<List<Shelter>> Handle(GetShelterByPositionQuery request, CancellationToken cancellationToken)
+        public async Task<Response> Handle(GetShelterByPositionQuery request, CancellationToken cancellationToken)
         {
             List<Domain.Entities.Shelter> allShelters = _dbContext.Shelters.ToList();
 
@@ -60,7 +61,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
 
 
-            var PetsList = usersWithSheltersWithRadius.Select(p => new SheltersInRadiusDto()
+            var sheltersInRadiusDto = usersWithSheltersWithRadius.Select(p => new SheltersInRadiusDto()
             {
                 Id = p.Shelter.Id,
                 OrganizationName = p.Shelter.OrganizationName,
@@ -76,44 +77,38 @@ namespace LapkaBackend.Application.Functions.Queries
             int totalItemsCount = sheltersIds.Count;
             int numberOfPages = (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
-            
+            var response = sheltersInRadiusDto.Select(p => new Response()
+            {
+                SheltersInRadiusDto = p,
+                TotalPages = numberOfPages,
+                TotalItemsCount = totalItemsCount
+            });
 
-            //var PetsList = FoundAnimals.Select(p => new PetInListDto()
-            //{
-            //    Id = p.Id,
-            //    Name = p.Name,
-            //    Type = p.AnimalCategory.CategoryName,
-            //    Gender = p.Gender,
-            //    Breed = p.Species,
-            //    Color = p.Marking,
-            //    Weight = (float)p.Weight,
-            //    //ProfilePhoto = p.Photos.FirstOrDefault(p => p.IsProfilePhoto = true),
-            //    //Photos = p.Photos.FindAll(p => p.IsProfilePhoto != true)
-            //    Months = p.Months,
-            //    CreatedAt = p.CreatedAt,
-            //    IsSterilized = p.IsSterilized,
-            //    Description = p.Description,
-            //    TotalPages = numberOfPages,
-            //    TotalItemsCount = totalItemsCount
-
-            //});
+            return (Response)response;
         }
+
+        
     }
 
     public class SheltersInRadiusDto
     {
         public Guid Id { get; set; }
-        public string OrganizationName { get; set; }
-        public string Email { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string ProfilePhoto { get; set; }
-        public string PhoneNumber { get; set; }
-        public string City { get; set; }
-        public string Street { get; set; }
+        public string? OrganizationName { get; set; }
+        public string? Email { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? ProfilePhoto { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? City { get; set; }
+        public string? Street { get; set; }
         public double Distance { get; set; }
     }
 
-
+    public class Response
+    {
+        public SheltersInRadiusDto? SheltersInRadiusDto { get; set; }
+        public int TotalPages { get; set; }
+        public int TotalItemsCount { get; set; }
+    }
 
 }

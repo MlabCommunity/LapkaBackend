@@ -16,17 +16,13 @@ namespace LapkaBackend.Application.Functions.Command
     {
         private string petId;
 
-        public AddPetToArchiveCommand(Guid petId)
-        {
-            PetId = petId;
-        }
 
         public AddPetToArchiveCommand(string petId)
         {
             this.petId = petId;
         }
 
-        public Guid PetId { get; set; }
+        public string PetId { get; set; }
     }
 
     public class AddPetToArchiveCommandHandler : IRequestHandler<AddPetToArchiveCommand>
@@ -43,7 +39,8 @@ namespace LapkaBackend.Application.Functions.Command
 
         public async Task Handle(AddPetToArchiveCommand request, CancellationToken cancellationToken)
         {
-            var animal = _dbContext.Animals.FirstOrDefault(x => x.Id == request.PetId);
+            Guid petId = new Guid(request.PetId);
+            var animal = _dbContext.Animals.FirstOrDefault(x => x.Id == petId);
 
             if (animal == null)
             {

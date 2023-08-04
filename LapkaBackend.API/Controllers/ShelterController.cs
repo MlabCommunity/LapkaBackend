@@ -114,7 +114,7 @@ namespace LapkaBackend.API.Controllers
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AddPetToArchive([FromRoute] Guid petId)
+        public async Task<IActionResult> AddPetToArchive([FromRoute] string petId)
         {
             var query = new AddPetToArchiveCommand(petId);
             await _mediator.Send(query);
@@ -289,13 +289,11 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         ///     Zwrócenie listy schronisk na podstawie długości i szerokości geograficznej
         /// </summary>
-        [HttpGet("/shelters/volunteers/")]
+        [HttpGet("/shelters/volunteers/getShelterByPosition")]
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetShelterByPosition(GetShelterByPositionQuery getShelterByPositionQuery)
+        public async Task<IActionResult> GetShelterByPosition([FromQuery] GetShelterByPositionQuery getShelterByPositionQuery)
         {
-            //var query = new GetShelterByPositionQuery(longitude, latitude);
-
             return Ok(await _mediator.Send(getShelterByPositionQuery));
         }   
 
