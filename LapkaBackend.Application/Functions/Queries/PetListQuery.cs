@@ -53,10 +53,18 @@ namespace LapkaBackend.Application.Functions.Queries
                 CreatedAt = p.CreatedAt,
                 IsSterilized = p.IsSterilized,
                 Description = p.Description,
+                
+
+            })
+            .ToList();
+
+            var petListResponse = new PetListResponse()
+            {
+                PetInListDto = PetsList,
                 TotalPages = numberOfPages,
                 TotalItemsCount = totalItemsCount
+            };
 
-            });
 
             return PetsList.ToList();
         }
@@ -77,7 +85,11 @@ namespace LapkaBackend.Application.Functions.Queries
         public DateTime CreatedAt { get; set; }
         public bool IsSterilized { get; set; }
         public string Description { get; set; } = null!;
+    }
 
+    public class PetListResponse
+    {
+        public List<PetInListDto>? PetInListDto { get; set; }
         public int TotalPages { get; set; }
         public int TotalItemsCount { get; set; }
     }

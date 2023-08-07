@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Domain.Enums
 {
-    public enum Gender
+    public enum Genders
     {
         Male,
         Female,

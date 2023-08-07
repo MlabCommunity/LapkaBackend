@@ -27,14 +27,14 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         ///     update shelter
         /// </summary>
-        [HttpPut("/shelters{shelterId}")]
+        [HttpPut("/shelters")]
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateShelter([FromRoute] string shelterId, UpdateShelterRequest request)
+        public async Task<IActionResult> UpdateShelter(UpdateShelterCommand command)
         {
-            var query = new UpdateShelterCommand(request, shelterId);
-            await _mediator.Send(query);
+            //var query = new UpdateShelterCommand(request);
+            await _mediator.Send(command);
 
             return NoContent();
         }
@@ -66,44 +66,16 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        ///     Utworzenie karty psa do shroniska
+        ///     Utworzenie karty zwierzaka do shroniska
         /// </summary>
-        [HttpPost("/shelters/cards/dog")]
+        [HttpPost("/shelters/cards/CreatePet")]
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> CreateDogCart(DogCard dogCard)
+        public async Task<IActionResult> CreateCatCard(CreatePetCardCommand CatCard)
         {
-            var query = new CreateDogCardCommand(dogCard);
-            await _mediator.Send(query);
-            return NoContent();
-        }
-
-        /// <summary>
-        ///     Utworzenie karty kota do shroniska
-        /// </summary>
-        [HttpPost("/shelters/cards/cat")]
-        //[Authorize(Roles = "Shelter")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> CreateCatCard(CatCard CatCard)
-        {
-            var query = new CreateCatCardCommand(CatCard);
-            await _mediator.Send(query);
-            return NoContent();
-        }
-
-        /// <summary>
-        ///     Utworzenie karty innego zwierzęcia(Undefined) do shroniska
-        /// </summary>
-        [HttpPost("/shelters/cards/UndefinedAnimal")]
-        //[Authorize(Roles = "Shelter")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> CreateUndefinedAnimalCard(UndefinedAnimalCard UndefinedAnimalCard)
-        {
-            var query = new CreateUndefinedAnimalCardCommand(UndefinedAnimalCard);
-            await _mediator.Send(query);
+            //var query = new CreateCatCardCommand(CatCard);
+            await _mediator.Send(CatCard);
             return NoContent();
         }
 
@@ -215,20 +187,6 @@ namespace LapkaBackend.API.Controllers
             
             return Ok(await _mediator.Send(query));
         }
-
-        ///// <summary>
-        /////     Wyświetlenie polubionych zwierząt danego schroniska z podziałem na strony
-        ///// </summary>
-        //[HttpPut("/shelters/cards/publish/{petId}")]
-        ////[Authorize(Roles = "Shelter")]
-        //[ProducesResponseType(StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //public async Task<IActionResult> PublishPet([FromRoute] string petId)
-        //{
-        //    var command = new PublishPetCommand(petId);
-        //    await _mediator.Send(command);
-        //    return NoContent();
-        //}
 
         /// <summary>
         ///     Publikacja zwierzęcia

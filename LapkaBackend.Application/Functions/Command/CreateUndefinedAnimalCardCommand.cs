@@ -33,7 +33,7 @@ namespace LapkaBackend.Application.Functions.Command
         public string Name { get; set; } = null!;
         public string PetIdentifier { get; set; } = null!;
         public string ProfilePhoto { get; set; } = null!;
-        public Gender Gender { get; set; }
+        public Genders Gender { get; set; }
         public string Description { get; set; } = null!;
         public bool IsVisible { get; set; }
         public int Months { get; set; }
@@ -97,7 +97,7 @@ namespace LapkaBackend.Application.Functions.Command
         [Required]
         public string ProfilePhoto { get; set; } = null!;
         [Required]
-        public Gender Gender { get; set; }
+        public Genders Gender { get; set; }
         [Required]
         public string Description { get; set; } = null!;
         [Required]

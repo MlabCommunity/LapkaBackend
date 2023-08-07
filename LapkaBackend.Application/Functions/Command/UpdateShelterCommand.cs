@@ -13,36 +13,7 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record UpdateShelterCommand:IRequest
-    {
-
-        public UpdateShelterCommand(UpdateShelterRequest request, string id)
-        {
-            OrganizationName = request.OrganizationName;
-            Longitude = request.Longitude;
-            Latitude = request.Latitude;
-            City = request.City;
-            Street = request.Street;
-            ZipCode = request.ZipCode;
-            Nip = request.Nip;
-            Krs = request.Krs;
-            PhoneNumber = request.PhoneNumber;
-
-            ShelterId = id;
-        }
-
-        public string OrganizationName { get; set; } = null!;
-        public float Longitude { get; set; }
-        public float Latitude { get; set; }
-        public string City { get; set; } = null!;
-        public string Street { get; set; } = null!;
-        public string ZipCode { get; set; } = null!;
-        public string Nip { get; set; } = null!;
-        public string Krs { get; set; } = null!;
-        public string PhoneNumber { get; set; } = null!;
-
-        public string ShelterId { get; set; }
-    }
+    public record UpdateShelterCommand(string ShelterId, string OrganizationName,float Longitude, float Latitude, string City, string Street, string ZipCode, string Nip, string Krs, string PhoneNumber):IRequest;
 
     
 
@@ -83,29 +54,6 @@ namespace LapkaBackend.Application.Functions.Command
 
             await _dbContext.SaveChangesAsync();
         }
-    }
-
-
-    public class UpdateShelterRequest
-    {
-        [Required]
-        public string OrganizationName { get; set; } = null!;
-        [Required]
-        public float Longitude { get; set; }
-        [Required]
-        public float Latitude { get; set; }
-        [Required]
-        public string City { get; set; } = null!;
-        [Required]
-        public string Street { get; set; } = null!;
-        [Required]
-        public string ZipCode { get; set; } = null!;
-        [Required]
-        public string Nip { get; set; } = null!;
-        [Required]
-        public string Krs { get; set; } = null!;
-        [Required]
-        public string PhoneNumber { get; set; } = null!;
     }
 
 

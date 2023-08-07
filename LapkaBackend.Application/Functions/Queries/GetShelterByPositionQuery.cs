@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
@@ -29,7 +30,7 @@ namespace LapkaBackend.Application.Functions.Queries
         
         public async Task<Response> Handle(GetShelterByPositionQuery request, CancellationToken cancellationToken)
         {
-            List<Domain.Entities.Shelter> allShelters = _dbContext.Shelters.ToList();
+            List<Shelter> allShelters = await _dbContext.Shelters.ToListAsync();
 
             var sheltersWithRadius = allShelters
                 .Select(shelter =>
@@ -71,24 +72,28 @@ namespace LapkaBackend.Application.Functions.Queries
                 PhoneNumber = p.Shelter.PhoneNumber,
                 City = p.Shelter.City,
                 Street = p.Shelter.Street,
-                Distance = p.Distance
-            });
+                Distance = Math.Round(p.Distance, 2)
+            })
+            .ToList();
 
             int totalItemsCount = sheltersIds.Count;
             int numberOfPages = (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
-            var response = sheltersInRadiusDto.Select(p => new Response()
+            Response response = new Response()
             {
-                SheltersInRadiusDto = p,
+                SheltersInRadiusDto = sheltersInRadiusDto,
                 TotalPages = numberOfPages,
                 TotalItemsCount = totalItemsCount
-            });
+            };
 
-            return (Response)response;
+            return response;
         }
 
         
     }
+
+
+
 
     public class SheltersInRadiusDto
     {
@@ -97,16 +102,21 @@ namespace LapkaBackend.Application.Functions.Queries
         public string? Email { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
-        public string? ProfilePhoto { get; set; }
+        //public string? ProfilePhoto { get; set; }
         public string? PhoneNumber { get; set; }
         public string? City { get; set; }
         public string? Street { get; set; }
         public double Distance { get; set; }
+
+        public static implicit operator SheltersInRadiusDto(List<SheltersInRadiusDto> v)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class Response
     {
-        public SheltersInRadiusDto? SheltersInRadiusDto { get; set; }
+        public List<SheltersInRadiusDto>? SheltersInRadiusDto { get; set; }
         public int TotalPages { get; set; }
         public int TotalItemsCount { get; set; }
     }
