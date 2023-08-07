@@ -9,14 +9,19 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
     {
         public static void BuildUserModel(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-            .ToTable("Users")
-            .HasKey(u => u.Id);
+            modelBuilder.Entity<User>(u =>
+            {
+                u.ToTable("Users")
+                    .HasKey(e => e.Id);
 
-            modelBuilder.Entity<User>()
-                .Property(u => u.Email)
-                .HasMaxLength(255)
-                .IsRequired();
+                u.HasOne(e => e.Role)
+                    .WithMany(e => e.Users);
+
+                u.Property(e => e.Email)
+                    .HasMaxLength(255)
+                    .IsRequired();
+            });
+
         }
         
         public static void SeedUser(DbContextOptions<DataContext> options)

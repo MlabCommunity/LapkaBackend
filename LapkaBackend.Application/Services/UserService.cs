@@ -57,17 +57,9 @@ namespace LapkaBackend.Application.Services
             };
         }
 
-        public async Task<User> AddUser(User user)
+        public async Task UpdateUser(UpdateUserDataRequest request, Guid id)
         {
-            await _dbContext.Users.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
-
-            return user;
-        }
-
-        public async Task UpdateUser(UpdateUserDataRequest request, string id)
-        {
-            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
 
             if (result is null)
             {
@@ -94,9 +86,9 @@ namespace LapkaBackend.Application.Services
 
         }
 
-        public async Task DeleteUser(string id)
+        public async Task DeleteUser(Guid id)
         {
-            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
 
             if (result is null)
             {
@@ -107,52 +99,30 @@ namespace LapkaBackend.Application.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<User> FindUserByRefreshToken(TokenRequest request)
-        {
-            var result = await _dbContext.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
-                
-            if (result is null)
-            {
-                throw new BadRequestException("invalid_user","User doesn't exists");
-            }
-
-            return result;
-        }
-
-        public async Task<User> FindUserByEmail(string email)
-        {
-            var result = await _dbContext.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Email == email);
-
-            if (result is null)
-            {
-                throw new BadRequestException("invalid_user","User doesn't exists");
-            }
-
-            return result;
-        }
-
-        public async Task SetNewPassword(string id, UserPasswordRequest request)
+        public async Task SetNewPassword(Guid id, UserPasswordRequest request)
         {
             var user = await _dbContext.Users.
-                FirstOrDefaultAsync(x => x.Id == new Guid(id));
+                FirstOrDefaultAsync(x => x.Id == id);
 
-            if (user is not null && !BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+            if (user is null)
             {
                 throw new BadRequestException("invalid_request", "User not found");
             }
+
+            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+            {
+                throw new BadRequestException("invalid_password", "Invalid current password");
+            }
+            
             user!.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
 
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task SetNewEmail(string id, UpdateUserEmailRequest request)
+        public async Task SetNewEmail(Guid id, UpdateUserEmailRequest request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
 
             user!.Email = request.Email;
             user.VerifiedAt = null;
@@ -175,20 +145,20 @@ namespace LapkaBackend.Application.Services
             });
         }
 
-        public async Task<GetCurrentUserDataQueryResult> GetLoggedUser(string id)
+        public async Task<GetCurrentUserDataQueryResult> GetLoggedUser(Guid id)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var user = await _dbContext.Users.Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
             return new GetCurrentUserDataQueryResult
             {
                 Id = user!.Id,
-                Username = "xd",
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
                 CreatedAt = user.CreatedAt,
                 ProfilePicture = user.ProfilePicture,
-                Role = (Roles)user.Role!.Id,
+                Role = (Roles)user.Role.Id - 1,
                 LoginProvider = user.LoginProvider
             };
         }
@@ -208,9 +178,9 @@ namespace LapkaBackend.Application.Services
             await _dbContext.SaveChangesAsync();
         }
         
-        public async Task DeleteProfilePicture(string id)
+        public async Task DeleteProfilePicture(Guid id)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == new Guid(id));
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
 
             if (user is null)
             {

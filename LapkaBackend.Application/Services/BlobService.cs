@@ -165,7 +165,7 @@ public class BlobService : IBlobService
             throw new NotFoundException("invalid_id", "File does not exists");
         }
 
-        if (!(blobFile.ParentEntityId == userId))
+        if (blobFile.ParentEntityId != userId)
         {
             throw new ForbiddenException("invalid_user", "You are not allowed to modify this file");
         }

@@ -134,7 +134,7 @@ internal class Program
 
         app.UseAuthorization();
         
-        app.UseMiddleware<ErrorHandlerMiddleware>();
+        //app.UseMiddleware<ErrorHandlerMiddleware>();
 
         app.MapControllers();
 
