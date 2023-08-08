@@ -234,8 +234,11 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("int");
 
-                    b.Property<Guid>("ShelterId")
+                    b.Property<Guid?>("ShelterId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("SoftDeleteAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("VerificationToken")
                         .HasColumnType("nvarchar(max)");
@@ -246,6 +249,8 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("ShelterId");
 
                     b.ToTable("Users", (string)null);
                 });
@@ -260,7 +265,8 @@ namespace LapkaBackend.Infrastructure.Migrations
 
                     b.HasOne("LapkaBackend.Domain.Entities.Shelter", "Shelter")
                         .WithMany("Animals")
-                        .HasForeignKey("ShelterId");
+                        .HasForeignKey("ShelterId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("AnimalCategory");
 
@@ -275,7 +281,13 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("LapkaBackend.Domain.Entities.Shelter", "Shelter")
+                        .WithMany()
+                        .HasForeignKey("ShelterId");
+
                     b.Navigation("Role");
+
+                    b.Navigation("Shelter");
                 });
 
             modelBuilder.Entity("LapkaBackend.Domain.Entities.AnimalCategory", b =>

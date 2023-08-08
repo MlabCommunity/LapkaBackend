@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using LapkaBackend.Domain.Enums;
+﻿using LapkaBackend.Domain.Enums;
 
 namespace LapkaBackend.Domain.Entities
 {
@@ -15,10 +14,11 @@ namespace LapkaBackend.Domain.Entities
         public string? VerificationToken { get; set; }
         public DateTime? VerifiedAt { get; set; }
         public int? RoleId { get; set; }
-        public Role Role { get; set; } 
-        public Guid ShelterId { get; set; }
+        public Role Role { get; set; }
         public string LoginProvider { get; set; } = string.Empty;
         public string? ProfilePicture { get; set; } = string.Empty;
-        
+        public DateTime? SoftDeleteAt { get; set; }
+        public Guid? ShelterId { get; set; }
+        public Shelter Shelter { get; set; }
     }
 }

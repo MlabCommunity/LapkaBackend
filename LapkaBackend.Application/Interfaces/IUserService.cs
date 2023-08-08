@@ -6,7 +6,6 @@ namespace LapkaBackend.Application.Interfaces
 {
     public interface IUserService
     {
-        Task<List<User>> GetAllUsers();
         Task<GetUserDataByIdQueryResult> GetUserById(Guid id);
         Task UpdateUser(UpdateUserDataRequest request, Guid id);
         Task DeleteUser(Guid id);

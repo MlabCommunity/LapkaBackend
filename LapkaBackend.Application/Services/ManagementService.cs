@@ -27,9 +27,9 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_role","Cannot choose SuperAdmin, Undefined, User");
             }
-
+            
             var users = await _dbContext.Users
-            .Where(u => u.Role.RoleName == role.ToString())
+            .Where(u => u.Role.RoleName == role.ToString() && u.SoftDeleteAt == null)
             .ToListAsync();
 
             var result = new GetUsersByRoleQueryResult
@@ -43,6 +43,7 @@ namespace LapkaBackend.Application.Services
         public async Task AssignAdminRole(Guid userId)
         {
             var userResult = await _dbContext.Users.Include(u => u.Role)
+                .Where(x => x.SoftDeleteAt == null)
                 .FirstOrDefaultAsync(x => x.Id == userId);
 
             if (userResult is null)
@@ -63,6 +64,7 @@ namespace LapkaBackend.Application.Services
         public async Task RemoveAdminRole(Guid userId)
         {
             var userResult = await _dbContext.Users.Include(u => u.Role)
+                .Where(x =>  x.SoftDeleteAt == null)
                 .FirstOrDefaultAsync(x => x.Id == userId);
 
             if (userResult is null)

@@ -10,7 +10,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
             modelBuilder.Entity<Animal>(a =>
             {
                 a.ToTable("Animals")
-                .HasKey(a => a.Id);
+                .HasKey(x => x.Id);
 
                 a.Property(x => x.Name)
                 .IsRequired();
@@ -39,8 +39,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
 
                 a.Property(x => x.Months)
                 .IsRequired();
-
-
+                
             });
 
 

@@ -33,12 +33,6 @@ namespace LapkaBackend.Application.Services
             _blobService = blobService;
             _contextAccessor = contextAccessor;
         }
-
-        public async Task<List<User>> GetAllUsers()
-        {
-            return await _dbContext.Users.ToListAsync();
-        }
-
         public async Task<GetUserDataByIdQueryResult> GetUserById(Guid id)
         {
             var user = await _dbContext.Users.FindAsync(id);
@@ -60,7 +54,7 @@ namespace LapkaBackend.Application.Services
         public async Task UpdateUser(UpdateUserDataRequest request, Guid id)
         {
             var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
-
+            
             if (result is null)
             {
                 throw new BadRequestException("invalid_user","User doesn't exists");
@@ -95,8 +89,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_user","User doesn't exists");
             }
 
-            _dbContext.Users.Remove(result);
-            await _dbContext.SaveChangesAsync();
+            result.SoftDeleteAt = DateTime.UtcNow.AddMonths(1);
         }
 
         public async Task SetNewPassword(Guid id, UserPasswordRequest request)

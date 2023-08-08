@@ -1,4 +1,6 @@
-﻿namespace LapkaBackend.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace LapkaBackend.Domain.Entities
 {
     public class Shelter
     {
@@ -13,5 +15,6 @@
         public string Krs { get; set; } = null!;
         public string PhoneNumber { get; set; } = null!;
         public virtual List<Animal>? Animals { get; set; }
+
     }
 }

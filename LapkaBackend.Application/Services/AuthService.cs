@@ -65,7 +65,7 @@ namespace LapkaBackend.Application.Services
         private async Task SendEmailToConfirmEmail(string emailAddress, string token)
         {
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
-            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;          
+            var baseUrl = myUrl.Scheme + Uri.SchemeDelimiter + myUrl.Authority;          
             var endpoint = $"/Auth/confirmEmail/{token}";
 
             var link = $"{baseUrl}{endpoint}";
@@ -83,7 +83,9 @@ namespace LapkaBackend.Application.Services
 
         public async Task<LoginResultDto> LoginUser(LoginRequest request)
         {
-            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
+            var result = await _dbContext.Users
+                .Where(x => x.SoftDeleteAt == null)
+                .FirstOrDefaultAsync(x => x.Email == request.Email);
 
             if (result == null)
             {
@@ -124,6 +126,7 @@ namespace LapkaBackend.Application.Services
         public async Task<LoginResultDto> LoginShelter(LoginRequest request)
         {
             var result = await _dbContext.Users
+                .Where(x => x.SoftDeleteAt == null)
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(x => x.Email == request.Email);
 
@@ -131,9 +134,9 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_email", "User not found");
             }
-            if (result.Role!.RoleName != Roles.Shelter.ToString() && result.Role.RoleName != Roles.Worker.ToString())
+            if (result.Role.RoleName != Roles.Shelter.ToString() && result.Role.RoleName != Roles.Worker.ToString())
             {
-                throw new BadRequestException("", "You are not Shelter!");
+                throw new BadRequestException("invalid_role", "You are not Shelter!");
             }
 
             if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
@@ -300,7 +303,7 @@ namespace LapkaBackend.Application.Services
                 RefreshToken = CreateRefreshToken(),
                 VerificationToken = CreateRandomToken(),
                 CreatedAt = DateTime.UtcNow,
-                Role = roleUser,
+                Role = roleUser!,
                 ShelterId = newShelter.Id
             };
 
@@ -312,8 +315,17 @@ namespace LapkaBackend.Application.Services
 
         public async Task ResetPassword(UserEmailRequest request)
         {
+            var result = _dbContext.Users
+                .Where(x => x.SoftDeleteAt == null)
+                .FirstOrDefaultAsync(x => x.Email == request.Email);
+
+            if (result is null)
+            {
+                throw new BadRequestException("invalid_mail", "User with that email does not exists");
+            }
+            
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
-            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;  
+            var baseUrl = myUrl.Scheme + Uri.SchemeDelimiter + myUrl.Authority;  
             var endpoint = $"/Auth/setPassword/{CreateSetNewPasswordToken(request.Email)}";
 
             var link = $"{baseUrl}{endpoint}";
@@ -359,7 +371,7 @@ namespace LapkaBackend.Application.Services
                 new(ClaimTypes.Email, user.Email),
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new(ClaimTypes.Name, user.LastName),
-                new(ClaimTypes.Role, user.Role!.RoleName)
+                new(ClaimTypes.Role, user.Role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(

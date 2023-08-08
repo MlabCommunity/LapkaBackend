@@ -14,7 +14,6 @@ namespace LapkaBackend.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.AddModels();
-
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Shelter> Shelters { get; set; }
@@ -22,7 +21,5 @@ namespace LapkaBackend.Infrastructure.Data
         public DbSet<Animal> Animals { get; set; }
         public DbSet<AnimalCategory> AnimalCategories { get; set; }
         public DbSet<FileBlob> Blobs { get; set; }
-
-
     }
 }
