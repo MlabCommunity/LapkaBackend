@@ -120,7 +120,7 @@ internal class Program
             db.Database.Migrate();
             Extensions.Seed(options);
             var job = scope.ServiceProvider.GetRequiredService<UpdateDeleteJob>();
-            RecurringJob.AddOrUpdate("deleteJob",() => job.PermDelete(), "*/3 * * * *");
+            RecurringJob.AddOrUpdate("deleteJob",() => job.PermDelete(), Cron.Daily);
             RecurringJob.TriggerJob("deleteJob");
         }
 
