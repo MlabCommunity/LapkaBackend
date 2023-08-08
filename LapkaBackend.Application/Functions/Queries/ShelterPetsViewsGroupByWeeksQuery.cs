@@ -28,21 +28,25 @@ namespace LapkaBackend.Application.Functions.Queries
         {
             Guid shelterId = new Guid(request.Shelter);
             var currentMonth = DateTime.Now.Month;
-
+            
             var animalViewsForShelter = await _dbContext.AnimalViews
-                .Where(av => av.Animal.ShelterId == shelterId && av.ViewDate.Year == currentMonth && av.Animal.IsVisible == true)
-                .GroupBy(x => ((int)x.ViewDate.DayOfWeek))
-                .Select(group => new { DayOfWeek = group.Key, Count = group.Count() })
-                .OrderBy(x => x.DayOfWeek)
-                .ToListAsync();
+                .Where(av => av.Animal.ShelterId == shelterId && av.ViewDate.Month == currentMonth && av.Animal.IsVisible == true)
+                .Select(av => new
+                {
+                    DayOfWeek = av.ViewDate.DayOfWeek,
+                    ViewDate = av.ViewDate,
+                    AnimalId = av.Animal.Id
+                })
+                .ToListAsync(); 
+            
 
-            var numberOfMonths = 7;
-            var result = new List<int>(numberOfMonths);
+            var numberOfdays = 7;
+            var result = new List<int>(numberOfdays);
 
-            for (int i = 1; i <= numberOfMonths; i++)
+            for (int i = 1; i <= numberOfdays; i++)
             {
-                var viewsCount = animalViewsForShelter.FirstOrDefault(x => x.DayOfWeek == i)?.Count ?? 0;
-                result.Add(viewsCount);
+                var value = animalViewsForShelter.Count(x => (int)x.DayOfWeek == i);
+                result.Add(value);
             }
 
             return result;

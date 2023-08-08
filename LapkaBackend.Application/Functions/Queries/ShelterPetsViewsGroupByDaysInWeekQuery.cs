@@ -33,17 +33,22 @@ namespace LapkaBackend.Application.Functions.Queries
 
             var animalViewsForShelter = await _dbContext.AnimalViews
                 .Where(av => av.Animal.ShelterId == shelterId && av.ViewDate >= currentWeekStart && av.ViewDate < currentWeekEnd && av.Animal.IsVisible==true)
-                .GroupBy(x => (int)x.ViewDate.DayOfWeek)
-                .Select(group => new { DayOfWeek = group.Key, Count = group.Count() })
-                .OrderBy(x => x.DayOfWeek)
+                .Select(av => new
+                {
+                    DayOfWeek = av.ViewDate.DayOfWeek,
+                    ViewDate = av.ViewDate,
+                    AnimalId = av.Animal.Id
+                })
                 .ToListAsync();
 
-            var numberOfMonths = 7;
-            var result = new List<int>(numberOfMonths);
 
-            for (int i = 1; i <= numberOfMonths; i++)
+
+            var numberOfDays = 7;
+            var result = new List<int>(numberOfDays);
+
+            for (int i = 1; i <= numberOfDays; i++)
             {
-                var viewsCount = animalViewsForShelter.FirstOrDefault(x => x.DayOfWeek == i)?.Count ?? 0;
+                var viewsCount = animalViewsForShelter.Count(x => (int)x.DayOfWeek == i);
                 result.Add(viewsCount);
             }
 

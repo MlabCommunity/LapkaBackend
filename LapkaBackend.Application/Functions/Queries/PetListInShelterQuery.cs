@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LapkaBackend.Application.Common;
+using LapkaBackend.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,33 +13,35 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record PetListQuery(int PageNumber, int PageSize) : IRequest<PetListResponse>;
+    public record PetListInShelterQuery(string ShelterId, int PageNumber, int PageSize) : IRequest<PetListInShelterResponse>;
 
-    public class PetListQueryHandler : IRequestHandler<PetListQuery, PetListResponse>
+    public class PetListInShelterQueryHandler : IRequestHandler<PetListInShelterQuery, PetListInShelterResponse>
     {
         private readonly IDataContext _dbContext;
         private readonly IMapper _mapper;
 
-        public PetListQueryHandler(IDataContext dbContext, IMapper mapper)
+        public PetListInShelterQueryHandler(IDataContext dbContext, IMapper mapper)
         {
 
             _dbContext = dbContext;
             _mapper = mapper;
         }
 
-        public async Task<PetListResponse> Handle(PetListQuery request, CancellationToken cancellationToken)
+        public async Task<PetListInShelterResponse> Handle(PetListInShelterQuery request, CancellationToken cancellationToken)
         {
-            int totalItemsCount = _dbContext.Animals.Count();
+            Guid ShelterId = new Guid(request.ShelterId);
+            int totalItemsCount = _dbContext.Animals.Where(x => x.ShelterId == ShelterId).Count();
             int numberOfPages =  (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
             var FoundAnimals =  _dbContext.Animals
                 .Include(a => a.Photos).Include(a => a.AnimalCategory)
                 .Where(a => a.IsVisible)
+                .Where(a => a.ShelterId == ShelterId)
                 .OrderBy(x => x.Name)
                 .Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize)
                 .ToList();
 
-            var petsList = FoundAnimals.Select(p => new PetInListDto()
+            var petsList = FoundAnimals.Select(p => new PetInListInShelterDto()
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -58,9 +61,9 @@ namespace LapkaBackend.Application.Functions.Queries
             })
             .ToList();
 
-            var petListResponse = new PetListResponse()
+            var petListResponse = new PetListInShelterResponse()
             {
-                PetInListDto = petsList,
+                PetInListInShelterDto = petsList,
                 TotalPages = numberOfPages,
                 TotalItemsCount = totalItemsCount
             };
@@ -70,26 +73,28 @@ namespace LapkaBackend.Application.Functions.Queries
         }
     }
 
-    public class PetInListDto
+
+
+    public class PetInListInShelterDto
     {
-        public Guid Id { get; set; } 
+        public Guid Id { get; set; }
         public string Name { get; set; } = null!;
         public string Type { get; set; } = null!;
         public string Gender { get; set; } = null!;
         public string Breed { get; set; } = null!;
         public string Color { get; set; } = null!;
         public float Weight { get; set; }
-        public string ProfilePhoto { get; set; } = null!;
-        public string[] Photos { get; set; } = null!;
+        public string? ProfilePhoto { get; set; }
+        public string[]? Photos { get; set; }
         public int Months { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsSterilized { get; set; }
         public string Description { get; set; } = null!;
     }
 
-    public class PetListResponse
+    public class PetListInShelterResponse
     {
-        public List<PetInListDto>? PetInListDto { get; set; }
+        public List<PetInListInShelterDto>? PetInListInShelterDto { get; set; }
         public int TotalPages { get; set; }
         public int TotalItemsCount { get; set; }
     }

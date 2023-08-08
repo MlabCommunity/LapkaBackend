@@ -35,9 +35,12 @@ namespace LapkaBackend.Application.Functions.Queries
 
             var animalViewsForShelter = await  _dbContext.AnimalViews
                 .Where(av => av.Animal.ShelterId == shelterId && av.ViewDate.Year == currentYear && av.Animal.IsVisible == true)
-                .GroupBy(x => x.ViewDate.Month)
-                .Select(group => new { Month = group.Key, Count = group.Count() })
-                .OrderBy(x => x.Month)
+                .Select(av => new
+                {
+                    Month = av.ViewDate.Month,
+                    ViewDate = av.ViewDate,
+                    AnimalId = av.Animal.Id
+                })
                 .ToListAsync();
 
             var numberOfMonths = 12;
@@ -45,7 +48,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
             for (int i = 1; i <= numberOfMonths; i++)
             {
-                var viewsCount = animalViewsForShelter.FirstOrDefault(x => x.Month == i)?.Count ?? 0;
+                var viewsCount = animalViewsForShelter.Count(x => x.Month == i);
                 result.Add(viewsCount);
             }
 

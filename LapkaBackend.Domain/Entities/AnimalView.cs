@@ -16,7 +16,7 @@ namespace LapkaBackend.Domain.Entities
         public virtual required Animal Animal { get; set; }
 
         [ForeignKey("UserId")]
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         public virtual User? User { get; set; }
 
         public DateTime ViewDate { get; set; }

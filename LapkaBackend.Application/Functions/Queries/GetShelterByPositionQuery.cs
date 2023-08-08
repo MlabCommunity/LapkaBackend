@@ -30,8 +30,9 @@ namespace LapkaBackend.Application.Functions.Queries
         
         public async Task<Response> Handle(GetShelterByPositionQuery request, CancellationToken cancellationToken)
         {
-            List<Shelter> allShelters = await _dbContext.Shelters.ToListAsync();
+            List<Shelter> allShelters = await _dbContext.Shelters.ToListAsync();// lista wszystkich shronisk
 
+            // sheltersWithRadius - lista zawierająca tylko shroniska znajdujące się w zasięgu i z paginacją, składa się z Shelter i Distance
             var sheltersWithRadius = allShelters
                 .Select(shelter =>
                 {
@@ -44,11 +45,14 @@ namespace LapkaBackend.Application.Functions.Queries
 
             var sheltersIds = sheltersWithRadius.Select(shelter => shelter.Shelter.Id).ToList();
 
-            var usersWithShelters = _dbContext.Users.Include(u=>u.Shelter)
-                .Where(user => sheltersIds.Contains(user.ShelterId))
+            var sheltersWithRadiusPagination = sheltersWithRadius.Skip(request.PageSize * (request.PageNumber - 1)).Take(request.PageSize);
+            var sheltersIdsPagination = sheltersWithRadiusPagination.Select(shelter => shelter.Shelter.Id).ToList();
+
+            var usersWithSheltersPagination = _dbContext.Users.Include(u=>u.Shelter)
+                .Where(user => sheltersIdsPagination.Contains(user.ShelterId))
                 .ToList();
 
-            var usersWithSheltersWithRadius = usersWithShelters
+            var usersWithSheltersWithRadiusPagination = usersWithSheltersPagination
             .Select(user => new
             {
                 User = user,
@@ -59,10 +63,11 @@ namespace LapkaBackend.Application.Functions.Queries
             .ToList();
 
 
+            int totalItemsCount = sheltersIds.Count;
+            int numberOfPages = (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
 
-
-            var sheltersInRadiusDto = usersWithSheltersWithRadius.Select(p => new SheltersInRadiusDto()
+            var sheltersInRadiusDto = usersWithSheltersWithRadiusPagination.Select(p => new SheltersInRadiusDto()
             {
                 Id = p.Shelter.Id,
                 OrganizationName = p.Shelter.OrganizationName,
@@ -76,8 +81,7 @@ namespace LapkaBackend.Application.Functions.Queries
             })
             .ToList();
 
-            int totalItemsCount = sheltersIds.Count;
-            int numberOfPages = (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
+            
 
             Response response = new Response()
             {

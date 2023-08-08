@@ -12,18 +12,7 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record AddPetToArchiveCommand : IRequest
-    {
-        private string petId;
-
-
-        public AddPetToArchiveCommand(string petId)
-        {
-            this.petId = petId;
-        }
-
-        public string PetId { get; set; }
-    }
+    public record AddPetToArchiveCommand(string PetId) : IRequest;
 
     public class AddPetToArchiveCommandHandler : IRequestHandler<AddPetToArchiveCommand>
     {

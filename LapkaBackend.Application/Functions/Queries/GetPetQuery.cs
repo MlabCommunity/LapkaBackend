@@ -55,8 +55,8 @@ namespace LapkaBackend.Application.Functions.Queries
                 Breed = FoundAnimal.Species,
                 Color = FoundAnimal.Marking,
                 Weight = (float)FoundAnimal.Weight,
-                //ProfilePhoto = p.Photos.FirstOrDefault(p => p.IsProfilePhoto = true),
-                //Photos = p.Photos.FindAll(p => p.IsProfilePhoto != true)
+                ProfilePhoto = FoundAnimal.Photos.FirstOrDefault(p => p.IsProfilePhoto = true).Id.ToString(),
+                Photos = FoundAnimal.Photos.Where(photo => !photo.IsProfilePhoto).Select(photo => photo.Id.ToString()).ToArray(),
                 Age = FoundAnimal.Months,
                 CreatedAt = FoundAnimal.CreatedAt,
                 IsSterilized = FoundAnimal.IsSterilized,
@@ -84,7 +84,7 @@ namespace LapkaBackend.Application.Functions.Queries
         public string Color { get; set; } = null!;
         public float Weight { get; set; }
         public string ProfilePhoto { get; set; } = null!;
-        public string Photos { get; set; } = null!;
+        public string[] Photos { get; set; } = null!;
         public int Age { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsSterilized { get; set; }

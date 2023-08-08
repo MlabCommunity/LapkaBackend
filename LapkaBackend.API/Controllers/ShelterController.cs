@@ -33,9 +33,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateShelter(UpdateShelterCommand command)
         {
-            //var query = new UpdateShelterCommand(request);
             await _mediator.Send(command);
-
             return NoContent();
         }
 
@@ -82,14 +80,14 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         ///     Dodanie karty zwierzaka do archiwum
         /// </summary>
-        [HttpPost("/shelters/cards/archive/{petId}")]
+        [HttpPost("/shelters/cards/archive")]
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AddPetToArchive([FromRoute] string petId)
+        public async Task<IActionResult> AddPetToArchive(AddPetToArchiveCommand petId)
         {
-            var query = new AddPetToArchiveCommand(petId);
-            await _mediator.Send(query);
+            //var query = new AddPetToArchiveCommand(petId);
+            await _mediator.Send(petId);
             return NoContent();
         }
 
@@ -97,7 +95,7 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         ///     liczba wyświetleneń kart zwierząt pogrupowana według miesięcy w roku
         /// </summary>
-        [HttpGet("/shelters/cards/chart/year/{shelterId}")]//Przetestować
+        [HttpGet("/shelters/cards/chart/year/{shelterId}")]
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -111,7 +109,7 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         ///     liczba wyświetleneń kart zwierząt pogrupowana według dni tygodnia w miesiącu
         /// </summary>
-        [HttpGet("/shelters/cards/chart/month/{shelterId}")]//Przetestować
+        [HttpGet("/shelters/cards/chart/month/{shelterId}")]
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -123,9 +121,9 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        ///     liczba wyświetleneń kart zwierząt pogrupowana według dni tygodnia w w tygodniu
+        ///     liczba wyświetleneń kart zwierząt pogrupowana według dni obecnego tygodnia w w tygodniu
         /// </summary>
-        [HttpGet("/shelters/cards/chart/week/{shelterId}")]//Przetestować
+        [HttpGet("/shelters/cards/chart/week/{shelterId}")]
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -150,9 +148,21 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        ///     Wyświetlenie kart zwierząt danego schroniska z podziałem na strony
+        ///     Wyświetlenie kart zwierząt z danego schroniska z paginacją
         /// </summary>
-        [HttpGet("/shelters/cards/PetList")]
+        [HttpGet("/shelters/cards/petListInShelter")]
+        //[Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PetListInShelter([FromQuery] PetListInShelterQuery petListInShelterQuery)
+        {
+            return Ok(await _mediator.Send(petListInShelterQuery));
+        }
+
+        /// <summary>
+        ///     Wyświetlenie kart zwierząt z wszystkich schronisk z paginacją
+        /// </summary>
+        [HttpGet("/shelters/cards/petList")]
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

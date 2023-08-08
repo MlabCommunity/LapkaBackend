@@ -39,7 +39,7 @@ namespace LapkaBackend.Application.Functions.Queries
     {
         public Guid Id { get; set; }
         public string OrganizationName { get; set; } = null!;
-        public float Longtitude { get; set; }
+        public float Longitude { get; set; }
         public float Latitude { get; set; }
         public string City { get; set; } = null!;
         public string Street { get; set; } = null!;
