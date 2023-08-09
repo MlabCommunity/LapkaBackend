@@ -17,9 +17,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 using Swashbuckle.AspNetCore.Filters;
 using Extensions = LapkaBackend.Infrastructure.Extensions;
-
 namespace LapkaBackend.API;
 
 internal class Program
@@ -27,6 +28,11 @@ internal class Program
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.AzureBlobStorage(connectionString: builder.Configuration.GetValue<string>("Storage:ConnectionString"), LogEventLevel.Error,"test", "{yyyy}_{MM}_{dd}/log.txt")
+            .CreateLogger();
 
         builder.Services.AddControllers()
             .ConfigureApiBehaviorOptions(options =>
