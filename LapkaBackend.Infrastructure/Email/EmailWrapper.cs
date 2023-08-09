@@ -1,4 +1,5 @@
-﻿using LapkaBackend.Domain.Enums;
+﻿using System.Reflection;
+using LapkaBackend.Domain.Enums;
 using LapkaBackend.Application.Interfaces;
 using MimeKit;
 
@@ -6,7 +7,7 @@ namespace LapkaBackend.Infrastructure.Email
 {
     public class EmailWrapper : IEmailWrapper
     {
-        private readonly string _filePath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.ToString(), "LapkaBackend.Infrastructure", "Email", "Account");
+        private readonly string _filePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Email", "Account");
 
         public BodyBuilder GetBuilder(Templates template)
         {

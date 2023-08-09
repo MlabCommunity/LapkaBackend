@@ -23,11 +23,10 @@
     <ItemGroup>
       <ProjectReference Include="..\LapkaBackend.Application\LapkaBackend.Application.csproj" />
     </ItemGroup>
-
+    
     <ItemGroup>
-      <None Remove="Email\Account\style.css" />
+        <Content Include="Email\Account\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
-
-
-
 </Project>

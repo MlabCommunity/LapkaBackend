@@ -2,7 +2,6 @@
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers
@@ -49,7 +48,7 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         ///     Potwierdzenie maila podanego przy rejestracji
         /// </summary>
-        [HttpPost("confirmEmail{token}")]
+        [HttpPost("confirmEmail/{token}")]
 
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -71,7 +70,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> LoginWeb(LoginRequest request)
         {
-           var result = await _authService.LoginShelter(request);
+           var result = await _authService.LoginUser(request);
 
             return Ok(result);
         }

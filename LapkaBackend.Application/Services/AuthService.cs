@@ -15,7 +15,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Serilog;
 
 
 namespace LapkaBackend.Application.Services
@@ -66,8 +65,7 @@ namespace LapkaBackend.Application.Services
         private async Task SendEmailToConfirmEmail(string emailAddress, string token)
         {
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
-            Log.Information(myUrl.ToString());
-            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;          
+            var baseUrl = myUrl.Scheme + Uri.SchemeDelimiter + myUrl.Authority;          
             var endpoint = $"/Auth/confirmEmail/{token}";
 
             var link = $"{baseUrl}{endpoint}";
@@ -85,7 +83,9 @@ namespace LapkaBackend.Application.Services
 
         public async Task<LoginResultDto> LoginUser(LoginRequest request)
         {
-            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
+            var result = await _dbContext.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(x => x.Email == request.Email);
 
             if (result == null)
             {
@@ -123,33 +123,6 @@ namespace LapkaBackend.Application.Services
             };
         }
 
-        public async Task<LoginResultDto> LoginShelter(LoginRequest request)
-        {
-            var result = await _dbContext.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(x => x.Email == request.Email);
-
-            if (result == null)
-            {
-                throw new BadRequestException("invalid_email", "User not found");
-            }
-            if (result.Role!.RoleName != Roles.Shelter.ToString() && result.Role.RoleName != Roles.Worker.ToString())
-            {
-                throw new BadRequestException("", "You are not Shelter!");
-            }
-
-            if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
-            {
-                throw new BadRequestException("invalid_password", "Wrong password");
-            }
-
-            return new LoginResultDto
-            {
-                AccessToken = CreateAccessToken(result),
-                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : result.RefreshToken = CreateRefreshToken()
-            };
-        }
-
         public async Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request)
         {
             var jwtAccessToken = new JwtSecurityToken(request.AccessToken);
@@ -166,14 +139,12 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_email", "User doesn't exists");
             }
-
-            var role = await _dbContext.Roles.FirstAsync(x => x.Id == user.RoleId);
-
+            
             var claims = new List<Claim>()
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Role, role.RoleName)
+                new(ClaimTypes.Role, user.Role!.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -193,14 +164,11 @@ namespace LapkaBackend.Application.Services
 
         public string CreateAccessToken(User user)
         {
-
-            var role = _dbContext.Roles.First(x => x.Id == user.RoleId);
-
             var claims = new List<Claim>()
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Role, role.RoleName)
+                new(ClaimTypes.Role, user.Role!.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -315,7 +283,7 @@ namespace LapkaBackend.Application.Services
         public async Task ResetPassword(UserEmailRequest request)
         {
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
-            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;  
+            var baseUrl = myUrl.Scheme + Uri.SchemeDelimiter + myUrl.Authority;  
             var endpoint = $"/Auth/setPassword/{CreateSetNewPasswordToken(request.Email)}";
 
             var link = $"{baseUrl}{endpoint}";
