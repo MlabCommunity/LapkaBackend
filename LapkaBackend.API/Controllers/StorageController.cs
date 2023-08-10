@@ -18,16 +18,18 @@ public class StorageController : Controller
         _blobService = blobService;
     }
     /// <summary>
-    ///     Pobieranie pliku na podstawie identyfikatora
+    ///     Pobieranie listy plików na podstawie identyfikatorów
     /// </summary>
-    [HttpGet ("{id}")]
+    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> GetFile([Required]Guid id)
+    public async Task<ActionResult> GetFile([Required]List<Guid> ids)
     {
-        return Ok(await _blobService.GetFileUrlAsync(id));
+        return Ok(await _blobService.GetFilesUrlsAsync(ids));
+        return NoContent();
     }
+    
     
     /// <summary>
     ///     Zastąpienie pliku o wskazanym Id nowym plikiem do 15MB 
