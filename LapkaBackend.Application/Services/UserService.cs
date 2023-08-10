@@ -151,7 +151,7 @@ namespace LapkaBackend.Application.Services
                 Email = user.Email,
                 CreatedAt = user.CreatedAt,
                 ProfilePicture = user.ProfilePicture,
-                Role = (Roles)user.Role.Id - 1,
+                Role = (Roles)user.Role.Id,
                 LoginProvider = user.LoginProvider
             };
         }

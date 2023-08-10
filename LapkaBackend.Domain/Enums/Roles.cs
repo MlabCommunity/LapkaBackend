@@ -2,7 +2,7 @@
 
 public enum Roles
 {
-    Undefined,
+    Undefined = 1,
     SuperAdmin,
     Admin,
     User,
