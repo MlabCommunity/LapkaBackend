@@ -12,8 +12,7 @@ namespace LapkaBackend.Domain.Entities
         public Guid Id { get; set; }
         public bool IsProfilePhoto { get; set; }
 
-        [ForeignKey("AnimalId")]
         public Guid? AnimalId { get; set; }
-        public virtual Animal? Animal { get; set; }
+        public virtual Animal Animal { get; set; }
     }
 }

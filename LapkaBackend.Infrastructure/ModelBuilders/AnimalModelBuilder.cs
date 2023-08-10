@@ -36,6 +36,11 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 a.Property(x => x.Months)
                 .IsRequired();
 
+                a.HasOne(x => x.AnimalCategory)
+                .WithMany()
+                .HasForeignKey(x => x.CategoryId);
+                
+
 
             });
 

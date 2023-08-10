@@ -18,7 +18,8 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 .HasKey(a => a.ShelterId);
 
                 a.HasOne(s => s.Shelter)
-                .WithOne(s => s.ShelterVolunteering);
+                .WithOne(s => s.ShelterVolunteering)
+                .HasForeignKey<ShelterVolunteering>(sv => sv.ShelterId);
 
                 a.Property(s => s.BankAccountNumber)
                 .IsRequired();

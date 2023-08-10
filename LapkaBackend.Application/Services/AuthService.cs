@@ -50,7 +50,7 @@ namespace LapkaBackend.Application.Services
                 VerificationToken = CreateRandomToken(),
                 RefreshToken = GenerateRefreshToken(),
                 CreatedAt = DateTime.Now,
-                Role = role
+                Role = role,
             };
 
             await _dbContext.Users.AddAsync(newUser);

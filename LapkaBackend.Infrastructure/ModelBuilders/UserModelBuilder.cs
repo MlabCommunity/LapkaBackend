@@ -15,6 +15,12 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 .Property(u => u.Email)
                 .HasMaxLength(255)
                 .IsRequired();
+
+            modelBuilder.Entity<User>()
+                .HasOne(x => x.Role)
+                .WithMany()
+                .HasForeignKey(x => x.RoleId);
+                
         }
     }
 }

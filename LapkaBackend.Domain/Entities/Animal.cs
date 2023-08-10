@@ -21,16 +21,15 @@ namespace LapkaBackend.Domain.Entities
         public bool IsVisible { get; set; }
         public int Months { get; set; }
         public bool IsArchival { get; set; }
-        [ForeignKey("AnimalCategory")]
         public int CategoryId { get; set; }
-        public virtual AnimalCategory? AnimalCategory { get; set; }
+        public virtual AnimalCategory AnimalCategory { get; set; }
 
         public Guid? ShelterId { get; set; }
-        public virtual Shelter? Shelter { get; set; }
+        public virtual Shelter Shelter { get; set; }
 
-        public virtual List<Photo>? Photos { get; set; }
+        public virtual List<Photo> Photos { get; set; }
 
-        public virtual List<Reaction>? Reactions { get; set; }
+        public virtual List<Reaction> Reactions { get; set; }
 
         public virtual List<AnimalView>? AnimalViews { get; set; }
     }

@@ -1,15 +1,7 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
-using LapkaBackend.Domain.Entities;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
@@ -18,19 +10,17 @@ namespace LapkaBackend.Application.Functions.Queries
     public class GetShelterVolunteeringQueryHandler : IRequestHandler<GetShelterVolunteeringQuery, ShelterVolunteeringDto>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public GetShelterVolunteeringQueryHandler(IDataContext dbContext, IMapper mapper)
+        public GetShelterVolunteeringQueryHandler(IDataContext dbContext)
         {
 
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         public async Task<ShelterVolunteeringDto> Handle(GetShelterVolunteeringQuery request, CancellationToken cancellationToken)
         {
             Guid shelterId = new Guid(request.ShelterId);
-            var shelterVolunteering = _dbContext.SheltersVolunteering.FirstOrDefault(x => x.ShelterId == shelterId);
+            var shelterVolunteering = await _dbContext.SheltersVolunteering.FirstOrDefaultAsync(x => x.ShelterId == shelterId);
             if (shelterVolunteering is null)
             {
                 throw new BadRequestException("invalid_Shelter", "Shelter doesn't exists or does not have voluntering bookmark");

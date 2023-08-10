@@ -15,13 +15,11 @@ namespace LapkaBackend.Application.Functions.Queries
     public class ShelterPetsViewsGroupByDaysInWeekQueryHandler : IRequestHandler<ShelterPetsViewsGroupByDaysInWeekQuery, List<int>>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public ShelterPetsViewsGroupByDaysInWeekQueryHandler(IDataContext dbContext, IMapper mapper)
+        public ShelterPetsViewsGroupByDaysInWeekQueryHandler(IDataContext dbContext)
         {
 
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         public async Task<List<int>> Handle(ShelterPetsViewsGroupByDaysInWeekQuery request, CancellationToken cancellationToken)

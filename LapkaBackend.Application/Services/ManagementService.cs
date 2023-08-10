@@ -6,6 +6,7 @@ using LapkaBackend.Domain.Enums;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Extensions;
 
 namespace LapkaBackend.Application.Services
 {
@@ -76,6 +77,50 @@ namespace LapkaBackend.Application.Services
 
             int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Worker.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
             userResult.Role.Id = searchedRoleId;
+            await _dbContext.SaveChangesAsync();
+
+        }
+
+        public async Task AddWorkerByAdmin(string userIdstring)
+        {
+            Guid userId = new Guid(userIdstring);
+            var userResult = await _dbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (userResult is null)
+            {
+                throw new BadRequestException("invalid_user", "User not found!");
+            }
+
+            if (userResult.Role.RoleName != "User")
+            {
+                throw new BadRequestException("invalid_user", "You can not assing worker role to user with other role than user");
+            }
+
+            int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Worker.ToString()).Select(r => r.Id).FirstOrDefaultAsync();
+            userResult.RoleId = searchedRoleId;
+            _dbContext.Users.Update(userResult);
+            await _dbContext.SaveChangesAsync();
+
+        }
+
+        public async Task RemoveWorkerByAdmin(string userIdstring)
+        {
+            Guid userId = new Guid(userIdstring);
+            var userResult = await _dbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (userResult is null)
+            {
+                throw new BadRequestException("invalid_user", "User not found!");
+            }
+
+            if (userResult.Role.RoleName != "Worker")
+            {
+                throw new BadRequestException("invalid_user", "You can not remove worker role to user with other role than worker");
+            }
+
+            int searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.User.GetDisplayName()).Select(r => r.Id).FirstOrDefaultAsync();
+            userResult.RoleId = searchedRoleId;
+            _dbContext.Users.Update(userResult);
             await _dbContext.SaveChangesAsync();
 
         }

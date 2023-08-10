@@ -17,13 +17,11 @@ namespace LapkaBackend.Application.Functions.Queries
     public class PetListQueryHandler : IRequestHandler<PetListQuery, PetListResponse>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public PetListQueryHandler(IDataContext dbContext, IMapper mapper)
+        public PetListQueryHandler(IDataContext dbContext)
         {
 
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         public async Task<PetListResponse> Handle(PetListQuery request, CancellationToken cancellationToken)
@@ -31,12 +29,12 @@ namespace LapkaBackend.Application.Functions.Queries
             int totalItemsCount = _dbContext.Animals.Count();
             int numberOfPages =  (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
-            var FoundAnimals =  _dbContext.Animals
+            var FoundAnimals = await  _dbContext.Animals
                 .Include(a => a.Photos).Include(a => a.AnimalCategory)
                 .Where(a => a.IsVisible)
                 .OrderBy(x => x.Name)
                 .Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize)
-                .ToList();
+                .ToListAsync();
 
             var petsList = FoundAnimals.Select(p => new PetInListDto()
             {

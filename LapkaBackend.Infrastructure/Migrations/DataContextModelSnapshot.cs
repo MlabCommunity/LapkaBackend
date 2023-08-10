@@ -130,6 +130,7 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("UserId")
+                        .IsRequired()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ViewDate")
@@ -361,9 +362,10 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("RoleId")
+                        .IsRequired()
                         .HasColumnType("int");
 
-                    b.Property<Guid>("ShelterId")
+                    b.Property<Guid?>("ShelterId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("VerificationToken")
@@ -408,7 +410,9 @@ namespace LapkaBackend.Infrastructure.Migrations
 
                     b.HasOne("LapkaBackend.Domain.Entities.User", "User")
                         .WithMany("AnimalViews")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Animal");
 
@@ -458,13 +462,13 @@ namespace LapkaBackend.Infrastructure.Migrations
                 {
                     b.HasOne("LapkaBackend.Domain.Entities.Role", "Role")
                         .WithMany("Users")
-                        .HasForeignKey("RoleId");
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("LapkaBackend.Domain.Entities.Shelter", "Shelter")
                         .WithMany()
-                        .HasForeignKey("ShelterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ShelterId");
 
                     b.Navigation("Role");
 

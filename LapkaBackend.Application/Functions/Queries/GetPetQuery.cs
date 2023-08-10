@@ -1,14 +1,9 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace LapkaBackend.Application.Functions.Queries
 {
@@ -17,13 +12,10 @@ namespace LapkaBackend.Application.Functions.Queries
     public class GetPetQueryHandler : IRequestHandler<GetPetQuery, PetDto>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public GetPetQueryHandler(IDataContext dbContext, IMapper mapper)
+        public GetPetQueryHandler(IDataContext dbContext)
         {
-
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         public async Task<PetDto> Handle(GetPetQuery request, CancellationToken cancellationToken)

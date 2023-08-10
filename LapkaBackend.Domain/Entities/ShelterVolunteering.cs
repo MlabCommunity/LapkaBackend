@@ -10,9 +10,8 @@ namespace LapkaBackend.Domain.Entities
 {
     public class ShelterVolunteering
     {
-        [Key, ForeignKey("ShelterId")]
         public Guid ShelterId { get; set; }
-        public virtual Shelter? Shelter { get; set; }
+        public virtual Shelter Shelter { get; set; }
 
         public bool IsDonationActive { get; set; }
         public string? BankAccountNumber { get; set; }

@@ -63,36 +63,36 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(await _managementService.ListOfUsersWithTheSpecifiedRole(role));
         }
-        /*
+        
         /// <summary>
         ///     Dodanie nowych pracowników do przestrzeni shroniska przez administratora
         /// </summary>
-        [HttpGet("addWorker/{userId}")]
+        [HttpPost("addWorker/{userId}")]
         [Authorize(Roles = "Admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> AddWorkerByAdmin(Roles role)
+        public async Task<ActionResult> AddWorkerByAdmin(string userId)
         {
-
-            return Ok(await _managementService.AddWorkerByAdmin(role));
+            await _managementService.AddWorkerByAdmin(userId);
+            return NoContent();
         }
 
         /// <summary>
-        ///     Usunięcie workera przez Admina
+        ///      sunięcie workera z przestrzeni shroniska przez administratora
         /// </summary>
-        [HttpGet("/Management/")]
+        [HttpPost("RemoveWorker/{userId}")]
         [Authorize(Roles = "Admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> RemoveWorkerByAdmin(Roles role)
+        public async Task<ActionResult> RemoveWorkerByAdmin(string userId)
         {
-
-            return Ok(await _managementService.AddWorkerByAdmin(role));
-        }   */
+            await _managementService.RemoveWorkerByAdmin(userId);
+            return NoContent();
+        }  
 
     }
 }

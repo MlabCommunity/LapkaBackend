@@ -17,19 +17,17 @@ namespace LapkaBackend.Application.Functions.Command
     public class AddPetToArchiveCommandHandler : IRequestHandler<AddPetToArchiveCommand>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public AddPetToArchiveCommandHandler(IDataContext dbContext, IMapper mapper)
+        public AddPetToArchiveCommandHandler(IDataContext dbContext)
         {
 
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         public async Task Handle(AddPetToArchiveCommand request, CancellationToken cancellationToken)
         {
             Guid petId = new Guid(request.PetId);
-            var animal = _dbContext.Animals.FirstOrDefault(x => x.Id == petId);
+            var animal = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == petId);
 
             if (animal == null)
             {

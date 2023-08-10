@@ -1,15 +1,8 @@
 ﻿using AutoMapper;
 using LapkaBackend.Application.Common;
-using LapkaBackend.Domain.Entities;
 using MediatR;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace LapkaBackend.Application.Functions.Queries
 {
@@ -18,28 +11,25 @@ namespace LapkaBackend.Application.Functions.Queries
     public class PetListInShelterQueryHandler : IRequestHandler<PetListInShelterQuery, PetListInShelterResponse>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public PetListInShelterQueryHandler(IDataContext dbContext, IMapper mapper)
+        public PetListInShelterQueryHandler(IDataContext dbContext)
         {
-
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         public async Task<PetListInShelterResponse> Handle(PetListInShelterQuery request, CancellationToken cancellationToken)
         {
             Guid ShelterId = new Guid(request.ShelterId);
-            int totalItemsCount = _dbContext.Animals.Where(x => x.ShelterId == ShelterId).Count();
+            int totalItemsCount = await _dbContext.Animals.Where(x => x.ShelterId == ShelterId).CountAsync();
             int numberOfPages =  (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
-            var FoundAnimals =  _dbContext.Animals
+            var FoundAnimals = await _dbContext.Animals
                 .Include(a => a.Photos).Include(a => a.AnimalCategory)
                 .Where(a => a.IsVisible)
                 .Where(a => a.ShelterId == ShelterId)
                 .OrderBy(x => x.Name)
                 .Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize)
-                .ToList();
+                .ToListAsync();
 
             var petsList = FoundAnimals.Select(p => new PetInListInShelterDto()
             {

@@ -18,10 +18,12 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 .IsRequired();
 
                 ac.HasOne(r => r.Animal)
-                .WithMany(u => u.AnimalViews);
+                .WithMany(u => u.AnimalViews)
+                .HasForeignKey(x => x.AnimalId);
 
                 ac.HasOne(r => r.User)
-                .WithMany(u => u.AnimalViews);
+                .WithMany(u => u.AnimalViews)
+                .HasForeignKey(x => x.UserId);
             });
         }
     }

@@ -57,7 +57,7 @@ namespace LapkaBackend.API.Controllers
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetShelter([FromRoute] Guid shelterId)
+        public async Task<IActionResult> GetShelter([FromRoute] string shelterId)
         {
             var query = new GetShelterQuery(shelterId);
             return Ok(await _mediator.Send(query)); 

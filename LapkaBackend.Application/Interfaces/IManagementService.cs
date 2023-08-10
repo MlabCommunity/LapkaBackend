@@ -8,5 +8,7 @@ namespace LapkaBackend.Application.Interfaces
         public Task AssignAdminRole(Guid userId);
         public Task RemoveAdminRole(Guid userId);
         public Task<GetUsersByRoleQueryResult> ListOfUsersWithTheSpecifiedRole(Roles role);
+        public Task AddWorkerByAdmin(string userId);
+        public Task RemoveWorkerByAdmin(string userId);
     }
 }

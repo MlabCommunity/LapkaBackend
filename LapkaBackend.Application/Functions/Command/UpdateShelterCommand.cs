@@ -1,15 +1,8 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
-using LapkaBackend.Application.Functions.Queries;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace LapkaBackend.Application.Functions.Command
 {
@@ -20,13 +13,10 @@ namespace LapkaBackend.Application.Functions.Command
     public class UpdateShelterCommandHandler : IRequestHandler<UpdateShelterCommand>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public UpdateShelterCommandHandler(IDataContext dbContext, IMapper mapper)
+        public UpdateShelterCommandHandler(IDataContext dbContext)
         {
-
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         public async Task Handle(UpdateShelterCommand request, CancellationToken cancellationToken)

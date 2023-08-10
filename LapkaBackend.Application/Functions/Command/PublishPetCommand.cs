@@ -1,33 +1,26 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record PublishPetCommand(string petId):IRequest;
+    public record PublishPetCommand(string PetId):IRequest;
 
     public class PublishPetCommandHandler : IRequestHandler<PublishPetCommand>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public PublishPetCommandHandler(IDataContext dbContext, IMapper mapper)
+        public PublishPetCommandHandler(IDataContext dbContext)
         {
 
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         public async Task Handle(PublishPetCommand request, CancellationToken cancellationToken)
         {
-            Guid petId = new Guid(request.petId);
-            var pet = _dbContext.Animals.FirstOrDefault(x=>x.Id == petId);
+            Guid petId = new Guid(request.PetId);
+            var pet = await _dbContext.Animals.FirstOrDefaultAsync(x=>x.Id == petId);
             if (pet == null)
             {
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");

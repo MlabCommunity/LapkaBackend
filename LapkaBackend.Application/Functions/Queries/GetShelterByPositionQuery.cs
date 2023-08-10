@@ -1,16 +1,9 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Utilities.IO.Pem;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
@@ -19,20 +12,17 @@ namespace LapkaBackend.Application.Functions.Queries
     public class GetShelterByPositionQueryHandler : IRequestHandler<GetShelterByPositionQuery, Response>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public GetShelterByPositionQueryHandler(IDataContext dbContext, IMapper mapper)
+        public GetShelterByPositionQueryHandler(IDataContext dbContext)
         {
-
             _dbContext = dbContext;
-            _mapper = mapper;
         }
         
         public async Task<Response> Handle(GetShelterByPositionQuery request, CancellationToken cancellationToken)
         {
             List<Shelter> allShelters = await _dbContext.Shelters.ToListAsync();// lista wszystkich shronisk
 
-            // sheltersWithRadius - lista zawierająca tylko shroniska znajdujące się w zasięgu i z paginacją, składa się z Shelter i Distance
+            // sheltersWithRadius - lista zawierająca tylko shroniska znajdujące się w zasięgu, składa się z Shelter i Distance
             var sheltersWithRadius = allShelters
                 .Select(shelter =>
                 {
@@ -48,9 +38,9 @@ namespace LapkaBackend.Application.Functions.Queries
             var sheltersWithRadiusPagination = sheltersWithRadius.Skip(request.PageSize * (request.PageNumber - 1)).Take(request.PageSize);
             var sheltersIdsPagination = sheltersWithRadiusPagination.Select(shelter => shelter.Shelter.Id).ToList();
 
-            var usersWithSheltersPagination = _dbContext.Users.Include(u=>u.Shelter)
-                .Where(user => sheltersIdsPagination.Contains(user.ShelterId))
-                .ToList();
+            var usersWithSheltersPagination = await _dbContext.Users.Include(u=>u.Shelter)
+                .Where(user => sheltersIdsPagination.Contains((Guid)user.ShelterId))
+                .ToListAsync();
 
             var usersWithSheltersWithRadiusPagination = usersWithSheltersPagination
             .Select(user => new

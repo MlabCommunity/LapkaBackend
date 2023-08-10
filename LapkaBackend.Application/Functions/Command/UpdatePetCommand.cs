@@ -1,32 +1,24 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record UpdatePetCommand(string PetId, string Description, string Name, string ProfilePhoto,Genders Gender, bool IsSterilized, decimal Weight, int Months, List<string> Photos, bool IsVisible, AnimalCategories Category, Breeds Breed, string Marking):IRequest;
+    public record UpdatePetCommand(string PetId, string Description, string Name,Genders Gender, bool IsSterilized, decimal Weight, int Months, List<string> Photos, bool IsVisible, AnimalCategories Category, Breeds Breed, string Marking):IRequest;
 
 
     public class UpdatePetCommandHandler : IRequestHandler<UpdatePetCommand>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public UpdatePetCommandHandler(IDataContext dbContext, IMapper mapper)
+        public UpdatePetCommandHandler(IDataContext dbContext)
         {
 
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         public async Task Handle(UpdatePetCommand request, CancellationToken cancellationToken)
@@ -42,9 +34,13 @@ namespace LapkaBackend.Application.Functions.Command
             var photosList = new List<Photo>();
             for (int i = 0; i < request.Photos.Count; i++)
             {
+                if (i==0)
+                {
+                    photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
+                }
                 photosList.Add(new Photo());//dodać zapisywanie zdjęć
             }
-            photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
+           
 
             var animalCategory = await _dbContext.AnimalCategories.FirstOrDefaultAsync(r => r.CategoryName == request.Category.ToString());
             if (animalCategory is null)

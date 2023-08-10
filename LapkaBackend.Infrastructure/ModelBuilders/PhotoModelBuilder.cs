@@ -18,7 +18,8 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 .IsRequired();
 
                 p.HasOne(r => r.Animal)
-                .WithMany(u => u.Photos);
+                .WithMany(u => u.Photos)
+                .HasForeignKey(x => x.AnimalId);
             });
         }
     }   
