@@ -93,11 +93,10 @@ namespace LapkaBackend.API.Controllers
         ///     Odnawia access token na podstawie refresh token
         /// </summary>
         [HttpPost ("useToken")]
-        [Authorize (Roles = "User,Worker,Shelter,SuperAdmin,Admin")]
         [ProducesResponseType(typeof(UseRefreshTokenResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> RefreshAccesToken(UseRefreshTokenRequest request)
+        public async Task<ActionResult> RefreshAccessToken(UseRefreshTokenRequest request)
         {
             if (_authService.IsTokenValid(request.AccessToken))
             {
