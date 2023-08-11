@@ -49,7 +49,7 @@ namespace LapkaBackend.API.Controllers
         /// <summary>
         ///     Potwierdzenie maila podanego przy rejestracji
         /// </summary>
-        [HttpPost("confirmEmail{token}")]
+        [HttpPost("confirmEmail/{token}")]
 
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -1,8 +1,10 @@
-﻿using LapkaBackend.Application.Common;
+﻿using Hangfire;
+using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Infrastructure.Data;
 using LapkaBackend.Infrastructure.Email;
 using LapkaBackend.Infrastructure.FileStorage;
+using LapkaBackend.Infrastructure.Hangfire;
 using LapkaBackend.Infrastructure.ModelBuilders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,10 +20,16 @@ namespace LapkaBackend.Infrastructure
             services.AddTransient<IDataContext, DataContext>();
             services.AddTransient<IAzureStorageContext, AzureStorageContext>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
+            services.AddTransient<UpdateDeleteJob>();
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("MySql"));
             });
+            
+            services.AddHangfire(options => options
+                .UseSqlServerStorage(configuration.GetConnectionString("MySql")));
+
+            services.AddHangfireServer();
         }
 
         public static void AddModels(this ModelBuilder modelBuilder)
@@ -31,6 +39,7 @@ namespace LapkaBackend.Infrastructure
             RoleModelBuilder.BuildRoleModel(modelBuilder);
             AnimalModelBuilder.BuildAnimalModel(modelBuilder);
             AnimalCategoryModelBuilder.BuildAnimalCategoryModel(modelBuilder);
+            
         }
 
         public static void Seed(DbContextOptions<DataContext> options)

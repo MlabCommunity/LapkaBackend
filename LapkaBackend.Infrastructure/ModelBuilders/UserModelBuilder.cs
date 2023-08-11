@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using LapkaBackend.Domain.Entities;
+using LapkaBackend.Domain.Enums;
 using LapkaBackend.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,14 +10,19 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
     {
         public static void BuildUserModel(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-            .ToTable("Users")
-            .HasKey(u => u.Id);
+            modelBuilder.Entity<User>(u =>
+            {
+                u.ToTable("Users")
+                    .HasKey(e => e.Id);
 
-            modelBuilder.Entity<User>()
-                .Property(u => u.Email)
-                .HasMaxLength(255)
-                .IsRequired();
+                u.HasOne(e => e.Role)
+                    .WithMany(e => e.Users);
+                    
+                u.Property(e => e.Email)
+                    .HasMaxLength(255)
+                    .IsRequired();
+            });
+
         }
         
         public static void SeedUser(DbContextOptions<DataContext> options)
@@ -31,10 +37,11 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                         FirstName = "Super", 
                         LastName = "Admin", 
                         Email = "lappka2k23@gmail.com", 
-                        Password = "$2a$12$T2jq9LwWyKjGZ5k8u.eNz..NIWCeTTc7p3vykFrRjoy9vX7VMo47O", 
-                        RoleId = 2, 
+                        Password = "$2a$12$T2jq9LwWyKjGZ5k8u.eNz..NIWCeTTc7p3vykFrRjoy9vX7VMo47O",
+                        Role = dbContext.Roles.First(x => x.RoleName == Roles.SuperAdmin.ToString()),
                         VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
-                        VerifiedAt = DateTime.UtcNow}
+                        VerifiedAt = DateTime.UtcNow
+                    }
                 };
 
                 dbContext.Users.AddRange(userList);

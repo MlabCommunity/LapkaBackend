@@ -55,6 +55,11 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                  .Property(u => u.PhoneNumber)
                  .HasMaxLength(255)
                  .IsRequired();
+
+            modelBuilder.Entity<Shelter>()
+                .HasMany(e => e.Animals)
+                .WithOne(e => e.Shelter)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
