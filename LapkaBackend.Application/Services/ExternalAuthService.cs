@@ -47,7 +47,7 @@ public class ExternalAuthService : IExternalAuthService
                 {
                     AccessToken = _authService.CreateAccessToken(user),
                     RefreshToken = user.RefreshToken,
-                    Role = user.Role!.RoleName
+                    Role = user.Role.RoleName
                 };
             }
             // If user not exists create new user
@@ -96,7 +96,7 @@ public class ExternalAuthService : IExternalAuthService
             {
                 AccessToken = _authService.CreateAccessToken(user),
                 RefreshToken = user.RefreshToken,
-                Role = user.Role!.RoleName
+                Role = user.Role.RoleName
             };
         }
         var newFacebookUser = new User
