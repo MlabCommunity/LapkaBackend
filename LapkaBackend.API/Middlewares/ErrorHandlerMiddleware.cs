@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Domain.Records;
+using Serilog;
 
 namespace LapkaBackend.API.Middlewares
 {
@@ -22,7 +23,6 @@ namespace LapkaBackend.API.Middlewares
             catch (Exception error)
             {
                 var errors = new List<Error>();
-
                 switch (error)
                 {
                     case BadRequestException badRequestException:
@@ -43,7 +43,8 @@ namespace LapkaBackend.API.Middlewares
                         break;
                     default:
                         context.Response.StatusCode = 500;
-                        errors.Add(new Error("error", "There was an error"));
+                        errors.Add(new Error("error", error.Message));
+                        Log.Error(error, "server_error");
                         break;
                 }
                 var response = context.Response;
