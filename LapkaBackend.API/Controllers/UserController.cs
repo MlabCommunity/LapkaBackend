@@ -23,7 +23,7 @@ namespace LapkaBackend.API.Controllers
         ///     Informacje o zalogowanym użytkowniku.
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = "User,Worker,Admin,SuperAdmin")]
+        [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
         [ProducesResponseType(typeof(GetCurrentUserDataQueryResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -39,7 +39,7 @@ namespace LapkaBackend.API.Controllers
         ///     Aktualizuj informacje o zalogowanym użytkowniku
         /// </summary>
         [HttpPatch]
-        [Authorize (Roles = "User,Worker,Admin,SuperAdmin")]
+        [Authorize (Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -55,7 +55,7 @@ namespace LapkaBackend.API.Controllers
         ///     Usuń zalogowanego użytkownika
         /// </summary>
         [HttpDelete]
-        [Authorize (Roles = "User,Worker,Admin,SuperAdmin")]
+        [Authorize (Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -72,7 +72,7 @@ namespace LapkaBackend.API.Controllers
         /// </summary>
          /// <response code="403">Available only for user with Łapka login provider.</response>
         [HttpPatch("NewPassword")]
-        [Authorize (Roles = "User,Worker,Admin,SuperAdmin")]
+        [Authorize (Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -90,7 +90,7 @@ namespace LapkaBackend.API.Controllers
         /// </summary>
         /// <response code="403">Available only for user with Łapka login provider.</response>
         [HttpPatch("EmailAddress")]
-        [Authorize(Roles = "User,Worker,Admin,SuperAdmin")]
+        [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

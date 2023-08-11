@@ -100,7 +100,10 @@ namespace LapkaBackend.API.Controllers
         {
             if (_authService.IsTokenValid(request.AccessToken))
             {
-                return Ok(request.AccessToken);
+                return Ok(new UseRefreshTokenResultDto
+                {
+                    AccessToken = request.AccessToken
+                });
             }
 
             var token = await _authService.RefreshAccessToken(request);

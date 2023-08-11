@@ -87,6 +87,7 @@ namespace LapkaBackend.Application.Services
 
             result.SoftDeleteAt = DateTime.UtcNow.AddMonths(1);
             _dbContext.Users.Update(result);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task SetNewPassword(Guid id, UserPasswordRequest request)

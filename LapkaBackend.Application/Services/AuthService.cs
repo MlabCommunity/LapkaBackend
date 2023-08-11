@@ -260,10 +260,12 @@ namespace LapkaBackend.Application.Services
                 {
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true,
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
                     IssuerSigningKey = key
                 }, out _);
             }
-            catch
+            catch (Exception e)
             {
                 return false;
             }
