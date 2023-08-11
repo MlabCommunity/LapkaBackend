@@ -36,6 +36,23 @@ public class BlobService : IBlobService
 
         return await _storageContext.GetFileUrlAsync(file.BlobName);
     }
+    
+    public async Task<List<string>> GetFilesUrlsAsync(List<Guid> ids)
+    {
+        var links = new List<string>();
+        foreach (var id in ids)
+        {
+            var file = await _dbContext.Blobs.FirstOrDefaultAsync(x => x.Id.Equals(id));
+
+            if (file is null)
+            {
+                throw new NotFoundException("invalid_id", "File does not exist");
+            }
+            links.Add(await _storageContext.GetFileUrlAsync(file.BlobName));
+        }
+
+        return links;
+    }
 
     public async Task<string> UploadFileAsync(IFormFile file, Guid parentId, string containerName, Guid? updateId = null)
     {

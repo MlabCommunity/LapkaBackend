@@ -15,7 +15,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Serilog;
 
 
 namespace LapkaBackend.Application.Services
@@ -66,9 +65,9 @@ namespace LapkaBackend.Application.Services
         private async Task SendEmailToConfirmEmail(string emailAddress, string token)
         {
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
-            
+
             var baseUrl = myUrl.Scheme + Uri.SchemeDelimiter + myUrl.Authority;          
-   
+
             var endpoint = $"/Auth/confirmEmail/{token}";
 
             var link = $"{baseUrl}{endpoint}";
@@ -87,6 +86,7 @@ namespace LapkaBackend.Application.Services
         public async Task<LoginResultDto> LoginUser(LoginRequest request)
         {
             var result = await _dbContext.Users
+                .Include(u => u.Role)
                 .Where(x => x.SoftDeleteAt == null)
                 .FirstOrDefaultAsync(x => x.Email == request.Email);
 
@@ -163,21 +163,28 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_token", "Invalid token");
             }
 
-            var user = await _dbContext.Users.FirstAsync(c =>
-                c.Email == jwtAccessToken.Claims.First(x => x.Type == ClaimTypes.Email).Value);
+            if (!IsTokenValid(request.RefreshToken))
+            {
+                throw new BadRequestException("invalid_token", "Invalid token");
+            }
+            
+            var emailClaim = jwtAccessToken.Claims.ToList().First(x => x.Type.Equals(ClaimTypes.Email));
+            
+            var user = await _dbContext.Users
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(c =>
+                c.Email == emailClaim.Value);
 
             if (user == null)
             {
                 throw new BadRequestException("invalid_email", "User doesn't exists");
             }
-
-            var role = await _dbContext.Roles.FirstAsync(x => x.Id == user.RoleId);
-
+            
             var claims = new List<Claim>()
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Role, role.RoleName)
+                new(ClaimTypes.Role, user.Role!.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -197,14 +204,11 @@ namespace LapkaBackend.Application.Services
 
         public string CreateAccessToken(User user)
         {
-
-            var role = _dbContext.Roles.First(x => x.Id == user.RoleId);
-
             var claims = new List<Claim>()
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Role, role.RoleName)
+                new(ClaimTypes.Role, user.Role!.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -233,7 +237,7 @@ namespace LapkaBackend.Application.Services
                 expires: DateTime.UtcNow.AddDays(7),
                 signingCredentials: credentials
             );
-
+            
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
             return jwt;
@@ -246,18 +250,25 @@ namespace LapkaBackend.Application.Services
 
         public bool IsTokenValid(string token)
         {
-            JwtSecurityToken jwtSecurityToken;
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Token").Value!));
+            
+            var tokenHandler = new JwtSecurityTokenHandler();
             try
             {
-                jwtSecurityToken = new JwtSecurityToken(token);
-
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    IssuerSigningKey = key
+                }, out _);
             }
-            catch (Exception)
+            catch
             {
                 return false;
             }
 
-            return jwtSecurityToken.ValidTo > DateTime.UtcNow;
+            return true;
         }
 
         public async Task RevokeToken(TokenRequest request)

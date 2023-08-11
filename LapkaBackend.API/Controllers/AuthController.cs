@@ -2,7 +2,6 @@
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LapkaBackend.API.Controllers
@@ -71,7 +70,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> LoginWeb(LoginRequest request)
         {
-           var result = await _authService.LoginShelter(request);
+           var result = await _authService.LoginUser(request);
 
             return Ok(result);
         }
@@ -94,11 +93,10 @@ namespace LapkaBackend.API.Controllers
         ///     Odnawia access token na podstawie refresh token
         /// </summary>
         [HttpPost ("useToken")]
-        [Authorize (Roles = "User,Worker,Shelter,SuperAdmin,Admin")]
         [ProducesResponseType(typeof(UseRefreshTokenResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> RefreshAccesToken(UseRefreshTokenRequest request)
+        public async Task<ActionResult> RefreshAccessToken(UseRefreshTokenRequest request)
         {
             if (_authService.IsTokenValid(request.AccessToken))
             {
