@@ -184,7 +184,7 @@ namespace LapkaBackend.Application.Services
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Role, user.Role!.RoleName)
+                new(ClaimTypes.Role, user.Role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -208,7 +208,7 @@ namespace LapkaBackend.Application.Services
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Role, user.Role!.RoleName)
+                new(ClaimTypes.Role, user.Role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(

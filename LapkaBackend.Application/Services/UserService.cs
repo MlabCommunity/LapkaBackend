@@ -1,5 +1,4 @@
 ﻿using LapkaBackend.Application.Common;
-using LapkaBackend.Domain.Entities;
 using LapkaBackend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using LapkaBackend.Application.Exceptions;
@@ -10,7 +9,6 @@ using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.Configuration;
 
 namespace LapkaBackend.Application.Services
 {
@@ -18,18 +16,16 @@ namespace LapkaBackend.Application.Services
     {
         private readonly IDataContext _dbContext;
         private readonly IEmailService _emailService;
-        private readonly IConfiguration _configuration;
         private readonly IBlobService _blobService;
         private readonly IHttpContextAccessor _contextAccessor;
         
 
-        public UserService(IDataContext context, IEmailService emailService, 
-            IConfiguration configuration, IBlobService blobService,
+        public UserService(IDataContext context, IEmailService emailService,
+            IBlobService blobService,
             IHttpContextAccessor contextAccessor)
         {
             _dbContext = context;
             _emailService = emailService;
-            _configuration = configuration;
             _blobService = blobService;
             _contextAccessor = contextAccessor;
         }
@@ -90,6 +86,7 @@ namespace LapkaBackend.Application.Services
             }
 
             result.SoftDeleteAt = DateTime.UtcNow.AddMonths(1);
+            _dbContext.Users.Update(result);
         }
 
         public async Task SetNewPassword(Guid id, UserPasswordRequest request)
@@ -124,7 +121,7 @@ namespace LapkaBackend.Application.Services
             await _dbContext.SaveChangesAsync();
 
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
-            var baseUrl = myUrl.Scheme + System.Uri.SchemeDelimiter + myUrl.Authority;
+            var baseUrl = myUrl.Scheme + Uri.SchemeDelimiter + myUrl.Authority;
             var endpoint = $"/User/ConfirmUpdatedEmail/{user.VerificationToken}";
 
             var link = $"{baseUrl}{endpoint}";

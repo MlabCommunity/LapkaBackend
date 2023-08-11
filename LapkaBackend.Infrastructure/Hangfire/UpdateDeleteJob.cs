@@ -1,5 +1,4 @@
-﻿using Hangfire;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -10,15 +9,10 @@ public class UpdateDeleteJob
 {
     private  readonly IDataContext _dbContext;
     private readonly IBlobService _blobService;
-    private readonly IBackgroundJobClient _jobClient;
-    private readonly IRecurringJobManager _recurringJobManager;
 
-    public UpdateDeleteJob(IDataContext dbContext, IBackgroundJobClient jobClient, 
-        IRecurringJobManager recurringJobManager, IBlobService blobService)
+    public UpdateDeleteJob(IDataContext dbContext, IBlobService blobService)
     {
         _dbContext = dbContext;
-        _jobClient = jobClient;
-        _recurringJobManager = recurringJobManager;
         _blobService = blobService;
     }
 
