@@ -15,6 +15,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Serilog;
 
 
 namespace LapkaBackend.Application.Services
@@ -65,7 +66,9 @@ namespace LapkaBackend.Application.Services
         private async Task SendEmailToConfirmEmail(string emailAddress, string token)
         {
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
+            
             var baseUrl = myUrl.Scheme + Uri.SchemeDelimiter + myUrl.Authority;          
+   
             var endpoint = $"/Auth/confirmEmail/{token}";
 
             var link = $"{baseUrl}{endpoint}";
