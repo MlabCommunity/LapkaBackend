@@ -3,9 +3,9 @@
 public enum Roles
 {
     Undefined = 1,
-    SuperAdmin,
-    Admin,
-    User,
-    Shelter,
-    Worker
+    SuperAdmin = 2,
+    Admin = 3,
+    User = 4,
+    Shelter = 5,
+    Worker = 6
 }

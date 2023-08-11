@@ -15,6 +15,10 @@ namespace LapkaBackend.Infrastructure.Migrations
                 name: "FK_Animals_Shelters_ShelterId",
                 table: "Animals");
 
+            migrationBuilder.DropForeignKey(
+                name: "FK_Users_Roles_RoleId",
+                table: "Users");
+
             migrationBuilder.AlterColumn<Guid>(
                 name: "ShelterId",
                 table: "Users",
@@ -22,6 +26,26 @@ namespace LapkaBackend.Infrastructure.Migrations
                 nullable: true,
                 oldClrType: typeof(Guid),
                 oldType: "uniqueidentifier");
+
+            migrationBuilder.AlterColumn<int>(
+                name: "RoleId",
+                table: "Users",
+                type: "int",
+                nullable: false,
+                defaultValue: 0,
+                oldClrType: typeof(int),
+                oldType: "int",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Password",
+                table: "Users",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)",
+                oldNullable: true);
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "SoftDeleteAt",
@@ -43,6 +67,14 @@ namespace LapkaBackend.Infrastructure.Migrations
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
+                name: "FK_Users_Roles_RoleId",
+                table: "Users",
+                column: "RoleId",
+                principalTable: "Roles",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_Users_Shelters_ShelterId",
                 table: "Users",
                 column: "ShelterId",
@@ -56,6 +88,10 @@ namespace LapkaBackend.Infrastructure.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_Animals_Shelters_ShelterId",
                 table: "Animals");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Users_Roles_RoleId",
+                table: "Users");
 
             migrationBuilder.DropForeignKey(
                 name: "FK_Users_Shelters_ShelterId",
@@ -79,11 +115,34 @@ namespace LapkaBackend.Infrastructure.Migrations
                 oldType: "uniqueidentifier",
                 oldNullable: true);
 
+            migrationBuilder.AlterColumn<int>(
+                name: "RoleId",
+                table: "Users",
+                type: "int",
+                nullable: true,
+                oldClrType: typeof(int),
+                oldType: "int");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Password",
+                table: "Users",
+                type: "nvarchar(max)",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)");
+
             migrationBuilder.AddForeignKey(
                 name: "FK_Animals_Shelters_ShelterId",
                 table: "Animals",
                 column: "ShelterId",
                 principalTable: "Shelters",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Users_Roles_RoleId",
+                table: "Users",
+                column: "RoleId",
+                principalTable: "Roles",
                 principalColumn: "Id");
         }
     }

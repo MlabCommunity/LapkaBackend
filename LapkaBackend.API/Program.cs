@@ -127,7 +127,7 @@ internal class Program
 
         app.MapHealthChecks("/healthcheck");
 
-        app.UseHangfireDashboard("/hangfire");
+        app.UseHangfireDashboard();
         
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
