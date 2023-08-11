@@ -30,7 +30,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> GetLoggedUser()
         {
-            var result = await _userService.GetLoggedUser(HttpContext.User.FindFirstValue("userId")!);
+            var result = await _userService.GetLoggedUser(new Guid(HttpContext.User.FindFirstValue("userId")!));
 
             return Ok(result);
         }
@@ -46,8 +46,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UpdateUser([FromBody]UpdateUserDataRequest request)
         {
-            await _userService.UpdateUser(request, HttpContext.User.FindFirstValue("userId")!);
-            HttpContext.Request.Host.Value.ToString();
+            await _userService.UpdateUser(request, new Guid(HttpContext.User.FindFirstValue("userId")!));
 
             return NoContent();
         }
@@ -63,7 +62,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> DeleteUser()
         {
-            await _userService.DeleteUser(HttpContext.User.FindFirstValue("userId")!);
+            await _userService.DeleteUser(new Guid(HttpContext.User.FindFirstValue("userId")!));
 
             return NoContent();
         }
@@ -81,7 +80,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> NewPassword(UserPasswordRequest request)
         {
-            await _userService.SetNewPassword(HttpContext.User.FindFirstValue("userId")!, request);
+            await _userService.SetNewPassword(new Guid(HttpContext.User.FindFirstValue("userId")!), request);
 
             return NoContent();
         }
@@ -99,7 +98,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> NewEmail(UpdateUserEmailRequest request)
         {
-            await _userService.SetNewEmail(HttpContext.User.FindFirstValue("userId")!, request);
+            await _userService.SetNewEmail(new Guid(HttpContext.User.FindFirstValue("userId")!), request);
 
             return NoContent();
         }
@@ -147,7 +146,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> DeleteProfilePicture()
         {
-            await _userService.DeleteProfilePicture(HttpContext.User.FindFirstValue("userId")!);
+            await _userService.DeleteProfilePicture(new Guid(HttpContext.User.FindFirstValue("userId")!));
             
             return NoContent();
         }

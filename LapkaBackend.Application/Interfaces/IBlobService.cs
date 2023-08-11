@@ -13,5 +13,5 @@ public interface IBlobService
     Task UpdateFileAsShelterAsync(IFormFile file, Guid id);
     Task DeleteListOfFiles(List<string> ids);
     Task UpdateFileName(Guid id, string newName, Guid userId);
-    
+    Task DeleteFilesByParentId(Guid id);
 }

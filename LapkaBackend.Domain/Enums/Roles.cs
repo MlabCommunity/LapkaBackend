@@ -2,10 +2,10 @@
 
 public enum Roles
 {
-    Undefined,
-    SuperAdmin,
-    Admin,
-    User,
-    Shelter,
-    Worker
+    Undefined = 1,
+    SuperAdmin = 2,
+    Admin = 3,
+    User = 4,
+    Shelter = 5,
+    Worker = 6
 }

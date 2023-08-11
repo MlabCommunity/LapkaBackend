@@ -1,4 +1,5 @@
-﻿using LapkaBackend.Application.Common;
+﻿using System.Reflection.Metadata;
+using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
@@ -80,7 +81,7 @@ public class BlobService : IBlobService
             throw new NotFoundException("invalid_id", "File does not exist");
         }
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.ProfilePicture.Equals(file.Id.ToString()));
+        var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.ProfilePicture!.Equals(file.Id.ToString()));
         
         if (user is not null)
         {
@@ -107,6 +108,7 @@ public class BlobService : IBlobService
         }
         
         var idFileList = new List<string>();
+        
         foreach (var file in files)
         {
             idFileList.Add(await UploadFileAsync(file, Guid.Empty, "lappka-img"));
@@ -182,7 +184,7 @@ public class BlobService : IBlobService
             throw new NotFoundException("invalid_id", "File does not exists");
         }
 
-        if (!(blobFile.ParentEntityId == userId))
+        if (blobFile.ParentEntityId != userId)
         {
             throw new ForbiddenException("invalid_user", "You are not allowed to modify this file");
         }
@@ -199,6 +201,14 @@ public class BlobService : IBlobService
         {
             await DeleteFileAsync(new Guid(file));
         }
+    }
+
+    public async Task DeleteFilesByParentId(Guid id)
+    {
+        var results = _dbContext.Blobs.Where(x => x.ParentEntityId == id)
+            .Select(blb => blb.Id.ToString());
+
+        await DeleteListOfFiles(results.ToList());
     }
 
     private readonly List<string> _pictureTypes = new()

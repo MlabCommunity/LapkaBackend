@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Hangfire;
 using LapkaBackend.API.Middlewares;
 using LapkaBackend.Application;
 using LapkaBackend.Application.Helper;
@@ -12,6 +13,7 @@ using LapkaBackend.Application.Mappers;
 using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
 using LapkaBackend.Infrastructure.Data;
+using LapkaBackend.Infrastructure.Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -72,7 +74,8 @@ internal class Program
         builder.Services.AddAutoMapper(typeof(UserMappingProfile));
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
         builder.Services.AddHttpContextAccessor();
-
+        
+        
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -109,11 +112,11 @@ internal class Program
             {
                 opt.SuppressMapClientErrors = true;
             });
-      
+        
         builder.Services.AddHealthChecks();
 
         var app = builder.Build();
-
+    
         using (var scope = app.Services.CreateScope())
         {
             var options = new DbContextOptionsBuilder<DataContext>()
@@ -123,10 +126,15 @@ internal class Program
             var db = scope.ServiceProvider.GetRequiredService<DataContext>();
             db.Database.Migrate();
             Extensions.Seed(options);
+            var job = scope.ServiceProvider.GetRequiredService<UpdateDeleteJob>();
+            RecurringJob.AddOrUpdate("deleteJob",() => job.PermDelete(), Cron.Daily);
+            RecurringJob.TriggerJob("deleteJob");
         }
 
         app.MapHealthChecks("/healthcheck");
 
+        app.UseHangfireDashboard();
+        
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {

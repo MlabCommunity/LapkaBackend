@@ -22,17 +22,14 @@ namespace LapkaBackend.Application.Services
 
         public async Task<GetUsersByRoleQueryResult> ListOfUsersWithTheSpecifiedRole(Roles role)
         {
-            var roleName = role.ToString();
 
-            if (roleName == Roles.SuperAdmin.ToString() ||
-                roleName == Roles.Undefined.ToString() || 
-                roleName == Roles.User.ToString())
+            if (role is Roles.SuperAdmin or Roles.Undefined or Roles.User)
             {
                 throw new BadRequestException("invalid_role","Cannot choose SuperAdmin, Undefined, User");
             }
-
+            
             var users = await _dbContext.Users
-            .Where(u => u.Role!.RoleName == roleName)
+            .Where(u => u.Role.RoleName == role.ToString() && u.SoftDeleteAt == null)
             .ToListAsync();
 
             var result = new GetUsersByRoleQueryResult
@@ -40,13 +37,13 @@ namespace LapkaBackend.Application.Services
                 Users = _mapper.Map<List<UserDto>>(users)
             };
 
-
             return result;
         }
 
         public async Task AssignAdminRole(Guid userId)
         {
             var userResult = await _dbContext.Users.Include(u => u.Role)
+                .Where(x => x.SoftDeleteAt == null)
                 .FirstOrDefaultAsync(x => x.Id == userId);
 
             if (userResult is null)
@@ -54,7 +51,7 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_user", "User not found!");
             }
 
-            if (userResult.Role!.RoleName != Roles.Shelter.ToString() && 
+            if (userResult.Role.RoleName != Roles.Shelter.ToString() && 
                 userResult.Role.RoleName != Roles.User.ToString())
             {
                 var searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Admin.ToString())
@@ -67,6 +64,7 @@ namespace LapkaBackend.Application.Services
         public async Task RemoveAdminRole(Guid userId)
         {
             var userResult = await _dbContext.Users.Include(u => u.Role)
+                .Where(x =>  x.SoftDeleteAt == null)
                 .FirstOrDefaultAsync(x => x.Id == userId);
 
             if (userResult is null)
@@ -74,12 +72,12 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_user","User not found!");
             }
 
-            if (userResult.Role!.RoleName != "Admin")
+            if (userResult.Role.RoleName != Roles.Admin.ToString())
             {
                 throw new ForbiddenException("invalid_user","User is not an admin!");
             }
 
-            var searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.Worker.ToString())
+            var searchedRoleId = await _dbContext.Roles.Where(r => r.RoleName == Roles.User.ToString())
                 .Select(r => r.Id)
                 .FirstOrDefaultAsync();
             userResult.Role.Id = searchedRoleId;
