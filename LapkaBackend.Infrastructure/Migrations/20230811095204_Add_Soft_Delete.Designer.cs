@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230808085106_Add_Soft_Delete")]
+    [Migration("20230811095204_Add_Soft_Delete")]
     partial class Add_Soft_Delete
     {
         /// <inheritdoc />
