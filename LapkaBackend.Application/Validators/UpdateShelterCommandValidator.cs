@@ -1,7 +1,5 @@
 ﻿using FluentValidation;
 using LapkaBackend.Application.Functions.Command;
-using LapkaBackend.Application.Functions.Queries;
-using LapkaBackend.Application.Requests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,15 +8,19 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Validators;
 
-    public class UpdateShelterValidator : AbstractValidator<UpdateShelterCommand>
+    public class UpdateShelterCommandValidator : AbstractValidator<UpdateShelterCommand>
     {
-        public UpdateShelterValidator()
+        public UpdateShelterCommandValidator()
         {
+            RuleFor(x => x.ShelterId)
+                .NotEmpty()
+                .Length(32)
+            .WithMessage("Invalid Id");
             RuleFor(x => x.OrganizationName)
-            .NotEmpty()
-            .MinimumLength(2)
-            .MaximumLength(64)
-            .WithErrorCode("invalid_organization_name");
+                .NotEmpty()
+                .MinimumLength(2)
+                .MaximumLength(64)
+                .WithErrorCode("invalid_organization_name");
             RuleFor(x => x.Longitude)
                 .NotEmpty()
                 .LessThanOrEqualTo(24.15f)
@@ -61,3 +63,4 @@ namespace LapkaBackend.Application.Validators;
                 .WithErrorCode("invalid_phone_number");
         }
     }
+

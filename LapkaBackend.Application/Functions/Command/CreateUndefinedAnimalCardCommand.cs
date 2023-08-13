@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record CreateUndefinedAnimalCardCommand(string Name, string ProfilePhoto, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string[] Photos, string ShelterId) : IRequest;
+    public record CreateUndefinedAnimalCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string[] Photos, string ShelterId) : IRequest;
 
     public class CreateUndefinedAnimalCardCommandHandler : IRequestHandler<CreateUndefinedAnimalCardCommand>
     {

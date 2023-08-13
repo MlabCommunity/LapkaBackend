@@ -1,7 +1,5 @@
 ﻿using FluentValidation;
 using LapkaBackend.Application.Functions.Command;
-using LapkaBackend.Application.Requests;
-using LapkaBackend.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,17 +8,25 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Validators;
 
-    public class ShelterVolunteeringRequestValidator : AbstractValidator<UpdateShelterVolunteeringCommand>
+    public class UpdateShelterVolunteeringCommandValidator : AbstractValidator<UpdateShelterVolunteeringCommand>
     {
-        public ShelterVolunteeringRequestValidator()
+        public UpdateShelterVolunteeringCommandValidator()
         {
             RuleFor(x => x.ShelterId)
-                .NotEmpty();
+                .NotEmpty()
+                .Length(32)
+                .WithMessage("Invalid Id");
             RuleFor(x => x.BankAccountNumber)
                 .NotEmpty()
                 .Matches(@"^\d{26}$")
                 .WithErrorCode("invalid_AccountNumber")
                 .WithMessage("In Poland Required 26 characters.");
+            RuleFor(x => x.DonationDescription)
+                .MaximumLength(150);
+            RuleFor(x => x.DailyHelpDescription)
+                .MaximumLength(150);
+            RuleFor(x => x.TakingDogsOutDescription)
+                .MaximumLength(150);
         }
     }
 

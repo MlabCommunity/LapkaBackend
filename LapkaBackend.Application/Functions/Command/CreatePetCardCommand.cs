@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Color, AnimalCategories AnimalCategory, Breeds Breed, List<string> Photos,string ShelterId) : IRequest;
+    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Color, AnimalCategories AnimalCategory, string Breed, List<string> Photos,string ShelterId) : IRequest;
 
 
     public class CreateCatCardCommandHandler : IRequestHandler<CreatePetCardCommand>
@@ -46,38 +46,6 @@ namespace LapkaBackend.Application.Functions.Command
             if (Shelter == null)
             {
                 throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
-            }
-            bool flag = false;
-            switch(request.AnimalCategory)
-            {
-                case AnimalCategories.Cat:
-                    if (request.Breed.ToString().StartsWith(AnimalCategories.Cat.ToString()) || request.Breed.ToString() == "Inna")
-                    {
-                        flag = true;
-                    }
-                    break;
-                case AnimalCategories.Dog:
-                    if (request.Breed.ToString().StartsWith(AnimalCategories.Dog.ToString()) || request.Breed.ToString() == "Inna")
-                    {
-                        flag = true;
-                    }
-                    break;
-                case AnimalCategories.Rabbit:
-                    if (request.Breed.ToString().StartsWith(AnimalCategories.Dog.ToString()) || request.Breed.ToString().StartsWith("Inna"))
-                    {
-                        flag = true;
-                    }
-                    break;
-                case AnimalCategories.Undefined:
-                    if (!(request.Breed.ToString().StartsWith(AnimalCategories.Undefined.ToString()) && (request.Breed.ToString().StartsWith(AnimalCategories.Cat.ToString()) || request.Breed.ToString().StartsWith(AnimalCategories.Dog.ToString()) || request.Breed.ToString().StartsWith(AnimalCategories.Rabbit.ToString()))))
-                    {
-                        flag = true;
-                    }
-                    break;
-            }
-            if (flag==false)
-            {
-                throw new BadRequestException("Wrong_Breed", "Trying to assing wrong breed to that animal category");
             }
 
             var newAnimal = new Animal()

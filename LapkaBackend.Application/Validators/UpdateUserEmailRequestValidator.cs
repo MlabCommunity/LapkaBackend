@@ -6,8 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LapkaBackend.Application.Validators
-{
+namespace LapkaBackend.Application.Validators;
+
     public class UpdateUserEmailRequestValidator : AbstractValidator<UpdateUserEmailRequest>
     {
         public UpdateUserEmailRequestValidator()
@@ -18,4 +18,4 @@ namespace LapkaBackend.Application.Validators
             .WithErrorCode("invalid_email");
         }
     }
-}
+
