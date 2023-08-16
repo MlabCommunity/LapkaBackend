@@ -146,7 +146,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> SetNewPassword(ResetPasswordRequest resetPasswordRequest, [FromRoute] string token)
+        public async Task<ActionResult> SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token)
         {
             await _authService.SetNewPassword(resetPasswordRequest, token);
             return NoContent();
