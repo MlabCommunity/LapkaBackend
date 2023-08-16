@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Color, AnimalCategories AnimalCategory, string Breed, List<string> Photos,string ShelterId) : IRequest;
+    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Color, AnimalCategories AnimalCategory, string Breed, string ProfilePhoto, List<string> Photos,string ShelterId) : IRequest;
 
 
     public class CreateCatCardCommandHandler : IRequestHandler<CreatePetCardCommand>
@@ -23,11 +23,10 @@ namespace LapkaBackend.Application.Functions.Command
         public async Task Handle(CreatePetCardCommand request, CancellationToken cancellationToken)
         {
             var photosList = new List<Photo>();
+            photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
+
             for (int i = 0; i < request.Photos.Count; i++)
             {
-                if (i==0)
-                    photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
-                else
                     photosList.Add(new Photo());//dodać zapisywanie zdjęć
             }
             

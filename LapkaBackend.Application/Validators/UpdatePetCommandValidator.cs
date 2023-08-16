@@ -63,6 +63,11 @@ namespace LapkaBackend.Application.Validators;
                 .WithMessage("Invalid animal category")
                 .WithErrorCode("invalid_breed");
 
+        RuleFor(x => x.ProfilePhoto)
+                .NotEmpty()
+                .WithMessage("Invalid Photo")
+                .WithErrorCode("invalid_photo");
+
         RuleFor(x => x.Photos)
                 .Must(photos => photos.Count <= 5)
                 .WithMessage("Photos array can have a maximum of 5 elements.")

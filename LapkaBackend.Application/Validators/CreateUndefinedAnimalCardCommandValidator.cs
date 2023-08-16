@@ -47,7 +47,12 @@ namespace LapkaBackend.Application.Validators;
                     .WithMessage("Invalid Description. Description must have less then 150 chars")
                     .WithErrorCode("invalid_shelterId");
 
-            RuleFor(x => x.Photos)
+        RuleFor(x => x.ProfilePhoto)
+                .NotEmpty()
+                .WithMessage("Invalid Photo")
+                .WithErrorCode("invalid_photo");
+
+        RuleFor(x => x.Photos)
                     .Must(photos => photos.Length <= 5)
                     .WithMessage("Photos array can have a maximum of 5 elements.")
                     .WithErrorCode("invalid_number_of_colors");

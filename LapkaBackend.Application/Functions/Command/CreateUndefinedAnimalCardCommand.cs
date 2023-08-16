@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record CreateUndefinedAnimalCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string[] Photos, string ShelterId) : IRequest;
+    public record CreateUndefinedAnimalCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string ProfilePhoto, string[] Photos, string ShelterId) : IRequest;
 
     public class CreateUndefinedAnimalCardCommandHandler : IRequestHandler<CreateUndefinedAnimalCardCommand>
     {
@@ -21,14 +21,13 @@ namespace LapkaBackend.Application.Functions.Command
         public async Task Handle(CreateUndefinedAnimalCardCommand request, CancellationToken cancellationToken)
         {
             var photosList = new List<Photo>();
+            photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
+
             for (int i = 0; i < request.Photos.Length; i++)
             {
-                if (i == 0)
-                    photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
-                else
-                    photosList.Add(new Photo());//dodać zapisywanie zdjęć
+                photosList.Add(new Photo());//dodać zapisywanie zdjęć
             }
-           
+
 
             var animalCategory = _dbContext.AnimalCategories.First(r => r.CategoryName == AnimalCategories.Undefined.ToString());
             Guid shelterId = new Guid(request.ShelterId);

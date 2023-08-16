@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record UpdatePetCommand(string PetId, string Description, string Name,Genders Gender, bool IsSterilized, decimal Weight, int Months, List<string> Photos, bool IsVisible, AnimalCategories Category, string Breed, string Marking):IRequest;
+    public record UpdatePetCommand(string PetId, string Description, string Name,Genders Gender, bool IsSterilized, decimal Weight, int Months, string ProfilePhoto, List<string> Photos, bool IsVisible, AnimalCategories Category, string Breed, string Marking):IRequest;
 
 
     public class UpdatePetCommandHandler : IRequestHandler<UpdatePetCommand>
@@ -32,15 +32,13 @@ namespace LapkaBackend.Application.Functions.Command
             }
 
             var photosList = new List<Photo>();
+            photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
+
             for (int i = 0; i < request.Photos.Count; i++)
             {
-                if (i==0)
-                {
-                    photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
-                }
                 photosList.Add(new Photo());//dodać zapisywanie zdjęć
             }
-           
+
 
             var animalCategory = await _dbContext.AnimalCategories.FirstOrDefaultAsync(r => r.CategoryName == request.Category.ToString());
             if (animalCategory is null)
