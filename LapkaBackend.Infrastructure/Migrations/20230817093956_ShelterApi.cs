@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class FluentApi2 : Migration
+    public partial class ShelterApi : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

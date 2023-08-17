@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230810110242_FluentApi2")]
-    partial class FluentApi2
+    [Migration("20230817093956_ShelterApi")]
+    partial class ShelterApi
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
