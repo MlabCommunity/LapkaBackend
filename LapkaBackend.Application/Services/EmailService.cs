@@ -23,7 +23,8 @@ namespace LapkaBackend.Application.Services
             email.To.Add(MailboxAddress.Parse(mailRequest.ToEmail));
             email.Subject = mailRequest.Subject;
             var builder = _emailWrapper.GetBuilder(mailRequest.Template);
-
+            builder.HtmlBody = builder.HtmlBody.Replace("__link", mailRequest.RedirectUrl);
+            
             email.Body = builder.ToMessageBody();
             using var smtp = new SmtpClient();
             await smtp.ConnectAsync(_emailSettings.Host, _emailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);

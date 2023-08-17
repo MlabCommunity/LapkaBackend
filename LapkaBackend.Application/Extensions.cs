@@ -19,6 +19,8 @@ namespace LapkaBackend.Application
             services.AddScoped<IManagementService, ManagementService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddMediatR(config => config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+            services.AddScoped<IBlobService, BlobService>();
+
         }
 
     }

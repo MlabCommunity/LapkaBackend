@@ -1,8 +1,10 @@
-﻿using LapkaBackend.Application.Common;
+﻿using Hangfire;
+using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Interfaces;
-using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Data;
 using LapkaBackend.Infrastructure.Email;
+using LapkaBackend.Infrastructure.FileStorage;
+using LapkaBackend.Infrastructure.Hangfire;
 using LapkaBackend.Infrastructure.ModelBuilders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,16 +15,21 @@ namespace LapkaBackend.Infrastructure
     public static class Extensions
     {
 
-        public static void AddInfrasturcture(this IServiceCollection services, IConfiguration configuration)
+        public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddTransient<IDataContext, DataContext>();
+            services.AddTransient<IAzureStorageContext, AzureStorageContext>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
-            
-
+            services.AddTransient<UpdateDeleteJob>();
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("MySql"));
             });
+            
+            services.AddHangfire(options => options
+                .UseSqlServerStorage(configuration.GetConnectionString("MySql")));
+
+            services.AddHangfireServer();
         }
 
         public static void AddModels(this ModelBuilder modelBuilder)
@@ -37,24 +44,11 @@ namespace LapkaBackend.Infrastructure
             ShelterVolunteeringModelBuilder.BuildShelterVolunteeringModel(modelBuilder);
         }
 
-        public static void Seed(this ModelBuilder modelBuilder)
+        public static void Seed(DbContextOptions<DataContext> options)
         {
-            //TODO: Migracja do zrobienia :)
-            modelBuilder.Entity<Role>().HasData(
-                    new Role() { Id =  1, RoleName = "Undefined" },
-                    new Role() { Id =  2, RoleName = "SuperAdmin" },
-                    new Role() { Id =  3, RoleName = "Admin" },
-                    new Role() { Id =  4, RoleName = "User" },
-                    new Role() { Id =  5, RoleName = "Shelter" },
-                    new Role() { Id =  6, RoleName = "Worker" }
-                );
-
-            modelBuilder.Entity<AnimalCategory>().HasData(
-                    new AnimalCategory() { Id = 1, CategoryName = "Dog" },
-                    new AnimalCategory() { Id = 2, CategoryName = "Cat" },
-                    new AnimalCategory() { Id = 3, CategoryName = "rabbit" },
-                    new AnimalCategory() { Id = 4, CategoryName = "Undefined" }
-                );
+            AnimalCategoryModelBuilder.SeedAnimalCategories(options);
+            RoleModelBuilder.SeedRoles(options);
+            UserModelBuilder.SeedUser(options);
         }
     }
 }
