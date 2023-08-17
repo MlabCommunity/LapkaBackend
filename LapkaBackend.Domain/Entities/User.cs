@@ -25,9 +25,6 @@ namespace LapkaBackend.Domain.Entities
         public string LoginProvider { get; set; } = string.Empty;
         public string? ProfilePicture { get; set; } = string.Empty;
         public DateTime? SoftDeleteAt { get; set; }
-        public Guid? ShelterId { get; set; }
-        public Shelter Shelter { get; set; }
-        public string ProfilePicture { get; set; } = string.Empty;
 
         public virtual List<AnimalView> AnimalViews { get; set; }
     }
