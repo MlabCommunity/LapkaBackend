@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
+using LapkaBackend.API.Filters;
 using LapkaBackend.API.Middlewares;
 using LapkaBackend.Application;
 using LapkaBackend.Application.Helper;
@@ -23,6 +24,8 @@ using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Filters;
 using Extensions = LapkaBackend.Infrastructure.Extensions;
+using ILogger = Serilog.ILogger;
+
 namespace LapkaBackend.API;
 
 internal class Program
@@ -30,12 +33,12 @@ internal class Program
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        
-        Log.Logger = new LoggerConfiguration()
+        var log = new LoggerConfiguration()
             .MinimumLevel.Information()
             .WriteTo.AzureBlobStorage(connectionString: builder.Configuration.GetValue<string>("Storage:ConnectionString"), LogEventLevel.Error,"test", "{yyyy}_{MM}_{dd}/log.txt")
             .CreateLogger();
-
+        
+        builder.Services.AddSingleton<ILogger>(log);
         builder.Services.AddControllers()
             .ConfigureApiBehaviorOptions(options =>
             {
@@ -133,8 +136,6 @@ internal class Program
 
         app.MapHealthChecks("/healthcheck");
 
-        app.UseHangfireDashboard();
-        
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -147,6 +148,11 @@ internal class Program
         app.UseAuthentication();
 
         app.UseAuthorization();
+        
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions()
+        {
+            Authorization = new [] { new HangfireAuthorizationFilter() }
+        });
         
         app.UseMiddleware<ErrorHandlerMiddleware>();
 

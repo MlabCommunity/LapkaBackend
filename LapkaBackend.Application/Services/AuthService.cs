@@ -15,7 +15,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-
+using Serilog;
 
 namespace LapkaBackend.Application.Services
 {
@@ -25,11 +25,12 @@ namespace LapkaBackend.Application.Services
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly ILogger _logger;
 
         public AuthService(IDataContext dbContext, IConfiguration configuration, 
-            IEmailService emailService, IHttpContextAccessor contextAccessor)
+            IEmailService emailService, IHttpContextAccessor contextAccessor, ILogger logger)
         {
-
+            _logger = logger;
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
@@ -118,6 +119,8 @@ namespace LapkaBackend.Application.Services
                 _dbContext.Users.Update(result);
                 await _dbContext.SaveChangesAsync();
             }
+
+            await SavingDataInCookies(result.Role.RoleName);
             
             return new LoginResultDto
             {
@@ -265,11 +268,15 @@ namespace LapkaBackend.Application.Services
                     IssuerSigningKey = key
                 }, out _);
             }
-            catch (Exception e)
+            catch (SecurityTokenValidationException e)
             {
                 return false;
             }
-
+            catch (Exception e)
+            {
+                _logger.Error(e, "token_error");
+                return false;
+            }
             return true;
         }
 
@@ -331,7 +338,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task ResetPassword(UserEmailRequest request)
         {
-            var result = _dbContext.Users
+            var result = await _dbContext.Users
                 .Where(x => x.SoftDeleteAt == null)
                 .FirstOrDefaultAsync(x => x.Email == request.Email);
 
@@ -356,23 +363,33 @@ namespace LapkaBackend.Application.Services
 
             await _emailService.SendEmail(mailRequest);
         }
-
         public async Task SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token)
         {
-            var email = VerifyToken(token);
-            if (email == null)
+            if (!IsTokenValid(token))
             {
                 throw new BadRequestException("invalid_token", "Token is invalid");
             }
+
             if (resetPasswordRequest.Password != resetPasswordRequest.ConfirmPassword)
             {
                 throw new BadRequestException("invalid_password", "Passwords aren't matching");
             }
 
-            var user =  _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email)!;
+            var userToken = new JwtSecurityToken(token);
+            var userEmail = userToken.Claims.ToList().
+                First(x => x.Type.Equals(ClaimTypes.Email));
 
-            user.Password = resetPasswordRequest.Password;
+            var user = await _dbContext.Users
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Email == userEmail.Value);
 
+            if (user is null)
+            {
+                throw new BadRequestException("invalid_email", "User doesn't exists");
+            }
+            
+            user.Password = BCrypt.Net.BCrypt.HashPassword(resetPasswordRequest.Password);
+            _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
         }
 
@@ -384,10 +401,7 @@ namespace LapkaBackend.Application.Services
 
             var claims = new List<Claim>()
             {
-                new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Name, user.LastName),
-                new(ClaimTypes.Role, user.Role.RoleName)
+                new(ClaimTypes.Email, user.Email)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -405,36 +419,6 @@ namespace LapkaBackend.Application.Services
             return jwt;
         }
 
-        private string? VerifyToken(string token)
-        {
-            if (!IsTokenValid(token))
-            {
-                return null;
-            }
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value!);
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = false,
-                ValidateAudience = false
-            };
-
-            try
-            {
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
-
-                var email = principal.FindFirst(ClaimTypes.Email)?.Value;
-                var user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);
-                return user == null ? null : email;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
         public async Task ConfirmEmail(string token)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
@@ -448,6 +432,34 @@ namespace LapkaBackend.Application.Services
             user.VerifiedAt = DateTime.UtcNow;
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
+        }
+
+        private async Task SavingDataInCookies(string data)
+        {
+            var claims = new List<Claim>()
+            {
+                new(ClaimTypes.Role, data)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Token").Value!));
+
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: credentials
+            );
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            
+            var options = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.UtcNow.AddDays(1),
+            };
+            
+            _contextAccessor.HttpContext!.Response.Cookies.Append("token", jwt, options);
         }
     }
 }
