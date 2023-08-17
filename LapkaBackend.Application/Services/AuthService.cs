@@ -15,6 +15,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Serilog;
 
 namespace LapkaBackend.Application.Services
 {
@@ -24,11 +25,12 @@ namespace LapkaBackend.Application.Services
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly ILogger _logger;
 
         public AuthService(IDataContext dbContext, IConfiguration configuration, 
-            IEmailService emailService, IHttpContextAccessor contextAccessor)
+            IEmailService emailService, IHttpContextAccessor contextAccessor, ILogger logger)
         {
-
+            _logger = logger;
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
@@ -266,11 +268,15 @@ namespace LapkaBackend.Application.Services
                     IssuerSigningKey = key
                 }, out _);
             }
-            catch
+            catch (SecurityTokenValidationException e)
             {
                 return false;
             }
-
+            catch (Exception e)
+            {
+                _logger.Error(e, "token_error");
+                return false;
+            }
             return true;
         }
 
@@ -430,13 +436,30 @@ namespace LapkaBackend.Application.Services
 
         private async Task SavingDataInCookies(string data)
         {
+            var claims = new List<Claim>()
+            {
+                new(ClaimTypes.Role, data)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Token").Value!));
+
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: credentials
+            );
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            
             var options = new CookieOptions
             {
                 HttpOnly = true,
                 Expires = DateTime.UtcNow.AddDays(1),
             };
             
-            _contextAccessor.HttpContext!.Response.Cookies.Append("role", data, options);
+            _contextAccessor.HttpContext!.Response.Cookies.Append("token", jwt, options);
         }
     }
 }
