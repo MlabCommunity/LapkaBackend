@@ -6,17 +6,16 @@ namespace LapkaBackend.Application.Interfaces
 {
     public interface IAuthService
     {
-        public Task RegisterUser(UserRegistrationRequest request);
-        public Task<LoginResultDto> LoginUser(LoginRequest request);
-        public Task RegisterShelter(ShelterWithUserRegistrationRequest request);
-        public string CreateAccessToken(User user);
-        public Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request);
-        public string GenerateRefreshToken();
-        public bool IsTokenValid(string token);
-        public Task RevokeToken(TokenRequest request);
-        public Task<LoginResultDto> LoginShelter(LoginRequest request);
-        public Task ResetPassword(UserEmailRequest request);
-        public Task SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token);
-        public Task ConfirmEmail(string token);
+         Task RegisterUser(UserRegistrationRequest request);
+         Task<LoginResultDto> LoginUser(LoginRequest request);
+         Task RegisterShelter(ShelterWithUserRegistrationRequest request);
+         string CreateAccessToken(User user);
+         Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request);
+         string CreateRefreshToken();
+         bool IsTokenValid(string token);
+         Task RevokeToken(TokenRequest request);
+         Task ResetPassword(UserEmailRequest request);
+         Task SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token);
+         Task ConfirmEmail(string token);
     }
 }

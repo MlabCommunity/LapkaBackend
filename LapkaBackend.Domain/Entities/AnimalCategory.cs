@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Domain.Entities
 {
-    public class AnimalCategory
+    public sealed class AnimalCategory
     {
         public int Id { get; set; }
         public string CategoryName { get; set; } = string.Empty;

@@ -1,4 +1,6 @@
-﻿namespace LapkaBackend.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace LapkaBackend.Domain.Entities
 {
     public class Shelter
     {

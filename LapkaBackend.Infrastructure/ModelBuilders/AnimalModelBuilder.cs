@@ -1,10 +1,5 @@
 ﻿using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LapkaBackend.Infrastructure.ModelBuilders
 {
@@ -15,7 +10,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
             modelBuilder.Entity<Animal>(a =>
             {
                 a.ToTable("Animals")
-                .HasKey(a => a.Id);
+                .HasKey(x => x.Id);
 
                 a.Property(x => x.Name)
                 .IsRequired();

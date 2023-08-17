@@ -13,7 +13,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Serilog;
 
 namespace LapkaBackend.Application.Services
 {
@@ -22,13 +24,17 @@ namespace LapkaBackend.Application.Services
         private readonly IDataContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
+        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly ILogger _logger;
 
-        public AuthService(IDataContext dbContext, IConfiguration configuration, IEmailService emailService)
+        public AuthService(IDataContext dbContext, IConfiguration configuration, 
+            IEmailService emailService, IHttpContextAccessor contextAccessor, ILogger logger)
         {
-
+            _logger = logger;
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
+            _contextAccessor = contextAccessor;
         }
 
         public async Task RegisterUser(UserRegistrationRequest request)
@@ -38,19 +44,17 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_email", "User with this email already exists");
             }
-
-            var role = _dbContext.Roles.First(r => r.RoleName == Roles.User.ToString());
-
-            var newUser = new User()
+            
+            var newUser = new User
             {
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Email = request.EmailAddress,
-                Password = request.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 VerificationToken = CreateRandomToken(),
-                RefreshToken = GenerateRefreshToken(),
-                CreatedAt = DateTime.Now,
-                Role = role,
+                RefreshToken = CreateRefreshToken(),
+                CreatedAt = DateTime.UtcNow,
+                Role = _dbContext.Roles.First(r => r.RoleName == Roles.User.ToString())
             };
 
             await _dbContext.Users.AddAsync(newUser);
@@ -61,18 +65,20 @@ namespace LapkaBackend.Application.Services
 
         private async Task SendEmailToConfirmEmail(string emailAddress, string token)
         {
-            string baseUrl = "https://localhost:7214"; //""
-            
-            string endpoint = $"/Auth/confirmEmail/{token}";
+            var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
 
-            string link = $"{baseUrl}{endpoint}";
+            var baseUrl = myUrl.Scheme + Uri.SchemeDelimiter + myUrl.Authority;          
 
-            MailRequest mailRequest = new MailRequest()
+            var endpoint = $"/Auth/confirmEmail/{token}";
+
+            var link = $"{baseUrl}{endpoint}";
+
+            var mailRequest = new MailRequest()
             {
                 ToEmail = emailAddress,
                 Subject = "email confirmation",
-                Template = Templates.Welcome
-
+                Template = Templates.Welcome,
+                RedirectUrl = link
             };
 
             await _emailService.SendEmail(mailRequest);
@@ -80,7 +86,10 @@ namespace LapkaBackend.Application.Services
 
         public async Task<LoginResultDto> LoginUser(LoginRequest request)
         {
-            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
+            var result = await _dbContext.Users
+                .Include(u => u.Role)
+                .Where(x => x.SoftDeleteAt == null)
+                .FirstOrDefaultAsync(x => x.Email == request.Email);
 
             if (result == null)
             {
@@ -89,38 +98,54 @@ namespace LapkaBackend.Application.Services
 
             if (result.VerifiedAt == null)
             {
-                throw new ForbiddenExcpetion("not_verified", "Not verified");
+                throw new ForbiddenException("not_verified", "Not verified");
             }
-
-            if (result.Password != request.Password)
+            
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
             {
                 throw new BadRequestException("invalid_password", "Wrong password");
             }
 
+            string refreshToken;
+            
+            if (IsTokenValid(result.RefreshToken))
+            {
+                refreshToken = result.RefreshToken;
+            }
+            else
+            {
+                refreshToken = CreateRefreshToken();
+                result.RefreshToken = refreshToken;
+                _dbContext.Users.Update(result);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            await SavingDataInCookies(result.Role.RoleName);
+            
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),
-                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : GenerateRefreshToken()
+                RefreshToken = refreshToken
             };
         }
 
         public async Task<LoginResultDto> LoginShelter(LoginRequest request)
         {
             var result = await _dbContext.Users
+                .Where(x => x.SoftDeleteAt == null)
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(x => x.Email == request.Email);
 
             if (result == null)
             {
-                throw new BadRequestException("invalid_mail", "User not found");
+                throw new BadRequestException("invalid_email", "User not found");
             }
-            if (result.Role!.RoleName.ToUpper() != "SHELTER" && result.Role.RoleName.ToUpper() != "WORKER")
+            if (result.Role.RoleName != Roles.Shelter.ToString() && result.Role.RoleName != Roles.Worker.ToString())
             {
-                throw new BadRequestException("", "You are not Shelter!");
+                throw new BadRequestException("invalid_role", "You are not Shelter!");
             }
-            //TODO replace with authorize
 
-            if (result.Password != request.Password)
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
             {
                 throw new BadRequestException("invalid_password", "Wrong password");
             }
@@ -128,7 +153,7 @@ namespace LapkaBackend.Application.Services
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),
-                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : GenerateRefreshToken()
+                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : result.RefreshToken = CreateRefreshToken()
             };
         }
 
@@ -141,32 +166,39 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_token", "Invalid token");
             }
 
-            var user = await _dbContext.Users.FirstAsync(c =>
-                c.Email == jwtAccessToken.Claims.First(x => x.Type == ClaimTypes.Email).Value);
+            if (!IsTokenValid(request.RefreshToken))
+            {
+                throw new BadRequestException("invalid_token", "Invalid token");
+            }
+            
+            var emailClaim = jwtAccessToken.Claims.ToList().First(x => x.Type.Equals(ClaimTypes.Email));
+            
+            var user = await _dbContext.Users
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(c =>
+                c.Email == emailClaim.Value);
 
             if (user == null)
             {
-                throw new BadRequestException("", "User doesn't exists");
+                throw new BadRequestException("invalid_email", "User doesn't exists");
             }
-
-            var role = await _dbContext.Roles.FirstAsync(x => x.Id == user.RoleId);
-
-            List<Claim> claims = new List<Claim>()
+            
+            var claims = new List<Claim>()
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Role, role.RoleName)
+                new(ClaimTypes.Role, user.Role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration.GetSection("AppSettings:Token").Value!));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(5),
-                signingCredentials: creds
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: credentials
             );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
@@ -175,83 +207,77 @@ namespace LapkaBackend.Application.Services
 
         public string CreateAccessToken(User user)
         {
-
-            var role = _dbContext.Roles.First(x => x.Id == user.RoleId);
-
-            List<Claim> claims = new List<Claim>()
+            var claims = new List<Claim>()
             {
                 new("userId", user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Role, role.RoleName)
+                new(ClaimTypes.Role, user.Role.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration.GetSection("AppSettings:Token").Value!));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(5),
-                signingCredentials: creds
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: credentials
             );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
             return jwt;
         }
 
-        public string GenerateRefreshToken()
+        public string CreateRefreshToken()
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration.GetSection("AppSettings:Token").Value!));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
-                expires: DateTime.Now.AddDays(7),
-                signingCredentials: creds
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: credentials
             );
-
+            
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
             return jwt;
         }
 
-        private string CreateRandomToken()
+        private static string CreateRandomToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
         }
 
-        public async Task SaveRefreshToken(LoginRequest request, string newRefreshToken)
-        {
-            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
-
-            if (result is null)
-            {
-                throw new BadRequestException("invalid_email", "User doesn't exists");
-            }
-
-            result.RefreshToken = newRefreshToken;
-
-            _dbContext.Users.Update(result);
-
-            await _dbContext.SaveChangesAsync();
-        }
-
         public bool IsTokenValid(string token)
         {
-            JwtSecurityToken jwtSecurityToken;
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Token").Value!));
+            
+            var tokenHandler = new JwtSecurityTokenHandler();
             try
             {
-                jwtSecurityToken = new JwtSecurityToken(token);
-
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    IssuerSigningKey = key
+                }, out _);
             }
-            catch (Exception)
+            catch (SecurityTokenValidationException e)
             {
                 return false;
             }
-
-            return jwtSecurityToken.ValidTo > DateTime.UtcNow;
+            catch (Exception e)
+            {
+                _logger.Error(e, "token_error");
+                return false;
+            }
+            return true;
         }
 
         public async Task RevokeToken(TokenRequest request)
@@ -262,155 +288,146 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_token", "Refresh Token is invalid");
             }
-                result.RefreshToken = "";
-                _dbContext.Users.Update(result);
-                await _dbContext.SaveChangesAsync();
+            result.RefreshToken = "";
+            _dbContext.Users.Update(result);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task RegisterShelter(ShelterWithUserRegistrationRequest request)
         {
             if (_dbContext.Users.Any(x => x.Email == request.UserRequest.EmailAddress))
             {
-                throw new BadRequestException("invalid_email", "Shelter already exists");
+                throw new BadRequestException("invalid_email", "Email already in use");
             }
 
-            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName.ToUpper() == "SHELTER");
+            var roleUser = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == Roles.Shelter.ToString());
 
-                var newShelter = new Shelter()
-                {
-                    OrganizationName = request.ShelterRequest.OrganizationName,
-                    Longitude = request.ShelterRequest.Longitude,
-                    Latitude = request.ShelterRequest.Latitude,
-                    City = request.ShelterRequest.City,
-                    Street = request.ShelterRequest.Street,
+            var newShelter = new Shelter
+            {
+                OrganizationName = request.ShelterRequest.OrganizationName,
+                Longitude = request.ShelterRequest.Longitude,
+                Latitude = request.ShelterRequest.Latitude,
+                City = request.ShelterRequest.City,
+                Street = request.ShelterRequest.Street,
+                ZipCode = request.ShelterRequest.ZipCode,
+                Nip = request.ShelterRequest.Nip,
+                Krs = request.ShelterRequest.Krs,
+                PhoneNumber = request.ShelterRequest.PhoneNumber,
+            };
+                    ZipCode = request.ShelterRequest.ZipCode,
+                    Nip = request.ShelterRequest.Nip,
+                    Krs = request.ShelterRequest.Krs,
+                    PhoneNumber = request.ShelterRequest.PhoneNumber,
+                };
                     ZipCode = request.ShelterRequest.ZipCode,
                     Nip = request.ShelterRequest.Nip,
                     Krs = request.ShelterRequest.Krs,
                     PhoneNumber = request.ShelterRequest.PhoneNumber,
                 };
 
-                await _dbContext.Shelters.AddAsync(newShelter);
+            await _dbContext.Shelters.AddAsync(newShelter);
 
-                var newUser = new User()
-                {
-                    FirstName = request.UserRequest.FirstName,
-                    LastName = request.UserRequest.LastName,
-                    Email = request.UserRequest.EmailAddress,
-                    Password = request.UserRequest.Password,
-                    RefreshToken = GenerateRefreshToken(),
-                    VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
-                    CreatedAt = DateTime.Now,
-                    Role = roleUser,
-                    ShelterId = newShelter.Id
-                };
+            var newUser = new User()
+            {
+                FirstName = request.UserRequest.FirstName,
+                LastName = request.UserRequest.LastName,
+                Email = request.UserRequest.EmailAddress,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.UserRequest.Password),
+            await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
+        }
+        }
+                Role = roleUser!,
+                ShelterId = newShelter.Id
+            };
 
-                await _dbContext.Users.AddAsync(newUser);
-                await _dbContext.SaveChangesAsync();
+            await _dbContext.Users.AddAsync(newUser);
+            await _dbContext.SaveChangesAsync();
 
                 await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
+            }
         }
 
         public async Task ResetPassword(UserEmailRequest request)
         {
-            string baseUrl = "https://localhost:7214";
-            string token = CreateSetNewPasswordToken(request.Email);
-            string endpoint = $"/Auth/setPassword/{token}";
+            var result = await _dbContext.Users
+                .Where(x => x.SoftDeleteAt == null)
+                .FirstOrDefaultAsync(x => x.Email == request.Email);
 
-            string link = $"{baseUrl}{endpoint}";
+            if (result is null)
+            {
+                throw new BadRequestException("invalid_mail", "User with that email does not exists");
+            }
+            
+            var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
+            var baseUrl = myUrl.Scheme + Uri.SchemeDelimiter + myUrl.Authority;  
+            var endpoint = $"/Auth/setPassword/{CreateSetNewPasswordToken(request.Email)}";
+
+            var link = $"{baseUrl}{endpoint}";
 
             MailRequest mailRequest = new()
             {
                 ToEmail = request.Email,
                 Subject = "Reset password",
-                Template = Templates.PasswordChange
-
+                Template = Templates.PasswordChange,
+                RedirectUrl = link
             };
 
             await _emailService.SendEmail(mailRequest);
         }
-
         public async Task SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token)
         {
-            string? email = VerifyToken(token);
-            if (email == null)
+            if (!IsTokenValid(token))
             {
                 throw new BadRequestException("invalid_token", "Token is invalid");
             }
+
             if (resetPasswordRequest.Password != resetPasswordRequest.ConfirmPassword)
             {
                 throw new BadRequestException("invalid_password", "Passwords aren't matching");
             }
 
-            User user =  _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email)!;
+            var userToken = new JwtSecurityToken(token);
+            var userEmail = userToken.Claims.ToList().
+                First(x => x.Type.Equals(ClaimTypes.Email));
 
-            user.Password = resetPasswordRequest.Password;
+            var user = await _dbContext.Users
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Email == userEmail.Value);
 
+            if (user is null)
+            {
+                throw new BadRequestException("invalid_email", "User doesn't exists");
+            }
+            
+            user.Password = BCrypt.Net.BCrypt.HashPassword(resetPasswordRequest.Password);
+            _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
         }
 
         private string CreateSetNewPasswordToken(string emailAddress)
         {
-            User user = _dbContext.Users
+            var user = _dbContext.Users
                 .Include(u => u.Role)
                 .FirstOrDefault(x => x.Email == emailAddress) ?? throw new BadRequestException("invalid_email","There are no such email!");
 
-            List<Claim> claims = new List<Claim>()
+            var claims = new List<Claim>()
             {
-                new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Name, user.LastName),
-                new(ClaimTypes.Role, user.Role!.RoleName)
+                new(ClaimTypes.Email, user.Email)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration.GetSection("AppSettings:Token").Value!));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
                     claims: claims,
-                    expires: DateTime.Now.AddMinutes(5),
-                    signingCredentials: creds
+                    expires: DateTime.UtcNow.AddMinutes(5),
+                    signingCredentials: credentials
                 );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
             return jwt;
-        }
-
-        private string? VerifyToken(string token)
-        {
-            if (!IsTokenValid(token))
-            {
-                return null;
-            }
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value!);
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = false,
-                ValidateAudience = false
-            };
-
-            try
-            {
-                SecurityToken validatedToken;
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
-
-                var email = principal.FindFirst(ClaimTypes.Email)?.Value;
-                User? user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(x => x.Email == email);
-                if (user == null)
-                {
-                    return null;
-                }
-
-                return email;
-            }
-            catch
-            {
-                return null;
-            }
         }
 
         public async Task ConfirmEmail(string token)
@@ -423,12 +440,37 @@ namespace LapkaBackend.Application.Services
             }
 
             user.VerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
-            user.VerifiedAt = DateTime.Now;
+            user.VerifiedAt = DateTime.UtcNow;
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
         }
 
+        private async Task SavingDataInCookies(string data)
+        {
+            var claims = new List<Claim>()
+            {
+                new(ClaimTypes.Role, data)
+            };
 
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Token").Value!));
+
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: credentials
+            );
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            
+            var options = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.UtcNow.AddDays(1),
+            };
+            
+            _contextAccessor.HttpContext!.Response.Cookies.Append("token", jwt, options);
+        }
     }
-
 }

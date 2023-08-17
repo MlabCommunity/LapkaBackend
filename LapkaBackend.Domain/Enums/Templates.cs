@@ -2,8 +2,8 @@
 {
     public enum Templates
     {
-        ConfirmEmailChange=1,
-        PasswordChange=2,
-        Welcome=3
+        ConfirmEmailChange = 1,
+        PasswordChange = 2,
+        Welcome = 3
     }
 }

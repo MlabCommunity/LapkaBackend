@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LapkaBackend.Domain.Entities
 {
-    public class Animal
+    public sealed class Animal
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;

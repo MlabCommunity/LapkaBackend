@@ -4,6 +4,6 @@ namespace LapkaBackend.Application.Interfaces
 {
     public interface IEmailService
     {
-        public Task SendEmail(MailRequest request);
+        Task SendEmail(MailRequest request);
     }
 }
