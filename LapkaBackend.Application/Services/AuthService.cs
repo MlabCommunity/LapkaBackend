@@ -15,8 +15,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Serilog;
-
 
 namespace LapkaBackend.Application.Services
 {
@@ -119,6 +117,8 @@ namespace LapkaBackend.Application.Services
                 _dbContext.Users.Update(result);
                 await _dbContext.SaveChangesAsync();
             }
+
+            await SavingDataInCookies(result.Role.RoleName);
             
             return new LoginResultDto
             {
@@ -426,6 +426,17 @@ namespace LapkaBackend.Application.Services
             user.VerifiedAt = DateTime.UtcNow;
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
+        }
+
+        private async Task SavingDataInCookies(string data)
+        {
+            var options = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.UtcNow.AddDays(1),
+            };
+            
+            _contextAccessor.HttpContext!.Response.Cookies.Append("role", data, options);
         }
     }
 }

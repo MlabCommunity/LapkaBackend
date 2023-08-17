@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
+using LapkaBackend.API.Filters;
 using LapkaBackend.API.Middlewares;
 using LapkaBackend.Application;
 using LapkaBackend.Application.Helper;
@@ -20,7 +21,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Filters;
 using Extensions = LapkaBackend.Infrastructure.Extensions;
@@ -136,8 +136,6 @@ internal class Program
 
         app.MapHealthChecks("/healthcheck");
 
-        app.UseHangfireDashboard();
-        
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -150,6 +148,11 @@ internal class Program
         app.UseAuthentication();
 
         app.UseAuthorization();
+        
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions()
+        {
+            Authorization = new [] { new HangfireAuthorizationFilter() }
+        });
         
         app.UseMiddleware<ErrorHandlerMiddleware>();
 
