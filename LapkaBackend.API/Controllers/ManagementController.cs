@@ -49,7 +49,7 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        ///     Lista użytkowników o wskazanej roli. Niedozwolony wybór ról: SuperAdmin, Undefined, User.
+        ///     Lista użytkowników o wskazanej roli. Niedozwolony wybór ról: SuperAdmin, Undefined, User
         /// </summary>
         [HttpGet("/Management")]
         [Authorize(Roles = "SuperAdmin")]
@@ -62,5 +62,36 @@ namespace LapkaBackend.API.Controllers
 
             return Ok(await _managementService.ListOfUsersWithTheSpecifiedRole(role));
         }
+        
+        /// <summary>
+        ///     Dodanie nowych pracowników do przestrzeni shroniska przez administratora
+        /// </summary>
+        [HttpPost("addWorker/{userId}")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> AddWorkerByAdmin(string userId)
+        {
+            await _managementService.AddWorkerByAdmin(userId);
+            return NoContent();
+        }
+
+        /// <summary>
+        ///      sunięcie workera z przestrzeni shroniska przez administratora
+        /// </summary>
+        [HttpPost("RemoveWorker/{userId}")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> RemoveWorkerByAdmin(string userId)
+        {
+            await _managementService.RemoveWorkerByAdmin(userId);
+            return NoContent();
+        }  
+
     }
 }

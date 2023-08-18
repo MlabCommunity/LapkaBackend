@@ -20,6 +20,12 @@ namespace LapkaBackend.Infrastructure.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<Animal> Animals { get; set; }
         public DbSet<AnimalCategory> AnimalCategories { get; set; }
+        public DbSet<Photo> Photos { get; set; }
+        public DbSet<Reaction> Reactions { get; set; }
+        public DbSet<AnimalView> AnimalViews { get; set; }
+        public DbSet<ShelterVolunteering> SheltersVolunteering { get; set; }
+
+
         public DbSet<FileBlob> Blobs { get; set; }
     }
 }

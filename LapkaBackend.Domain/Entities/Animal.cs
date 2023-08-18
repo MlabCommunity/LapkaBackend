@@ -2,7 +2,7 @@
 
 namespace LapkaBackend.Domain.Entities
 {
-    public sealed class Animal
+    public class Animal
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -12,16 +12,21 @@ namespace LapkaBackend.Domain.Entities
         public decimal Weight { get; set; }
         public string PhotoName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
         public bool IsSterilized { get; set; }
         public bool IsVisible { get; set; }
         public int Months { get; set; }
-        [ForeignKey("AnimalCategory")]
+        public bool IsArchival { get; set; }
         public int CategoryId { get; set; }
-        public AnimalCategory? AnimalCategory { get; set; }
+        public virtual AnimalCategory AnimalCategory { get; set; }
 
         public Guid? ShelterId { get; set; }
-        public Shelter? Shelter { get; set; }
+        public virtual Shelter Shelter { get; set; }
 
+        public virtual List<Photo> Photos { get; set; }
 
+        public virtual List<Reaction> Reactions { get; set; }
+
+        public virtual List<AnimalView>? AnimalViews { get; set; }
     }
 }

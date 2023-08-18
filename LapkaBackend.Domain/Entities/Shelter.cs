@@ -14,7 +14,7 @@ namespace LapkaBackend.Domain.Entities
         public string Nip { get; set; } = null!;
         public string Krs { get; set; } = null!;
         public string PhoneNumber { get; set; } = null!;
-        public virtual List<Animal>? Animals { get; set; }
-
+        public virtual List<Animal> Animals { get; set; }
+        public ShelterVolunteering? ShelterVolunteering { get; set; }
     }
 }

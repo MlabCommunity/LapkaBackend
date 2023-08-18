@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using LapkaBackend.Application.Requests;
 
-namespace LapkaBackend.Application.Validators
-{
+namespace LapkaBackend.Application.Validators;
+
     public class UserPasswordRequestValidator : AbstractValidator<UserPasswordRequest>
     {
         public UserPasswordRequestValidator()
@@ -25,4 +25,4 @@ namespace LapkaBackend.Application.Validators
             .WithErrorCode("invalid_confirm_password");
         }
     }
-}
+

@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
@@ -13,10 +14,12 @@ using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Mappers;
 using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
+using MediatR;
 using LapkaBackend.Infrastructure.Data;
 using LapkaBackend.Infrastructure.Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -35,9 +38,9 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
         var log = new LoggerConfiguration()
             .MinimumLevel.Information()
-            .WriteTo.AzureBlobStorage(connectionString: builder.Configuration.GetValue<string>("Storage:ConnectionString"), LogEventLevel.Error,"test", "{yyyy}_{MM}_{dd}/log.txt")
+            .WriteTo.AzureBlobStorage(connectionString: builder.Configuration.GetValue<string>("Storage:ConnectionString"), LogEventLevel.Error, "test", "{yyyy}_{MM}_{dd}/log.txt")
             .CreateLogger();
-        
+
         builder.Services.AddSingleton<ILogger>(log);
         builder.Services.AddControllers()
             .ConfigureApiBehaviorOptions(options =>

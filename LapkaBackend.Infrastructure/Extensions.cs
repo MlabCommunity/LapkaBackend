@@ -39,7 +39,9 @@ namespace LapkaBackend.Infrastructure
             RoleModelBuilder.BuildRoleModel(modelBuilder);
             AnimalModelBuilder.BuildAnimalModel(modelBuilder);
             AnimalCategoryModelBuilder.BuildAnimalCategoryModel(modelBuilder);
-            
+            ReactionModelBuilder.BuildReactionModel(modelBuilder);
+            AnimalViewsModelBuilder.BuildAnimalViewModel(modelBuilder);
+            ShelterVolunteeringModelBuilder.BuildShelterVolunteeringModel(modelBuilder);
         }
 
         public static void Seed(DbContextOptions<DataContext> options)

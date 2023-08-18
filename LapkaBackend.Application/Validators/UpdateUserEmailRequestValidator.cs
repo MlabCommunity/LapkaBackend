@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using LapkaBackend.Application.Requests;
 
-namespace LapkaBackend.Application.Validators
-{
+namespace LapkaBackend.Application.Validators;
+
     public class UpdateUserEmailRequestValidator : AbstractValidator<UpdateUserEmailRequest>
     {
         public UpdateUserEmailRequestValidator()
@@ -13,4 +13,4 @@ namespace LapkaBackend.Application.Validators
             .WithErrorCode("invalid_email");
         }
     }
-}
+
