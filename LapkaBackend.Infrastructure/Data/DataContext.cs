@@ -27,5 +27,7 @@ namespace LapkaBackend.Infrastructure.Data
 
 
         public DbSet<FileBlob> Blobs { get; set; }
+        public DbSet<ChatRoom> ChatRooms { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
     }
 }

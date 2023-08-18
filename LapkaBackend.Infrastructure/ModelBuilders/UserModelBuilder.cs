@@ -21,8 +21,21 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 u.Property(e => e.Email)
                     .HasMaxLength(255)
                     .IsRequired();
-            });
 
+                u.HasMany(e => e.ChatRoomsAsUser1)
+                    .WithOne(e => e.User1)
+                    .HasForeignKey(e => e.User1Id)
+                    .OnDelete(DeleteBehavior.NoAction);;
+                
+                u.HasMany(e => e.ChatRoomsAsUser2)
+                    .WithOne(e => e.User2)
+                    .HasForeignKey(e => e.User2Id)
+                    .OnDelete(DeleteBehavior.NoAction);;
+                
+                u.HasMany(e => e.Messages)
+                    .WithOne(e => e.User)
+                    .HasForeignKey(e => e.UserId);
+            });
         }
         
         public static void SeedUser(DbContextOptions<DataContext> options)

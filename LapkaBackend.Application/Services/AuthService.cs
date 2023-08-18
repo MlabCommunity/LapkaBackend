@@ -129,34 +129,6 @@ namespace LapkaBackend.Application.Services
             };
         }
 
-        public async Task<LoginResultDto> LoginShelter(LoginRequest request)
-        {
-            var result = await _dbContext.Users
-                .Where(x => x.SoftDeleteAt == null)
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(x => x.Email == request.Email);
-
-            if (result == null)
-            {
-                throw new BadRequestException("invalid_email", "User not found");
-            }
-            if (result.Role.RoleName != Roles.Shelter.ToString() && result.Role.RoleName != Roles.Worker.ToString())
-            {
-                throw new BadRequestException("invalid_role", "You are not Shelter!");
-            }
-
-            if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
-            {
-                throw new BadRequestException("invalid_password", "Wrong password");
-            }
-
-            return new LoginResultDto
-            {
-                AccessToken = CreateAccessToken(result),
-                RefreshToken = IsTokenValid(result.RefreshToken) ? result.RefreshToken : result.RefreshToken = CreateRefreshToken()
-            };
-        }
-
         public async Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request)
         {
             var jwtAccessToken = new JwtSecurityToken(request.AccessToken);
