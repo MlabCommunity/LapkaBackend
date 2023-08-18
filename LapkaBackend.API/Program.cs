@@ -36,12 +36,12 @@ internal class Program
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        //var log = new LoggerConfiguration()
-        //    .MinimumLevel.Information()
-        //    .WriteTo.AzureBlobStorage(connectionString: builder.Configuration.GetValue<string>("Storage:ConnectionString"), LogEventLevel.Error,"test", "{yyyy}_{MM}_{dd}/log.txt")
-        //    .CreateLogger();
-        
-        //builder.Services.AddSingleton<ILogger>(log);
+        var log = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.AzureBlobStorage(connectionString: builder.Configuration.GetValue<string>("Storage:ConnectionString"), LogEventLevel.Error, "test", "{yyyy}_{MM}_{dd}/log.txt")
+            .CreateLogger();
+
+        builder.Services.AddSingleton<ILogger>(log);
         builder.Services.AddControllers()
             .ConfigureApiBehaviorOptions(options =>
             {
