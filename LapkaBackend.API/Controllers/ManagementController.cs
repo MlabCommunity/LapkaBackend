@@ -49,7 +49,7 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        ///     Lista użytkowników o wskazanej roli. Niedozwolony wybór ról: SuperAdmin, Undefined, User.
+        ///     Lista użytkowników o wskazanej roli. Niedozwolony wybór ról: SuperAdmin, Undefined, User
         /// </summary>
         [HttpGet("/Management")]
         [Authorize(Roles = "SuperAdmin")]
