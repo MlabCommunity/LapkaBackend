@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace LapkaBackend.Application.Functions.Queries
 {
     
-    public record ShelterPetsViewsGroupByMonthsQuery(string Shelter):IRequest<List<int>>;
+    public record ShelterPetsViewsGroupByMonthsQuery(Guid Shelter):IRequest<List<int>>;
 
     public class ShelterPetsViewsGroupByMonthsQueryHandler : IRequestHandler<ShelterPetsViewsGroupByMonthsQuery, List<int>>
     {
@@ -26,12 +26,11 @@ namespace LapkaBackend.Application.Functions.Queries
 
         public async Task<List<int>> Handle(ShelterPetsViewsGroupByMonthsQuery request, CancellationToken cancellationToken)
         {
-            Guid shelterId = new Guid(request.Shelter);
             var currentYear = DateTime.Now.Year;
 
 
             var animalViewsForShelter = await  _dbContext.AnimalViews
-                .Where(av => av.Animal.ShelterId == shelterId && av.ViewDate.Year == currentYear && av.Animal.IsVisible == true)
+                .Where(av => av.Animal.ShelterId == request.Shelter && av.ViewDate.Year == currentYear && av.Animal.IsVisible == true)
                 .Select(av => new
                 {
                     Month = av.ViewDate.Month,
@@ -41,7 +40,7 @@ namespace LapkaBackend.Application.Functions.Queries
                 .ToListAsync();
 
             var numberOfMonths = 12;
-            var result = new List<int>(numberOfMonths);
+            var result = new List<int>();
 
             for (int i = 1; i <= numberOfMonths; i++)
             {

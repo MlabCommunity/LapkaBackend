@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record GetPetQuery(string Id) : IRequest<PetDto>;
+    public record GetPetQuery(Guid Id) : IRequest<PetDto>;
 
     public class GetPetQueryHandler : IRequestHandler<GetPetQuery, PetDto>
     {
@@ -20,8 +20,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
         public async Task<PetDto> Handle(GetPetQuery request, CancellationToken cancellationToken)
         {
-            Guid petId = new Guid(request.Id);
-            var FoundAnimal = await _dbContext.Animals.Include(a => a.Photos).Include(a => a.AnimalCategory).FirstOrDefaultAsync(x => x.Id == petId && x.IsVisible);
+            var FoundAnimal = await _dbContext.Animals.Include(a => a.Photos).Include(a => a.AnimalCategory).FirstOrDefaultAsync(x => x.Id == request.Id && x.IsVisible);
             if (FoundAnimal is null)
             {
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
@@ -30,7 +29,6 @@ namespace LapkaBackend.Application.Functions.Queries
             var newAnimalView = new AnimalView()
             {
                 Animal = FoundAnimal,
-                //User=
                 ViewDate=DateTime.Now
             };
 

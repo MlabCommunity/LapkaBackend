@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record PublishPetCommand(string PetId):IRequest;
+    public record PublishPetCommand(Guid PetId):IRequest;
 
     public class PublishPetCommandHandler : IRequestHandler<PublishPetCommand>
     {
@@ -19,8 +19,7 @@ namespace LapkaBackend.Application.Functions.Command
 
         public async Task Handle(PublishPetCommand request, CancellationToken cancellationToken)
         {
-            Guid petId = new Guid(request.PetId);
-            var pet = await _dbContext.Animals.FirstOrDefaultAsync(x=>x.Id == petId);
+            var pet = await _dbContext.Animals.FirstOrDefaultAsync(x=>x.Id == request.PetId);
             if (pet == null)
             {
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");

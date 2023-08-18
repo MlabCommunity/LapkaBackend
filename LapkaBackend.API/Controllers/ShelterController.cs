@@ -96,7 +96,7 @@ namespace LapkaBackend.API.Controllers
         //[Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ShelterPetsViewsGroupByMonths([FromRoute] string shelterId)
+        public async Task<IActionResult> ShelterPetsViewsGroupByMonths([FromRoute] Guid shelterId)
         {
             var query = new ShelterPetsViewsGroupByMonthsQuery(shelterId);
             
@@ -110,7 +110,7 @@ namespace LapkaBackend.API.Controllers
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ShelterPetsViewsGroupBydaysInMonth([FromRoute] string shelterId)
+        public async Task<IActionResult> ShelterPetsViewsGroupBydaysInMonth([FromRoute] Guid shelterId)
         {
             var query = new ShelterPetsViewsGroupByWeeksQuery(shelterId);
             return Ok(await _mediator.Send(query));
@@ -123,7 +123,7 @@ namespace LapkaBackend.API.Controllers
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ShelterPetsViewsGroupByDaysInWeek([FromRoute] string shelterId)
+        public async Task<IActionResult> ShelterPetsViewsGroupByDaysInWeek([FromRoute] Guid shelterId)
         {
             var query = new ShelterPetsViewsGroupByDaysInWeekQuery(shelterId);
             return Ok(await _mediator.Send(query));
@@ -172,7 +172,7 @@ namespace LapkaBackend.API.Controllers
         [HttpDelete("/shelters/cards/delete/{petId}")]
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> DeletePet([FromRoute] string petId)
+        public async Task<IActionResult> DeletePet([FromRoute] Guid petId)
         {
             var query = new DeletePetCommand(petId);
             await _mediator.Send(query);
@@ -186,7 +186,7 @@ namespace LapkaBackend.API.Controllers
         [HttpGet("/shelters/cards/Get/{petId}")]
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPet([FromRoute] string petId)
+        public async Task<IActionResult> GetPet([FromRoute] Guid petId)
         {
             var query = new GetPetQuery(petId);          
             return Ok(await _mediator.Send(query));
@@ -199,7 +199,7 @@ namespace LapkaBackend.API.Controllers
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PublishPet([FromRoute] string petId)
+        public async Task<IActionResult> PublishPet([FromRoute] Guid petId)
         {
             var command = new PublishPetCommand(petId);
             await _mediator.Send(command);
@@ -213,7 +213,7 @@ namespace LapkaBackend.API.Controllers
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> HidePet([FromRoute] string petId)
+        public async Task<IActionResult> HidePet([FromRoute] Guid petId)
         {
             var command = new HidePetCommand(petId);
             await _mediator.Send(command);
@@ -240,7 +240,7 @@ namespace LapkaBackend.API.Controllers
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetShelterVolunteering([FromRoute] string shelterId)
+        public async Task<IActionResult> GetShelterVolunteering([FromRoute] Guid shelterId)
         {
             var query = new GetShelterVolunteeringQuery(shelterId);
             return Ok(await _mediator.Send(query));

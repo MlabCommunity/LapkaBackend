@@ -29,8 +29,6 @@ namespace LapkaBackend.Application.Functions.Command
                 {
                     throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
                 }
-                else
-                {
                     ShelterVolunteering newShelterVolunteering = new()
                     {
                         ShelterId=shelterId,
@@ -46,7 +44,6 @@ namespace LapkaBackend.Application.Functions.Command
 
                     await _dbContext.SheltersVolunteering.AddAsync(newShelterVolunteering);
                     await _dbContext.SaveChangesAsync();
-                }
             }
             else
             {

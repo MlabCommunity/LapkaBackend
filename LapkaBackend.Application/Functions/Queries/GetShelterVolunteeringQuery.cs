@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record GetShelterVolunteeringQuery(string ShelterId):IRequest<ShelterVolunteeringDto>;
+    public record GetShelterVolunteeringQuery(Guid ShelterId):IRequest<ShelterVolunteeringDto>;
 
     public class GetShelterVolunteeringQueryHandler : IRequestHandler<GetShelterVolunteeringQuery, ShelterVolunteeringDto>
     {
@@ -19,8 +19,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
         public async Task<ShelterVolunteeringDto> Handle(GetShelterVolunteeringQuery request, CancellationToken cancellationToken)
         {
-            Guid shelterId = new Guid(request.ShelterId);
-            var shelterVolunteering = await _dbContext.SheltersVolunteering.FirstOrDefaultAsync(x => x.ShelterId == shelterId);
+            var shelterVolunteering = await _dbContext.SheltersVolunteering.FirstOrDefaultAsync(x => x.ShelterId == request.ShelterId);
             if (shelterVolunteering is null)
             {
                 throw new BadRequestException("invalid_Shelter", "Shelter doesn't exists or does not have voluntering bookmark");

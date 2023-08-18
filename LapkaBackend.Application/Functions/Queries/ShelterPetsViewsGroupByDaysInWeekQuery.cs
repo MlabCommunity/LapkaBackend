@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record ShelterPetsViewsGroupByDaysInWeekQuery(string Shelter) : IRequest<List<int>>;
+    public record ShelterPetsViewsGroupByDaysInWeekQuery(Guid Shelter) : IRequest<List<int>>;
 
     public class ShelterPetsViewsGroupByDaysInWeekQueryHandler : IRequestHandler<ShelterPetsViewsGroupByDaysInWeekQuery, List<int>>
     {
@@ -24,13 +24,12 @@ namespace LapkaBackend.Application.Functions.Queries
 
         public async Task<List<int>> Handle(ShelterPetsViewsGroupByDaysInWeekQuery request, CancellationToken cancellationToken)
         {
-            Guid shelterId = new Guid(request.Shelter);
             var today = DateTime.Now;
             var currentWeekStart = today.AddDays(-(int)today.DayOfWeek); 
             var currentWeekEnd = currentWeekStart.AddDays(7);
 
             var animalViewsForShelter = await _dbContext.AnimalViews
-                .Where(av => av.Animal.ShelterId == shelterId && av.ViewDate >= currentWeekStart && av.ViewDate < currentWeekEnd && av.Animal.IsVisible==true)
+                .Where(av => av.Animal.ShelterId == request.Shelter && av.ViewDate >= currentWeekStart && av.ViewDate < currentWeekEnd && av.Animal.IsVisible==true)
                 .Select(av => new
                 {
                     DayOfWeek = av.ViewDate.DayOfWeek,
@@ -42,7 +41,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
 
             var numberOfDays = 7;
-            var result = new List<int>(numberOfDays);
+            var result = new List<int>();
 
             for (int i = 1; i <= numberOfDays; i++)
             {

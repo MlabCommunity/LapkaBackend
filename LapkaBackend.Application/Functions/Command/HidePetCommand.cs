@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record HidePetCommand(string PetId) : IRequest;
+    public record HidePetCommand(Guid PetId) : IRequest;
 
     public class HidePetCommadnHandler : IRequestHandler<HidePetCommand>
     {
@@ -18,8 +18,7 @@ namespace LapkaBackend.Application.Functions.Command
 
         public async Task Handle(HidePetCommand request, CancellationToken cancellationToken)
         {
-            Guid petId = new Guid(request.PetId);
-            var pet = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == petId);
+            var pet = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == request.PetId);
             if (pet == null)
             {
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");

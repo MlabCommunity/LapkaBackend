@@ -7,9 +7,9 @@ using System.Linq;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record GetShelterByPositionQuery(float Longitude,float Latitude, int RadiusKm, int PageNumber, int PageSize) : IRequest<Response>;
+    public record GetShelterByPositionQuery(float Longitude,float Latitude, int RadiusKm, int PageNumber, int PageSize) : IRequest<ShelterByPositionResponse>;
     
-    public class GetShelterByPositionQueryHandler : IRequestHandler<GetShelterByPositionQuery, Response>
+    public class GetShelterByPositionQueryHandler : IRequestHandler<GetShelterByPositionQuery, ShelterByPositionResponse>
     {
         private readonly IDataContext _dbContext;
 
@@ -18,9 +18,10 @@ namespace LapkaBackend.Application.Functions.Queries
             _dbContext = dbContext;
         }
         
-        public async Task<Response> Handle(GetShelterByPositionQuery request, CancellationToken cancellationToken)
+        public async Task<ShelterByPositionResponse> Handle(GetShelterByPositionQuery request, CancellationToken cancellationToken)
         {
-            List<Shelter> allShelters = await _dbContext.Shelters.ToListAsync();// lista wszystkich shronisk
+            IQueryable<Shelter> allSheltersQuery = _dbContext.Shelters;
+            List<Shelter> allShelters = await allSheltersQuery.ToListAsync();// lista wszystkich shronisk
 
             // sheltersWithRadius - lista zawierająca tylko shroniska znajdujące się w zasięgu, składa się z Shelter i Distance
             var sheltersWithRadius = allShelters
@@ -73,7 +74,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
             
 
-            Response response = new Response()
+            ShelterByPositionResponse response = new ShelterByPositionResponse()
             {
                 SheltersInRadiusDto = sheltersInRadiusDto,
                 TotalPages = numberOfPages,
@@ -108,7 +109,7 @@ namespace LapkaBackend.Application.Functions.Queries
         }
     }
 
-    public class Response
+    public class ShelterByPositionResponse
     {
         public List<SheltersInRadiusDto>? SheltersInRadiusDto { get; set; }
         public int TotalPages { get; set; }
