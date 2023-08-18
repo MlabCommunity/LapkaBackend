@@ -28,9 +28,9 @@ namespace LapkaBackend.Application.Services
         private readonly ILogger _logger;
 
         public AuthService(IDataContext dbContext, IConfiguration configuration, 
-            IEmailService emailService, IHttpContextAccessor contextAccessor)
+            IEmailService emailService, IHttpContextAccessor contextAccessor, ILogger logger)
         {
-            // _logger = logger;
+            _logger = logger;
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
