@@ -18,7 +18,7 @@ public class AzureStorageContext : IAzureStorageContext
     public AzureStorageContext(IConfiguration configuration)
     {
         _configuration = configuration;
-        //_blobServiceClient = new BlobServiceClient(configuration.GetValue<string>("Storage:ConnectionString"));
+        _blobServiceClient = new BlobServiceClient(configuration.GetValue<string>("Storage:ConnectionString"));
     }
     
     public async Task<string> GetFileUrlAsync(string fileName)
