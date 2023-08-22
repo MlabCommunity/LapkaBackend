@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
+using LapkaBackend.Application.Interfaces;
+using LapkaBackend.Application.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,11 +15,13 @@ namespace LapkaBackend.Application.Functions.Command
     public class DeletePetCommandHandler : IRequestHandler<DeletePetCommand>
     {
         private readonly IDataContext _dbContext;
+        private readonly IBlobService _blobService;
 
-        public DeletePetCommandHandler(IDataContext dbContext)
+        public DeletePetCommandHandler(IDataContext dbContext, IBlobService blobService)
         {
 
             _dbContext = dbContext;
+            _blobService = blobService;
         }
 
         public async Task Handle(DeletePetCommand request, CancellationToken cancellationToken)
@@ -28,8 +32,8 @@ namespace LapkaBackend.Application.Functions.Command
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
             }
 
-            var animalPhotos = await _dbContext.Photos.Where(p => p.AnimalId == result.Id).ToListAsync();
-            _dbContext.Photos.RemoveRange(animalPhotos);
+            var Photos = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.ParentEntityId.ToString()).ToListAsync();
+            await _blobService.DeleteListOfFiles(Photos);
 
             _dbContext.Animals.Remove(result);
             await _dbContext.SaveChangesAsync();       

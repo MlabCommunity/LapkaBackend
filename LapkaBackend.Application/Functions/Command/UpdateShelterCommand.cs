@@ -6,9 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record UpdateShelterCommand(string ShelterId, string OrganizationName,float Longitude, float Latitude, string City, string Street, string ZipCode, string Nip, string Krs, string PhoneNumber):IRequest;
-
-    
+    public record UpdateShelterCommand(Guid ShelterId, string OrganizationName,float Longitude, float Latitude, string City, string Street, string ZipCode, string Nip, string Krs, string PhoneNumber):IRequest;
 
     public class UpdateShelterCommandHandler : IRequestHandler<UpdateShelterCommand>
     {
@@ -21,9 +19,8 @@ namespace LapkaBackend.Application.Functions.Command
 
         public async Task Handle(UpdateShelterCommand request, CancellationToken cancellationToken)
         {
-            Guid shelterId = new Guid(request.ShelterId);
 
-            var result = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == shelterId);
+            var result = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == request.ShelterId);
 
             if (result is null)
             {
@@ -44,6 +41,20 @@ namespace LapkaBackend.Application.Functions.Command
 
             await _dbContext.SaveChangesAsync();
         }
+    }
+
+    public class UpdateShelterRequest
+    {
+        public Guid ShelterId { get; set; }
+        public string OrganizationName { get; set; }
+        public float Longitude { get; set; }
+        public float Latitude { get; set; }
+        public string City { get; set; }
+        public string Street { get; set; }
+        public string ZipCode { get; set; }
+        public string Nip { get; set; }
+        public string Krs { get; set; }
+        public string PhoneNumber { get; set; }
     }
 
 

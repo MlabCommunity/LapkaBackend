@@ -14,7 +14,6 @@ namespace LapkaBackend.Application.Validators;
         {
             RuleFor(x => x.PetId)
                 .NotEmpty()
-                .MaximumLength(32)
                 .WithMessage("Invalid pet Id")
                 .WithErrorCode("invalid_petId");
 

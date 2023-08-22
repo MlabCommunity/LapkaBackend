@@ -1,37 +1,38 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
+using LapkaBackend.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record PetListInShelterQuery(Guid ShelterId, int PageNumber, int PageSize) : IRequest<PetListInShelterResponse>;
+    public record GetMostViewedPetsQuery(Guid ShelterId) : IRequest<List<MostViewedPetsResponse>>;
 
-    public class PetListInShelterQueryHandler : IRequestHandler<PetListInShelterQuery, PetListInShelterResponse>
+    public class GetMostViewedPetsQueryHandler : IRequestHandler<GetMostViewedPetsQuery, List<MostViewedPetsResponse>>
     {
         private readonly IDataContext _dbContext;
 
-        public PetListInShelterQueryHandler(IDataContext dbContext)
+        public GetMostViewedPetsQueryHandler(IDataContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task<PetListInShelterResponse> Handle(PetListInShelterQuery request, CancellationToken cancellationToken)
+        public async Task<List<MostViewedPetsResponse>> Handle(GetMostViewedPetsQuery request, CancellationToken cancellationToken)
         {
-            int totalItemsCount = await _dbContext.Animals.Where(x => x.ShelterId == request.ShelterId).CountAsync();
-            int numberOfPages =  (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
             var FoundAnimals = await _dbContext.Animals
-                .Include(a => a.AnimalCategory)
+                .Include(a => a.AnimalViews)
                 .Where(a => a.IsVisible)
                 .Where(a => a.ShelterId == request.ShelterId)
-                .OrderBy(x => x.Name)
-                .Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize)
+                .OrderByDescending(x => x.AnimalViews.Count())
+                .Take(10)
                 .ToListAsync();
 
-            var  petsList = FoundAnimals.Select(async p => new PetInListInShelterDto()
+            var MostViewedPets = FoundAnimals.Select(async p => new MostViewedPetsResponse()
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -46,28 +47,19 @@ namespace LapkaBackend.Application.Functions.Queries
                 CreatedAt = p.CreatedAt,
                 IsSterilized = p.IsSterilized,
                 Description = p.Description,
-                
+
 
             })
-            .ToList();
-            PetInListInShelterDto[] petsListArray = await Task.WhenAll(petsList);
-            List<PetInListInShelterDto>? petInListInShelterDto = petsListArray.ToList();
-
-            var petListResponse = new PetListInShelterResponse()
-            {
-                PetInListInShelterDto = petInListInShelterDto,
-                TotalPages = numberOfPages,
-                TotalItemsCount = totalItemsCount
-            };
+             .ToList();
+            MostViewedPetsResponse[] petsListArray = await Task.WhenAll(MostViewedPets);
+            List<MostViewedPetsResponse>? mostViewedPetsResponse = petsListArray.ToList();
 
 
-            return petListResponse;
+            return mostViewedPetsResponse;
         }
     }
 
-
-
-    public class PetInListInShelterDto
+    public class MostViewedPetsResponse
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;
@@ -83,12 +75,4 @@ namespace LapkaBackend.Application.Functions.Queries
         public bool IsSterilized { get; set; }
         public string Description { get; set; } = null!;
     }
-
-    public class PetListInShelterResponse
-    {
-        public List<PetInListInShelterDto>? PetInListInShelterDto { get; set; }
-        public int TotalPages { get; set; }
-        public int TotalItemsCount { get; set; }
-    }
-
 }

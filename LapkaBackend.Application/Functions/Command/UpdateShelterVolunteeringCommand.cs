@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record UpdateShelterVolunteeringCommand(string ShelterId,string BankAccountNumber,string DonationDescription,string DailyHelpDescription,string  TakingDogsOutDescription,bool IsDonationActive,bool IsDailyHelpActive,bool IsTakingDogsOutActive) :IRequest;
+    public record UpdateShelterVolunteeringCommand(Guid ShelterId,string BankAccountNumber,string DonationDescription,string DailyHelpDescription,string  TakingDogsOutDescription,bool IsDonationActive,bool IsDailyHelpActive,bool IsTakingDogsOutActive) :IRequest;
     public class UpdateShelterVolunteeringCommandHandler : IRequestHandler<UpdateShelterVolunteeringCommand>
     {
         private readonly IDataContext _dbContext;
@@ -19,19 +19,18 @@ namespace LapkaBackend.Application.Functions.Command
 
         public async Task Handle(UpdateShelterVolunteeringCommand request, CancellationToken cancellationToken)
         {
-            Guid shelterId = new Guid(request.ShelterId);
-            var shelterVolunteering = await _dbContext.SheltersVolunteering.FirstOrDefaultAsync(x => x.ShelterId == shelterId);
+            var shelterVolunteering = await _dbContext.SheltersVolunteering.FirstOrDefaultAsync(x => x.ShelterId == request.ShelterId);
 
             if (shelterVolunteering is null)
             {
-                var shelter = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == shelterId);
+                var shelter = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == request.ShelterId);
                 if (shelter is null)
                 {
                     throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
                 }
                     ShelterVolunteering newShelterVolunteering = new()
                     {
-                        ShelterId=shelterId,
+                        ShelterId= request.ShelterId,
                         Shelter = shelter,
                         BankAccountNumber = request.BankAccountNumber,
                         DailyHelpDescription = request.DailyHelpDescription,
@@ -60,6 +59,17 @@ namespace LapkaBackend.Application.Functions.Command
             }
             
         }
+    }
+
+    public class UpdateShelterVolunteeringRequest
+    {
+        public string? BankAccountNumber { get; set; }
+        public string? DonationDescription { get; set; }
+        public string? DailyHelpDescription { get; set; }
+        public string? TakingDogsOutDescription { get; set; }
+        public bool IsDonationActive { get; set; }
+        public bool IsDailyHelpActive { get; set; }
+        public bool IsTakingDogsOutActive { get; set; }
     }
 
 }

@@ -8,16 +8,11 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Validators;
 
-    public class UpdateShelterVolunteeringCommandValidator : AbstractValidator<UpdateShelterVolunteeringCommand>
+    public class UpdateShelterVolunteeringCommandValidator : AbstractValidator<UpdateShelterVolunteeringRequest>
     {
         public UpdateShelterVolunteeringCommandValidator()
         {
-            RuleFor(x => x.ShelterId)
-                .NotEmpty()
-                .Length(32)
-                .WithMessage("Invalid Id");
             RuleFor(x => x.BankAccountNumber)
-                .NotEmpty()
                 .Matches(@"^\d{26}$")
                 .WithErrorCode("invalid_AccountNumber")
                 .WithMessage("In Poland Required 26 characters.");

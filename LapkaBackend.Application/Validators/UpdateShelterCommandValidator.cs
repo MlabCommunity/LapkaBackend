@@ -8,13 +8,12 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Validators;
 
-    public class UpdateShelterCommandValidator : AbstractValidator<UpdateShelterCommand>
+    public class UpdateShelterCommandValidator : AbstractValidator<UpdateShelterRequest>
     {
         public UpdateShelterCommandValidator()
         {
             RuleFor(x => x.ShelterId)
                 .NotEmpty()
-                .Length(32)
             .WithMessage("Invalid Id");
             RuleFor(x => x.OrganizationName)
                 .NotEmpty()

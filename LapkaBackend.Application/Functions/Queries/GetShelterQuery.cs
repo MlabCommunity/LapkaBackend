@@ -16,7 +16,7 @@ using LapkaBackend.Domain.Entities;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record GetShelterQuery(string ShelterId) : IRequest<ShelterDto>;
+    public record GetShelterQuery(Guid ShelterId) : IRequest<ShelterDto>;
 
     public class GetShelterQueryHandler : IRequestHandler<GetShelterQuery, ShelterDto>
     {
@@ -33,8 +33,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
         public async Task<ShelterDto> Handle(GetShelterQuery request, CancellationToken cancellationToken)
         {
-            Guid shelterId = new Guid(request.ShelterId);
-            var FoundShelter = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == shelterId);
+            var FoundShelter = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == request.ShelterId);
 
             var result = _mapper.Map<ShelterDto>(FoundShelter);
 
