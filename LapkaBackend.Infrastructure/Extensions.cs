@@ -20,10 +20,11 @@ namespace LapkaBackend.Infrastructure
             services.AddTransient<IDataContext, DataContext>();
             services.AddTransient<IAzureStorageContext, AzureStorageContext>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
+            services.AddTransient<IChatHubContext, ChatHub.ChatHub>();
             services.AddTransient<UpdateDeleteJob>();
             services.AddDbContext<DataContext>(options =>
             {
-                options.UseSqlServer(configuration.GetConnectionString("MySql"));
+                options.UseLazyLoadingProxies().UseSqlServer(configuration.GetConnectionString("MySql"));
             });
             
             services.AddHangfire(options => options

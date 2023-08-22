@@ -143,7 +143,12 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_token", "Invalid token");
             }
             
-            var emailClaim = jwtAccessToken.Claims.ToList().First(x => x.Type.Equals(ClaimTypes.Email));
+            var emailClaim = jwtAccessToken.Claims.ToList().FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
+
+            if (emailClaim is null)
+            {
+                throw new BadRequestException("invalid_token", "Access token is invalid");
+            }
             
             var user = await _dbContext.Users
                 .Include(x => x.Role)
@@ -195,6 +200,7 @@ namespace LapkaBackend.Application.Services
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(5),
                 signingCredentials: credentials
+                
             );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
@@ -237,7 +243,8 @@ namespace LapkaBackend.Application.Services
                     ValidateLifetime = true,
                     ValidateAudience = false,
                     ValidateIssuer = false,
-                    IssuerSigningKey = key
+                    IssuerSigningKey = key,
+                    ClockSkew = TimeSpan.Zero
                 }, out _);
             }
             catch (SecurityTokenValidationException e)
