@@ -28,7 +28,9 @@ public class AdvertisementController : Controller
     [ProducesResponseType(typeof(ShelterPetAdvertisementDtoPagedResult), StatusCodes.Status200OK)]
     [Authorize (Roles = "User, Admin, SuperAdmin")]
     public async Task<ActionResult> GetAllShelterAdvertisements(double longitude, double latitude, 
-        AnimalCategories type, Genders gender = Genders.Undefined, int pageNumber = 1, int pageSize = 10)
+        SortAdvertisementOptions sortOptions, SortingType sortingType, 
+        AnimalCategories type = AnimalCategories.Undefined, Genders gender = Genders.Undefined, 
+        int pageNumber = 1, int pageSize = 10)
     {
         var mappedData = new GetAllShelterAdvertisementsRequest
         {
@@ -38,7 +40,9 @@ public class AdvertisementController : Controller
             Gender = gender,
             PageNumber = pageNumber,
             PageSize = pageSize,
-            UserId = new Guid(HttpContext.User.FindFirstValue("userId")!)
+            UserId = new Guid(HttpContext.User.FindFirstValue("userId")!),
+            SortOption = sortOptions,
+            SortingType = sortingType
         };
         var items = 
             await _mediator.Send(new GetAllShelterAdvertisementsQuery(mappedData));
@@ -54,7 +58,9 @@ public class AdvertisementController : Controller
     [ProducesResponseType(typeof(ShelterPetAdvertisementDtoPagedResult), StatusCodes.Status200OK)]
     [Authorize (Roles = "User, Admin, SuperAdmin")]
     public async Task<ActionResult> GetAllLikedShelterLikedAdvertisements(double longitude, double latitude, 
-        AnimalCategories type, Genders gender = Genders.Undefined, int pageNumber = 1, int pageSize = 10)
+        SortAdvertisementOptions sortOptions, SortingType sortingType, 
+        AnimalCategories type = AnimalCategories.Undefined, Genders gender = Genders.Undefined, 
+        int pageNumber = 1, int pageSize = 10)
     {
         var mappedData = new GetAllShelterAdvertisementsRequest
         {
@@ -64,7 +70,9 @@ public class AdvertisementController : Controller
             Gender = gender,
             PageNumber = pageNumber,
             PageSize = pageSize,
-            UserId = new Guid(HttpContext.User.FindFirstValue("userId")!)
+            UserId = new Guid(HttpContext.User.FindFirstValue("userId")!),
+            SortOption = sortOptions,
+            SortingType = sortingType
         };
         var items = 
             await _mediator.Send(new GetAllLikedShelterAdvertisementsQuery(mappedData));
