@@ -23,9 +23,9 @@ namespace LapkaBackend.Application.Functions.Queries
             if (shelterVolunteering is null)
             {
                 throw new BadRequestException("invalid_Shelter", "Shelter doesn't exists or does not have voluntering bookmark");
-            };
+            }
 
-            var shelterVolunteeringDto = new ShelterVolunteeringDto()
+            var shelterVolunteeringDto = new ShelterVolunteeringDto
             {
                 IsDonationActive = shelterVolunteering.IsDonationActive,
                 BankAccountNumber = shelterVolunteering.BankAccountNumber,

@@ -3,7 +3,6 @@ using LapkaBackend.Application.Helper;
 using LapkaBackend.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace LapkaBackend.Application.Functions.Queries
 {

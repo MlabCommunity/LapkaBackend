@@ -55,7 +55,7 @@ namespace LapkaBackend.Application.Functions.Command
             result.Months = request.Months;
             result.Name = request.Name;
             result.Photos = photosList;
-            result.Species = request.Breed.ToString();
+            result.Species = request.Breed;
             result.Weight = request.Weight;
 
             _dbContext.Animals.Update(result);

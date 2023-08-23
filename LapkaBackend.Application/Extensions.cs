@@ -1,9 +1,5 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Functions.Queries;
-using LapkaBackend.Application.Interfaces;
+﻿using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Services;
-using MediatR;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 

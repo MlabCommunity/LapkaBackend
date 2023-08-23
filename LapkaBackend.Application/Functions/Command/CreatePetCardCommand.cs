@@ -31,26 +31,27 @@ namespace LapkaBackend.Application.Functions.Command
             }
             
 
-            Guid ShelterId;
+            Guid shelterId;
             try
             {
-                ShelterId = new Guid(request.ShelterId);
+                shelterId = new Guid(request.ShelterId);
             }
-            catch
+            catch 
             {
                 throw new BadRequestException("invalid_Id", "Invalid format of Id");
             }
-            var animalCategory =await _dbContext.AnimalCategories.FirstAsync(r => r.CategoryName == request.AnimalCategory.ToString());
-            var Shelter = await _dbContext.Shelters.FirstOrDefaultAsync(r => r.Id == ShelterId);
-            if (Shelter == null)
+            var animalCategory = await _dbContext.AnimalCategories
+                .FirstAsync(r => r.CategoryName == request.AnimalCategory.ToString(), cancellationToken: cancellationToken);
+            var shelter = await _dbContext.Shelters.FirstOrDefaultAsync(r => r.Id == shelterId, cancellationToken: cancellationToken);
+            if (shelter == null)
             {
                 throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
             }
 
-            var newAnimal = new Animal()
+            var newAnimal = new Animal
             {
                 Name = request.Name,
-                Species = request.Breed.ToString(),
+                Species = request.Breed,
                 Gender = request.Gender.ToString(),
                 Marking = request.Color,
                 Weight = request.Weight,
@@ -60,11 +61,13 @@ namespace LapkaBackend.Application.Functions.Command
                 Months = request.Months,
                 AnimalCategory = animalCategory,
                 Photos = photosList,
-                Shelter = Shelter
+                Shelter = shelter
             };
+            shelter.Animals.Add(newAnimal);
 
-            await _dbContext.Animals.AddAsync(newAnimal);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Animals.AddAsync(newAnimal, cancellationToken);
+            _dbContext.Shelters.Update(shelter);
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 

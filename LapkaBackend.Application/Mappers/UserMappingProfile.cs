@@ -2,8 +2,6 @@
 using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Functions.Queries;
 using LapkaBackend.Domain.Entities;
-using Microsoft.AspNetCore.Http.HttpResults;
-using System.Drawing;
 
 namespace LapkaBackend.Application.Mappers
 {
