@@ -62,7 +62,7 @@ namespace LapkaBackend.API.Controllers
         ///     Pobranie danych schroniska mobile
         /// </summary>
         [HttpGet("/shelters/details/{shelterId}")]
-        [Authorize(Roles = "Shelter")]
+        [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
         [ProducesResponseType(typeof(ShelterDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetShelterMoblile([FromRoute] Guid shelterId)
@@ -91,7 +91,7 @@ namespace LapkaBackend.API.Controllers
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> CreateCatCard(CreatePetCardRequest request)
+        public async Task<IActionResult> CreatePet(CreatePetCardRequest request)
         {
             var command = new CreatePetCardCommand(request.Name, request.Gender, request.Description, request.IsVisible, request.Months, request.IsSterilized, request.Weight, request.Color, request.AnimalCategory, request.Breed, request.ProfilePhoto, request.Photos, await GetShelterIdByLoggedUser());
             await _mediator.Send(command);
@@ -185,9 +185,10 @@ namespace LapkaBackend.API.Controllers
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(typeof(PetListInShelterResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PetListInShelter([FromQuery] int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> PetListInShelter(
+            [FromQuery] int pageNumber = 1, int pageSize = 10,string sortParam="", bool asc=false)
         {
-            var query = new PetListInShelterQuery(await GetShelterIdByLoggedUser(), pageNumber, pageSize);
+            var query = new PetListInShelterQuery(await GetShelterIdByLoggedUser(), pageNumber, pageSize, sortParam,asc);
             return Ok(await _mediator.Send(query));
         }
 
@@ -221,7 +222,7 @@ namespace LapkaBackend.API.Controllers
         ///     Wyświetlenie zwierzęcia
         /// </summary>
         [HttpGet("/shelters/cards/Get/{petId}")]
-        [Authorize(Roles = "Shelter")]
+        [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
         [ProducesResponseType(typeof(PetDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPet([FromRoute] Guid petId)
         {
@@ -287,7 +288,7 @@ namespace LapkaBackend.API.Controllers
         ///     Pobranie danych dot. wolontariatu schroniska mobile
         /// </summary>
         [HttpGet("/shelters/volunteering/GetShelterVolunteeringMobile/{shelterId}")]
-        [Authorize(Roles = "Shelter,User")]
+        [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
         [ProducesResponseType(typeof(ShelterVolunteeringDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetShelterVolunteeringMobile([FromRoute] Guid shelterId)
@@ -314,7 +315,7 @@ namespace LapkaBackend.API.Controllers
         ///     Zwrócenie listy schronisk na podstawie długości i szerokości geograficznej
         /// </summary>
         [HttpGet("/shelters/volunteers/getShelterByPosition")]
-        [Authorize(Roles = "Shelter")]
+        [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
         [ProducesResponseType(typeof(ShelterByPositionResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetShelterByPosition([FromQuery] GetShelterByPositionQuery getShelterByPositionQuery)
         {

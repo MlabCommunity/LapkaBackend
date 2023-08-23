@@ -47,7 +47,8 @@ namespace LapkaBackend.Application.Functions.Command
                 IsVisible = request.IsVisible,
                 Months = request.Months,
                 AnimalCategory = animalCategory,
-                Shelter = Shelter
+                Shelter = Shelter,
+                CreatedAt = DateTime.Now
             };
 
             await _dbContext.Animals.AddAsync(newAnimal);
