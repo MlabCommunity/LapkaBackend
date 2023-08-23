@@ -26,9 +26,10 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
             {
                 var animalCategoriesList = new List<AnimalCategory>()
                 {
+                    new () { CategoryName = "Other" },
                     new () { CategoryName = "Dog" },
                     new () { CategoryName = "Cat" },
-                    new () { CategoryName = "Rabbit" }
+                    new () { CategoryName = "Rabbit" }                    
                 };
 
                 dbContext.AnimalCategories.AddRange(animalCategoriesList);

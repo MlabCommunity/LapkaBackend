@@ -12,9 +12,6 @@ namespace LapkaBackend.Application.Validators;
     {
         public UpdateShelterCommandValidator()
         {
-            RuleFor(x => x.ShelterId)
-                .NotEmpty()
-            .WithMessage("Invalid Id");
             RuleFor(x => x.OrganizationName)
                 .NotEmpty()
                 .MinimumLength(2)

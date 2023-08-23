@@ -54,14 +54,23 @@ namespace LapkaBackend.Application.Functions.Command
             await _dbContext.SaveChangesAsync();
 
 
-            newAnimal.ProfilePhoto = request.ProfilePhoto;
-            var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
-            fileProfile.ParentEntityId = newAnimal.Id;
+            
+            if (!string.IsNullOrEmpty(request.ProfilePhoto))
+            {
+                newAnimal.ProfilePhoto = request.ProfilePhoto;
+                var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
+                fileProfile.ParentEntityId = newAnimal.Id;
+            }
+            
 
             for (int i = 0; i < request.Photos.Count; i++)
-            {               
-                var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
-                file.ParentEntityId = newAnimal.Id;
+            {
+                if (!string.IsNullOrEmpty(request.Photos[i]))
+                {
+                    var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
+                    file.ParentEntityId = newAnimal.Id;
+                }            
+                
             }
 
             _dbContext.Animals.Update(newAnimal);
@@ -71,19 +80,18 @@ namespace LapkaBackend.Application.Functions.Command
 
     public class CreatePetCardRequest
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
         public Genders Gender { get; set; }
-        public string Description { get; set; }
+        public string Description { get; set; } = null!;
         public bool IsVisible { get; set; }
         public int Months { get; set; }
         public bool IsSterilized { get; set; }
         public decimal Weight { get; set; }
-        public string Color { get; set; }
+        public string Color { get; set; } = null!;
         public AnimalCategories AnimalCategory { get; set; }
-        public string Breed { get; set; }
-        public string ProfilePhoto { get; set; }
-        public List<string> Photos { get; set; }
-        public Guid ShelterId { get; set; }
+        public string Breed { get; set; } = null!;
+        public string? ProfilePhoto { get; set; }
+        public List<string>? Photos { get; set; }
     }
 }
 

@@ -33,8 +33,8 @@ namespace LapkaBackend.Application.Functions.Command
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
             }
 
-            var Photos = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.ParentEntityId.ToString()).ToListAsync();
-            await _blobService.DeleteListOfFiles(Photos);
+            var PhotosIds = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.Id.ToString()).ToListAsync();
+            await _blobService.DeleteListOfFiles(PhotosIds);
 
             
 
@@ -45,14 +45,21 @@ namespace LapkaBackend.Application.Functions.Command
                 throw new BadRequestException("invalid_AnimalCategory", "Animal category doesn't exists");
             }
 
-            result.ProfilePhoto = request.ProfilePhoto;
-            var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
-            fileProfile.ParentEntityId = result.Id;
+            if (!string.IsNullOrEmpty(request.ProfilePhoto))
+            {
+                result.ProfilePhoto = request.ProfilePhoto;
+                var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
+                fileProfile.ParentEntityId = result.Id;
+            }
+            
 
             for (int i = 0; i < request.Photos.Count; i++)
             {
-                var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
-                file.ParentEntityId = result.Id;
+                if (!string.IsNullOrEmpty(request.Photos[i]))
+                {
+                    var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
+                    file.ParentEntityId = result.Id;
+                }               
             }
 
             result.AnimalCategory = animalCategory;

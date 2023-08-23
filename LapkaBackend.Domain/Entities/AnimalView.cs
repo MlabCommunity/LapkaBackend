@@ -12,7 +12,7 @@ namespace LapkaBackend.Domain.Entities
         public Guid Id { get; set; }
 
         public Guid AnimalId { get; set; }
-        public virtual required Animal Animal { get; set; }
+        public virtual Animal Animal { get; set; }
 
         public Guid? UserId { get; set; }
         public virtual User User { get; set; }

@@ -26,13 +26,15 @@ namespace LapkaBackend.Application.Functions.Queries
 
             var FoundAnimals = await _dbContext.Animals
                 .Include(a => a.AnimalViews)
+                .Include(a => a.AnimalCategory)
                 .Where(a => a.IsVisible)
                 .Where(a => a.ShelterId == request.ShelterId)
+                .Where(a => a.AnimalViews.Any())
                 .OrderByDescending(x => x.AnimalViews.Count())
                 .Take(10)
                 .ToListAsync();
 
-            var MostViewedPets = FoundAnimals.Select(async p => new MostViewedPetsResponse()
+            var mostViewedPetsResponse = FoundAnimals.Select( p => new MostViewedPetsResponse()
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -42,18 +44,16 @@ namespace LapkaBackend.Application.Functions.Queries
                 Color = p.Marking,
                 Weight = (float)p.Weight,
                 ProfilePhoto = p.ProfilePhoto,
-                Photos = await _dbContext.Blobs.Where(x => x.ParentEntityId == p.Id).Select(blob => blob.ParentEntityId.ToString()).ToArrayAsync(),
+                Photos =  _dbContext.Blobs.Where(x => x.ParentEntityId == p.Id).Select(blob => blob.ParentEntityId.ToString()).ToArray(),
                 Months = p.Months,
                 CreatedAt = p.CreatedAt,
                 IsSterilized = p.IsSterilized,
                 Description = p.Description,
+                AnimalViews = p.AnimalViews.Count,
 
 
             })
              .ToList();
-            MostViewedPetsResponse[] petsListArray = await Task.WhenAll(MostViewedPets);
-            List<MostViewedPetsResponse>? mostViewedPetsResponse = petsListArray.ToList();
-
 
             return mostViewedPetsResponse;
         }
@@ -74,5 +74,6 @@ namespace LapkaBackend.Application.Functions.Queries
         public DateTime CreatedAt { get; set; }
         public bool IsSterilized { get; set; }
         public string Description { get; set; } = null!;
+        public int? AnimalViews { get; set; }
     }
 }

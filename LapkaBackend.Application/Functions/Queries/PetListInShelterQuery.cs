@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record PetListInShelterQuery(Guid ShelterId, int PageNumber, int PageSize) : IRequest<PetListInShelterResponse>;
+    public record PetListInShelterQuery(Guid ShelterId, int PageNumber=1, int PageSize=10) : IRequest<PetListInShelterResponse>;
 
     public class PetListInShelterQueryHandler : IRequestHandler<PetListInShelterQuery, PetListInShelterResponse>
     {
@@ -31,7 +31,7 @@ namespace LapkaBackend.Application.Functions.Queries
                 .Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize)
                 .ToListAsync();
 
-            var  petsList = FoundAnimals.Select(async p => new PetInListInShelterDto()
+            var petsList =  FoundAnimals.Select( p => new PetInListInShelterDto()
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -41,7 +41,7 @@ namespace LapkaBackend.Application.Functions.Queries
                 Color = p.Marking,
                 Weight = (float)p.Weight,
                 ProfilePhoto = p.ProfilePhoto,
-                Photos = await _dbContext.Blobs.Where(x => x.ParentEntityId == p.Id).Select(blob => blob.ParentEntityId.ToString()).ToArrayAsync(),
+                Photos = _dbContext.Blobs.Where(x => x.ParentEntityId == p.Id).Select(blob => blob.ParentEntityId.ToString()).ToArray(),
                 Months = p.Months,
                 CreatedAt = p.CreatedAt,
                 IsSterilized = p.IsSterilized,
@@ -50,12 +50,13 @@ namespace LapkaBackend.Application.Functions.Queries
 
             })
             .ToList();
-            PetInListInShelterDto[] petsListArray = await Task.WhenAll(petsList);
-            List<PetInListInShelterDto>? petInListInShelterDto = petsListArray.ToList();
+
+
+
 
             var petListResponse = new PetListInShelterResponse()
             {
-                PetInListInShelterDto = petInListInShelterDto,
+                PetInListInShelterDto = petsList,
                 TotalPages = numberOfPages,
                 TotalItemsCount = totalItemsCount
             };

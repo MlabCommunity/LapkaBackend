@@ -13,7 +13,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record PetListQuery(int PageNumber, int PageSize) : IRequest<PetListResponse>;
+    public record PetListQuery(int PageNumber=1, int PageSize=10) : IRequest<PetListResponse>;
 
     public class PetListQueryHandler : IRequestHandler<PetListQuery, PetListResponse>
     {
@@ -38,7 +38,7 @@ namespace LapkaBackend.Application.Functions.Queries
                 .Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize)
                 .ToListAsync();
 
-            var petsList = FoundAnimals.Select(async p => new PetInListDto()
+            var petsList = FoundAnimals.Select(p => new PetInListDto()
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -48,10 +48,10 @@ namespace LapkaBackend.Application.Functions.Queries
                 Color = p.Marking,
                 Weight = (float)p.Weight,
                 ProfilePhoto = p.ProfilePhoto,
-                Photos = await _dbContext.Blobs
+                Photos = _dbContext.Blobs
                             .Where(x => x.ParentEntityId == p.Id && x.Id.ToString() != p.ProfilePhoto)
                             .Select(blob => blob.ParentEntityId.ToString())
-                            .ToArrayAsync(),
+                            .ToArray(),
                 Months = p.Months,
                 CreatedAt = p.CreatedAt,
                 IsSterilized = p.IsSterilized,
@@ -61,12 +61,9 @@ namespace LapkaBackend.Application.Functions.Queries
             })
             .ToList();
 
-            PetInListDto[] petsListMap = await Task.WhenAll(petsList);
-            List<PetInListDto>? petInListDto = petsListMap.ToList();
-
             var petListResponse = new PetListResponse()
             {
-                PetInListDto = petInListDto,
+                PetInListDto = petsList,
                 TotalPages = numberOfPages,
                 TotalItemsCount = totalItemsCount
             };

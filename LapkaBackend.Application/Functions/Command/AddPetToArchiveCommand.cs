@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record AddPetToArchiveCommand(string PetId) : IRequest;
+    public record AddPetToArchiveCommand(Guid PetId) : IRequest;
 
     public class AddPetToArchiveCommandHandler : IRequestHandler<AddPetToArchiveCommand>
     {
@@ -26,8 +26,7 @@ namespace LapkaBackend.Application.Functions.Command
 
         public async Task Handle(AddPetToArchiveCommand request, CancellationToken cancellationToken)
         {
-            Guid petId = new Guid(request.PetId);
-            var animal = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == petId);
+            var animal = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == request.PetId);
 
             if (animal == null)
             {
