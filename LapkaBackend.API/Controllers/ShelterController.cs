@@ -231,18 +231,6 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        ///     Wyświetlenie 10 zwierząt które mają najwięcej wyświetleń
-        /// </summary>
-        [HttpGet("/shelters/cards/Get")]
-        [Authorize(Roles = "Shelter")]
-        [ProducesResponseType(typeof(MostViewedPetsResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetMostViewedPets()
-        {
-            return Ok(await _mediator.Send(new GetMostViewedPetsQuery(await GetShelterIdByLoggedUser())));
-        }
-
-        /// <summary>
         ///     Publikacja zwierzęcia
         /// </summary>
         [HttpPut("/shelters/cards/publish/{petId}")]

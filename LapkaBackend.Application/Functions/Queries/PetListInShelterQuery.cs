@@ -23,14 +23,6 @@ namespace LapkaBackend.Application.Functions.Queries
             int totalItemsCount = await _dbContext.Animals.Where(x => x.ShelterId == request.ShelterId).CountAsync();
             int numberOfPages =  (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
-            //var FoundAnimals = await _dbContext.Animals
-            //    .Include(a => a.AnimalCategory)
-            //    .Where(a => a.IsVisible)
-            //    .Where(a => a.ShelterId == request.ShelterId)
-            //    .OrderBy(x => x.Name)
-            //    .Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize)
-            //    .ToListAsync();
-
             var query = _dbContext.Animals
                 .Include(a => a.AnimalCategory)
                 .Where(a => a.IsVisible)
