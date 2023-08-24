@@ -50,8 +50,13 @@ public class ErrorHandlerMiddleware
                     if (_webHostEnvironment.IsProduction())
                     {
                         _logger.Error(error, "server_error");
+                        errors.Add(new Error("error", "Something went wrong"));
                     }
-                    errors.Add(new Error("error", "Something went wrong"));
+                    else
+                    {
+                        errors.Add(new Error("error", $"{error.Message} \n {error.StackTrace}"));
+                    }
+                    
                     break;
             }
             var response = context.Response;
