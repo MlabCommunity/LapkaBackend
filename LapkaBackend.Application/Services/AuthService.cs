@@ -344,7 +344,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new BadRequestException("invalid_mail", "User with that email does not exists");
+                throw new BadRequestException("invalid_email", "User with that email does not exists");
             }
             
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
