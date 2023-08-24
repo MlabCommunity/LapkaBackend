@@ -24,8 +24,9 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
 
             if (!dbContext.AnimalCategories.Any())
             {
-                var animalCategoriesList = new List<AnimalCategory>()
+                var animalCategoriesList = new List<AnimalCategory>
                 {
+                    new () { CategoryName = "Undefined" },
                     new () { CategoryName = "Dog" },
                     new () { CategoryName = "Cat" },
                     new () { CategoryName = "Rabbit" }

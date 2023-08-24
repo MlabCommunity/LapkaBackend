@@ -59,6 +59,7 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
             modelBuilder.Entity<Shelter>()
                 .HasMany(e => e.Animals)
                 .WithOne(e => e.Shelter)
+                .HasForeignKey(e => e.ShelterId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

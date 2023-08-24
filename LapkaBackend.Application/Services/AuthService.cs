@@ -242,7 +242,7 @@ namespace LapkaBackend.Application.Services
                     ClockSkew = TimeSpan.Zero
                 }, out _);
             }
-            catch (SecurityTokenValidationException e)
+            catch (SecurityTokenValidationException)
             {
                 return false;
             }
@@ -408,7 +408,7 @@ namespace LapkaBackend.Application.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        private async Task SavingDataInCookies(string data)
+        private Task SavingDataInCookies(string data)
         {
             var claims = new List<Claim>()
             {
@@ -434,6 +434,7 @@ namespace LapkaBackend.Application.Services
             };
             
             _contextAccessor.HttpContext!.Response.Cookies.Append("token", jwt, options);
+            return Task.CompletedTask;
         }
     }
 }

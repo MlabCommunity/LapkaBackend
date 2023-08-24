@@ -34,8 +34,6 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 a.HasOne(x => x.AnimalCategory)
                 .WithMany()
                 .HasForeignKey(x => x.CategoryId);
-                
-
 
             });
 

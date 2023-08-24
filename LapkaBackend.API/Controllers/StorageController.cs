@@ -27,7 +27,6 @@ public class StorageController : Controller
     public async Task<ActionResult> GetFile([Required]List<Guid> ids)
     {
         return Ok(await _blobService.GetFilesUrlsAsync(ids));
-        return NoContent();
     }
     
     
@@ -70,7 +69,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByShelter([Required]List<IFormFile> files)
+    public async Task<ActionResult> SaveFilesByShelter([Required]List<IFormFile> files)
     {
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)
@@ -90,7 +89,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> SaveFileByUser([Required]List<IFormFile> files)
+    public async Task<ActionResult> SaveFilesByUser([Required]List<IFormFile> files)
     {
         var user = HttpContext.User.FindFirstValue("userId");
         if (user is null)

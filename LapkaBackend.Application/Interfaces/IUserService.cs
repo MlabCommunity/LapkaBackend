@@ -1,6 +1,5 @@
 ﻿using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Requests;
-using LapkaBackend.Domain.Entities;
 
 namespace LapkaBackend.Application.Interfaces
 {

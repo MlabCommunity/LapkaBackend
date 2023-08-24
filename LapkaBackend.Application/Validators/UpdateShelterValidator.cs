@@ -1,12 +1,5 @@
 ﻿using FluentValidation;
 using LapkaBackend.Application.Functions.Command;
-using LapkaBackend.Application.Functions.Queries;
-using LapkaBackend.Application.Requests;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LapkaBackend.Application.Validators;
 

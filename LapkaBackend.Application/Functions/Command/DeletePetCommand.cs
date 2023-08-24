@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
