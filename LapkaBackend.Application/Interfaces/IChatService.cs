@@ -8,5 +8,6 @@ public interface IChatService
     Task SendMessage(string message, Guid sender, Guid receiver);
     Task<List<ConversationWithLastMessageResultDto>> GetConversations(Guid userId);
     Task<List<MessageResultDto>> GetMessagesForConversation(Guid roomId, Guid userId);
+    Task LeaveConversation(Guid roomId);
 
 }

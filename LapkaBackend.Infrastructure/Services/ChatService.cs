@@ -49,7 +49,7 @@ public class ChatService : IChatService
             await _dbContext.SaveChangesAsync();
         }
         
-        var newMessage = new ChatMessage()
+        var newMessage = new ChatMessage
         {
             RoomId = room.Id,
             UserId = sender,
@@ -157,8 +157,8 @@ public class ChatService : IChatService
             .AddToGroupAsync(_httpContextAccessor.HttpContext.Items["ConnectionId"].ToString(),
                 roomId.ToString());
     }
-    
-    public async Task RemoveFromGroup(Guid roomId)
+
+    private async Task RemoveFromGroup(Guid roomId)
     {
         await _chatHubContext
             .Groups

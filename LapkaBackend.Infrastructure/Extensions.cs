@@ -5,6 +5,7 @@ using LapkaBackend.Infrastructure.Data;
 using LapkaBackend.Infrastructure.Email;
 using LapkaBackend.Infrastructure.FileStorage;
 using LapkaBackend.Infrastructure.Hangfire;
+using LapkaBackend.Infrastructure.Hubs;
 using LapkaBackend.Infrastructure.ModelBuilders;
 using LapkaBackend.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -20,8 +21,9 @@ namespace LapkaBackend.Infrastructure
         {
             services.AddTransient<IDataContext, DataContext>();
             services.AddTransient<IAzureStorageContext, AzureStorageContext>();
+            services.AddTransient<IChatHubContext, ChatHub>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
-            services.AddScoped<IChatService, ChatService>();
+            services.AddTransient<IChatService, ChatService>();
             services.AddTransient<UpdateDeleteJob>();
             services.AddDbContext<DataContext>(options =>
             {

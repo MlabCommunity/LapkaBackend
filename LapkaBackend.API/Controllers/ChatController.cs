@@ -68,4 +68,20 @@ public class ChatController : Controller
         return Ok(await _chatService
             .GetConversations(new Guid(HttpContext.User.FindFirstValue("userId")!)));
     }
+    
+    /// <summary>
+    /// Opuszczenie grupy przez aktualnie zalogowanego użytkownika
+    /// </summary>
+    [HttpGet("LeaveConversation")]
+    [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> LeaveConversation(string roomId)
+    {
+        await _chatService.LeaveConversation(new Guid(roomId));
+
+        return NoContent();
+    }
 }
