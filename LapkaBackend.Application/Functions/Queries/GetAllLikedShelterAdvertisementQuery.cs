@@ -79,38 +79,8 @@ public class GetAllLikedShelterAdvertisementsQueryHandler : IRequestHandler<GetA
                     }).ToList();
                 petsAdvertisementsFromShelters.AddRange(petsAdvertisementsFromShelter);
             }
-
-            petsAdvertisementsFromShelters = query.Request.SortingType switch
-            {
-                SortingType.Ascending => query.Request.SortOption switch
-                {
-                    SortAdvertisementOptions.Name => petsAdvertisementsFromShelters
-                        .OrderBy(x => x.Name)
-                        .ToList(),
-                    SortAdvertisementOptions.Age => petsAdvertisementsFromShelters
-                        .OrderBy(x => x.Age)
-                        .ToList(),
-                    SortAdvertisementOptions.Distance => petsAdvertisementsFromShelters
-                        .OrderBy(x => x.Distance)
-                        .ToList(),
-                    _ => petsAdvertisementsFromShelters
-                },
-                SortingType.Descending => query.Request.SortOption switch
-                {
-                    SortAdvertisementOptions.Name => petsAdvertisementsFromShelters
-                        .OrderByDescending(x => x.Name)
-                        .ToList(),
-                    SortAdvertisementOptions.Age => petsAdvertisementsFromShelters
-                        .OrderByDescending(x => x.Age)
-                        .ToList(),
-                    SortAdvertisementOptions.Distance => petsAdvertisementsFromShelters
-                        .OrderByDescending(x => x.Distance)
-                        .ToList(),
-                    _ => petsAdvertisementsFromShelters
-                },
-                _ => petsAdvertisementsFromShelters
-            };
-            //return paged result
+            petsAdvertisementsFromShelters = Sorter.SortAdvertisements(petsAdvertisementsFromShelters, query.Request.SortOption, 
+                query.Request.SortingType);
             return new ShelterPetAdvertisementDtoPagedResult
             {
                 Items = petsAdvertisementsFromShelters,
