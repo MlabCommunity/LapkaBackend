@@ -2,5 +2,6 @@
 
 public interface IChatHubContext
 {
-    Task SendMessageToClient(string message);
+    Task OnConnectedAsync();
+    Task OnDisconnectedAsync(Exception e);
 }

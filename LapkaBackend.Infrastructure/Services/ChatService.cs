@@ -1,31 +1,42 @@
-﻿using LapkaBackend.Application.Common;
+﻿using System.Security.Claims;
+using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
+using LapkaBackend.Infrastructure.Hubs;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
-namespace LapkaBackend.Application.Services;
+namespace LapkaBackend.Infrastructure.Services;
 
 public class ChatService : IChatService
 {
-    private readonly IChatHubContext _chatHubContext;
+    private readonly IHubContext<ChatHub> _chatHubContext;
     private readonly IDataContext _dbContext;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ChatService(IChatHubContext chatHubContext, IDataContext dbContext)
+    public ChatService(IHubContext<ChatHub> chatHubContext, IDataContext dbContext, IHttpContextAccessor httpContextAccessor)
     {
         _chatHubContext = chatHubContext;
         _dbContext = dbContext;
+        _httpContextAccessor = httpContextAccessor;
     }
 
 
     public async Task SendMessage(string message, Guid sender, Guid receiver)
     {
+        if (await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == receiver) is null)
+        {
+            throw new BadRequestException("invalid_id", "Receiver is invalid");
+        }
+            
         var room = await _dbContext.ChatRooms
             .Where(x => x.User1Id == sender || x.User2Id == sender)
             .FirstOrDefaultAsync(x => x.User2Id == receiver || x.User1Id == receiver);
-
+        
         if (room is null)
         {
             room = new ChatRoom()
@@ -48,6 +59,11 @@ public class ChatService : IChatService
             
         await _dbContext.ChatMessages.AddAsync(newMessage);
         await _dbContext.SaveChangesAsync();
+        
+        // Add actually logged user into SignalR group 
+        await AddToGroup(room.Id);
+        // Send notification about new message
+        await NotifyNewMessage(room.Id);
     }
 
     public Task<List<ConversationWithLastMessageResultDto>> GetConversations(Guid userId)
@@ -106,5 +122,47 @@ public class ChatService : IChatService
                 }
             })
             .ToList();
+    }
+
+    public async Task LeaveConversation(Guid roomId)
+    {
+        var room = await _dbContext.ChatRooms.FirstOrDefaultAsync(x => x.Id == roomId);
+
+        if (room is null)
+        {
+            throw new BadRequestException("invalid_room", "Invalid room Id");
+        }
+
+        if (room.User1Id == new Guid(_httpContextAccessor.HttpContext.User.FindFirstValue("userId")))
+        {
+            room.User1Id = Guid.Empty;
+        }
+        else
+        {
+            room.User2Id = Guid.Empty;
+        }
+
+        await RemoveFromGroup(roomId);
+    }
+    
+    private async Task NotifyNewMessage(Guid roomId)
+    {
+        _chatHubContext.Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage");
+    }
+
+    private async Task AddToGroup(Guid roomId)
+    {
+        await _chatHubContext
+            .Groups
+            .AddToGroupAsync(_httpContextAccessor.HttpContext.Items["ConnectionId"].ToString(),
+                roomId.ToString());
+    }
+    
+    public async Task RemoveFromGroup(Guid roomId)
+    {
+        await _chatHubContext
+            .Groups
+            .RemoveFromGroupAsync(_httpContextAccessor.HttpContext.Items["ConnectionId"].ToString(),
+                roomId.ToString());
     }
 }

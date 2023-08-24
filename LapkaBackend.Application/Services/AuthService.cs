@@ -26,20 +26,22 @@ namespace LapkaBackend.Application.Services
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly ILogger _logger;
+        private readonly IChatHubContext _chatHubContext;
 
         public AuthService(IDataContext dbContext, IConfiguration configuration, 
-            IEmailService emailService, IHttpContextAccessor contextAccessor, ILogger logger)
+            IEmailService emailService, IHttpContextAccessor contextAccessor, ILogger logger, 
+            IChatHubContext chatHubContext)
         {
             _logger = logger;
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
             _contextAccessor = contextAccessor;
+            _chatHubContext = chatHubContext;
         }
 
         public async Task RegisterUser(UserRegistrationRequest request)
         {
-
             if (_dbContext.Users.Any(x => x.Email == request.EmailAddress))
             {
                 throw new BadRequestException("invalid_email", "User with this email already exists");
@@ -121,7 +123,7 @@ namespace LapkaBackend.Application.Services
             }
 
             await SavingDataInCookies(result.Role.RoleName);
-            
+            await _chatHubContext.OnConnectedAsync();
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),
@@ -270,6 +272,7 @@ namespace LapkaBackend.Application.Services
             result.RefreshToken = "";
             _dbContext.Users.Update(result);
             await _dbContext.SaveChangesAsync();
+            await _chatHubContext.OnDisconnectedAsync(new Exception());
         }
 
         public async Task RegisterShelter(ShelterWithUserRegistrationRequest request)
@@ -349,11 +352,6 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_token", "Token is invalid");
             }
 
-            if (resetPasswordRequest.Password != resetPasswordRequest.ConfirmPassword)
-            {
-                throw new BadRequestException("invalid_password", "Passwords aren't matching");
-            }
-
             var userToken = new JwtSecurityToken(token);
             var userEmail = userToken.Claims.ToList().
                 First(x => x.Type.Equals(ClaimTypes.Email));
@@ -361,10 +359,15 @@ namespace LapkaBackend.Application.Services
             var user = await _dbContext.Users
                 .Include(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Email == userEmail.Value);
-
+            
             if (user is null)
             {
                 throw new BadRequestException("invalid_email", "User doesn't exists");
+            }
+            
+            if (user.Password == resetPasswordRequest.Password)
+            {
+                throw new BadRequestException("invalid_password", "New password match the old one");
             }
             
             user.Password = BCrypt.Net.BCrypt.HashPassword(resetPasswordRequest.Password);
