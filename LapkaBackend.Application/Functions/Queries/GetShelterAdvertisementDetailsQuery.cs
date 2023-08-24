@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore;
 namespace LapkaBackend.Application.Functions.Queries;
 public record GetShelterAdvertisementDetailsQuery(Guid PetId, double Longitude, double Latitude, Guid UserId) : IRequest<ShelterPetAdvertisementDetailsDto>;
 
-public class GetShelterAdvertisementQueryDetailsHandler : IRequestHandler<GetShelterAdvertisementDetailsQuery, ShelterPetAdvertisementDetailsDto>
+public class GetShelterAdvertisementDetailsQueryHandler : IRequestHandler<GetShelterAdvertisementDetailsQuery, ShelterPetAdvertisementDetailsDto>
     {
         private readonly IDataContext _dbContext;
 
-        public GetShelterAdvertisementQueryDetailsHandler(IDataContext dbContext)
+        public GetShelterAdvertisementDetailsQueryHandler(IDataContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -21,12 +21,15 @@ public class GetShelterAdvertisementQueryDetailsHandler : IRequestHandler<GetShe
         public async Task<ShelterPetAdvertisementDetailsDto> Handle(GetShelterAdvertisementDetailsQuery query, CancellationToken cancellationToken)
         {
                var pet = _dbContext.Animals.FirstOrDefault(x => x.Id == query.PetId && x.IsVisible && !x.IsArchival);
+               
                if (pet == null)
                {
                    throw new NotFoundException("invalid_id", "Advertisement not found");
                }
+               
                var userShelter = await _dbContext.Users.FirstOrDefaultAsync(x => x.ShelterId == pet.Shelter.Id 
                    && x.RoleId == (int)Roles.Shelter, cancellationToken: cancellationToken);
+               
                return new ShelterPetAdvertisementDetailsDto
                {
                    OrganizationName = pet.Shelter.OrganizationName,

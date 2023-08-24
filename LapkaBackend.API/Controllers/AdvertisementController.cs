@@ -27,25 +27,11 @@ public class AdvertisementController : Controller
     [HttpGet ("{longitude:double}/{latitude:double}")]
     [ProducesResponseType(typeof(ShelterPetAdvertisementDtoPagedResult), StatusCodes.Status200OK)]
     [Authorize (Roles = "User, Admin, SuperAdmin")]
-    public async Task<ActionResult> GetAllShelterAdvertisements(double longitude, double latitude, 
-        SortAdvertisementOptions sortOptions, SortingType sortingType, 
-        AnimalCategories type = AnimalCategories.Undefined, Genders gender = Genders.Undefined, 
-        int pageNumber = 1, int pageSize = 10)
+    public async Task<ActionResult> GetAllShelterAdvertisements(double longitude, double latitude, [FromQuery] GetAllShelterAdvertisementsRequest request)
     {
-        var mappedData = new GetAllShelterAdvertisementsRequest
-        {
-            Longitude = longitude,
-            Latitude = latitude,
-            Type = type,
-            Gender = gender,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-            UserId = new Guid(HttpContext.User.FindFirstValue("userId")!),
-            SortOption = sortOptions,
-            SortingType = sortingType
-        };
+        var userId = new Guid(HttpContext.User.FindFirstValue("userId")!); 
         var items = 
-            await _mediator.Send(new GetAllShelterAdvertisementsQuery(mappedData));
+            await _mediator.Send(new GetAllShelterAdvertisementsQuery(longitude, latitude, request, userId));
             
         return Ok(items);
     }
@@ -57,25 +43,11 @@ public class AdvertisementController : Controller
     [HttpGet ("like/{longitude:double}/{latitude:double}")]
     [ProducesResponseType(typeof(ShelterPetAdvertisementDtoPagedResult), StatusCodes.Status200OK)]
     [Authorize (Roles = "User, Admin, SuperAdmin")]
-    public async Task<ActionResult> GetAllLikedShelterLikedAdvertisements(double longitude, double latitude, 
-        SortAdvertisementOptions sortOptions, SortingType sortingType, 
-        AnimalCategories type = AnimalCategories.Undefined, Genders gender = Genders.Undefined, 
-        int pageNumber = 1, int pageSize = 10)
+    public async Task<ActionResult> GetAllLikedShelterLikedAdvertisements(double longitude, double latitude, [FromQuery] GetAllShelterAdvertisementsRequest request)
     {
-        var mappedData = new GetAllShelterAdvertisementsRequest
-        {
-            Longitude = longitude,
-            Latitude = latitude,
-            Type = type,
-            Gender = gender,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-            UserId = new Guid(HttpContext.User.FindFirstValue("userId")!),
-            SortOption = sortOptions,
-            SortingType = sortingType
-        };
+        var userId = new Guid(HttpContext.User.FindFirstValue("userId")!); 
         var items = 
-            await _mediator.Send(new GetAllLikedShelterAdvertisementsQuery(mappedData));
+            await _mediator.Send(new GetAllLikedShelterAdvertisementsQuery(longitude, latitude, request, userId));
             
         return Ok(items);
     }

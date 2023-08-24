@@ -6,11 +6,11 @@ namespace LapkaBackend.Application.Helper;
 public class Sorter
 {
     public static List<ShelterPetAdvertisementDto> SortAdvertisements(List<ShelterPetAdvertisementDto> unsortedList,
-        SortAdvertisementOptions option, SortingType type)
+        SortAdvertisementOptions option, bool type)
     {
         var sortedList = type switch
         {
-            SortingType.Ascending => option switch
+            true => option switch
             {
                 SortAdvertisementOptions.Name => unsortedList
                     .OrderBy(x => x.Name)
@@ -23,7 +23,7 @@ public class Sorter
                     .ToList(),
                 _ => unsortedList
             },
-            SortingType.Descending => option switch
+            false => option switch
             {
                 SortAdvertisementOptions.Name => unsortedList
                     .OrderByDescending(x => x.Name)
@@ -36,7 +36,6 @@ public class Sorter
                     .ToList(),
                 _ => unsortedList
             },
-            _ => unsortedList
         };
         return sortedList;
     }

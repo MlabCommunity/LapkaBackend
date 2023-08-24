@@ -9,7 +9,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Queries;
-public record GetAllLikedShelterAdvertisementsQuery(GetAllShelterAdvertisementsRequest Request) : IRequest<ShelterPetAdvertisementDtoPagedResult>;
+public record GetAllLikedShelterAdvertisementsQuery(double Longitude, double Latitude, GetAllShelterAdvertisementsRequest Request, Guid UserId) : IRequest<ShelterPetAdvertisementDtoPagedResult>;
 
 public class GetAllLikedShelterAdvertisementsQueryHandler : IRequestHandler<GetAllLikedShelterAdvertisementsQuery, ShelterPetAdvertisementDtoPagedResult>
     {
@@ -26,21 +26,26 @@ public class GetAllLikedShelterAdvertisementsQueryHandler : IRequestHandler<GetA
             {
                 throw new BadRequestException("invalid_page_size", "Page size must be greater than 0");
             }
+            
             if (query.Request.PageNumber <= 0)
             {
                 throw new BadRequestException("invalid_page_number", "Page number must be greater than 0");
             }
+            
             var petsAdvertisementsFromShelters = new List<ShelterPetAdvertisementDto>();
             var shelters = _dbContext.Shelters.ToList();
+            
             foreach (var shelter in shelters)
             {
                 var petsFromShelter = shelter.Animals.Where(x => 
                     _dbContext.Reactions.Any(reaction => reaction.AnimalId == x.Id 
-                    && reaction.UserId == query.Request.UserId)).ToList();
+                    && reaction.UserId == query.UserId)).ToList();
+                
                 if (petsFromShelter.Count == 0)
                 {
                     continue;
                 }
+                
                 if (query.Request.Type is not AnimalCategories.Undefined)
                 {
                     petsFromShelter = petsFromShelter.Where(x => x.AnimalCategory.CategoryName == query.Request.Type.ToString()).ToList();
@@ -50,14 +55,18 @@ public class GetAllLikedShelterAdvertisementsQueryHandler : IRequestHandler<GetA
                 {
                     petsFromShelter = petsFromShelter.Where(x => x.Gender == query.Request.Gender.ToString()).ToList();
                 }
+                
                 petsFromShelter = petsFromShelter.Skip((query.Request.PageNumber - 1) * query.Request.PageSize)
                     .Take(query.Request.PageSize).ToList();
+                
                 var userShelter = await _dbContext.Users.FirstOrDefaultAsync(x => x.ShelterId == shelter.Id 
                     && x.RoleId == (int)Roles.Shelter, cancellationToken: cancellationToken);
+                
                 if (userShelter == null)
                 {
                     throw new BadRequestException("invalid shelter", "Invalid shelter");
                 }
+                
                 var petsAdvertisementsFromShelter = 
                     petsFromShelter.Select(x => new ShelterPetAdvertisementDto
                     {
@@ -67,20 +76,22 @@ public class GetAllLikedShelterAdvertisementsQueryHandler : IRequestHandler<GetA
                         PetId = x.Id,
                         Name = x.Name,
                         Age = x.Months,
-                        IsLiked = _dbContext.Reactions.Any(reaction => reaction.AnimalId == x.Id && reaction.UserId == query.Request.UserId),
+                        IsLiked = _dbContext.Reactions.Any(reaction => reaction.AnimalId == x.Id && reaction.UserId == query.UserId),
                         Gender = (Genders)Enum.Parse(typeof(Genders), x.Gender),
                         Breed = x.Species,
                         //TODO when fixes are gonna be done, update this
                         ProfilePicture = "",
                         Distance = DistanceCalculator.CalculateDistance(
                             shelter.Latitude, shelter.Longitude, 
-                            query.Request.Latitude, query.Request.Longitude),
+                            query.Latitude, query.Longitude),
                         City = shelter.City
                     }).ToList();
                 petsAdvertisementsFromShelters.AddRange(petsAdvertisementsFromShelter);
             }
+            
             petsAdvertisementsFromShelters = Sorter.SortAdvertisements(petsAdvertisementsFromShelters, query.Request.SortOption, 
-                query.Request.SortingType);
+                query.Request.AscendingSort);
+            
             return new ShelterPetAdvertisementDtoPagedResult
             {
                 Items = petsAdvertisementsFromShelters,

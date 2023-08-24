@@ -1,16 +1,18 @@
-﻿using LapkaBackend.Domain.Enums;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using LapkaBackend.Domain.Enums;
 
 namespace LapkaBackend.Application.Requests;
 
 public class GetAllShelterAdvertisementsRequest
 {
-    public double Longitude { get; set; }
-    public double Latitude { get; set; }
     public AnimalCategories Type { get; set; } = AnimalCategories.Undefined;
     public Genders Gender { get; set; } = Genders.Undefined;
-    public int PageNumber { get; set; }
-    public int PageSize { get; set; }
-    public Guid UserId { get; set; }
+    [DefaultValue(1)]
+    public int PageNumber { get; set; } = 1;
+    [DefaultValue(10)]
+    public int PageSize { get; set; } = 10;
     public SortAdvertisementOptions SortOption { get; set; } = SortAdvertisementOptions.Distance;
-    public SortingType SortingType { get; set; } = SortingType.Ascending;
+    public bool AscendingSort { get; set; } = true;
+    // true - ascending, false - descending
 }
