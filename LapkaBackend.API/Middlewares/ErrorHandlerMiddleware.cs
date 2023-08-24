@@ -26,42 +26,44 @@ public class ErrorHandlerMiddleware
         }
         catch (Exception error)
         {
-            var errors = new List<Error>();
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            Error exception;
             switch (error)
             {
                 case BadRequestException badRequestException:
                     context.Response.StatusCode = 400;
-                    errors.Add(new Error(badRequestException.Code, badRequestException.Message));
+                    exception = new Error(badRequestException.Code, badRequestException.Message);
                     break;
                 case UnauthorizedException unauthorizedException:
                     context.Response.StatusCode = 401;
-                    errors.Add(new Error(unauthorizedException.Code, unauthorizedException.Message));
+                    exception = new Error(unauthorizedException.Code, unauthorizedException.Message);
                     break;
                 case ForbiddenException forbiddenException:
                     context.Response.StatusCode = 403;
-                    errors.Add(new Error(forbiddenException.Code, forbiddenException.Message));
+                    exception = new Error(forbiddenException.Code, forbiddenException.Message);
                     break;
                 case NotFoundException notFoundException:
                     context.Response.StatusCode = 404;
-                    errors.Add(new Error(notFoundException.Code, notFoundException.Message));
+                    exception = new Error(notFoundException.Code, notFoundException.Message);
                     break;
                 default:
                     context.Response.StatusCode = 500;
-                    if (_webHostEnvironment.IsProduction())
+                    if (environment == Environments.Development)
                     {
-                        _logger.Error(error, "server_error");
-                        errors.Add(new Error("error", "Something went wrong"));
+                        exception = new LocalError("error", error.Message, error.StackTrace!.Split(Environment.NewLine).ToList());
                     }
                     else
                     {
-                        errors.Add(new Error("error", $"{error.Message} \n {error.StackTrace}"));
+                        _logger.Error(error, "server_error");
+                        exception = new Error("error", "Something went wrong");
                     }
                     
                     break;
             }
             var response = context.Response;
             response.ContentType = "application/json";
-            var result = JsonSerializer.Serialize(new { errors });
+            var result = environment == Environments.Development ?
+                JsonSerializer.Serialize((LocalError)exception) : JsonSerializer.Serialize(exception);
             await response.WriteAsync(result);
         }
 
