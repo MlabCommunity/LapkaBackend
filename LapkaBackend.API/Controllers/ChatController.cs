@@ -72,7 +72,7 @@ public class ChatController : Controller
     /// <summary>
     /// Opuszczenie grupy przez aktualnie zalogowanego użytkownika
     /// </summary>
-    [HttpGet("LeaveConversation")]
+    [HttpPost("LeaveConversation")]
     [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
