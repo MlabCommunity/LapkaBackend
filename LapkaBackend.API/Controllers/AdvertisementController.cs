@@ -59,6 +59,7 @@ public class AdvertisementController : Controller
     /// <response code="404">advertisement not found</response>
     [HttpGet ("{petId:Guid}/{longitude:double}/{latitude:double}")]
     [ProducesResponseType(typeof(ShelterPetAdvertisementDtoPagedResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize (Roles = "User, Admin, SuperAdmin")]
     public async Task<ActionResult> GetShelterAdvertisementDetails(Guid petId, double longitude, double latitude)
     {
