@@ -21,7 +21,6 @@ namespace LapkaBackend.Infrastructure
         {
             services.AddTransient<IDataContext, DataContext>();
             services.AddTransient<IAzureStorageContext, AzureStorageContext>();
-            services.AddTransient<IChatHubContext, ChatHub>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
             services.AddTransient<IChatService, ChatService>();
             services.AddTransient<UpdateDeleteJob>();

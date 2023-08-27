@@ -149,14 +149,21 @@ internal class Program
 
         app.UseAuthentication();
 
-        app.UseAuthorization();
+        
         
         app.UseHangfireDashboard("/hangfire", new DashboardOptions()
         {
             Authorization = new [] { new HangfireAuthorizationFilter() }
         });
+
+        app.UseRouting();
         
-        app.MapHub<ChatHub>("/chathub");
+        app.UseAuthorization();
+        
+        app.UseEndpoints(e =>
+        {
+            e.MapHub<ChatHub>("/chathub");
+        });
         
         app.UseMiddleware<ErrorHandlerMiddleware>();
 

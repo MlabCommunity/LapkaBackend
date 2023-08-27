@@ -26,18 +26,15 @@ namespace LapkaBackend.Application.Services
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly ILogger _logger;
-        private readonly IChatHubContext _chatHubContext;
 
         public AuthService(IDataContext dbContext, IConfiguration configuration, 
-            IEmailService emailService, IHttpContextAccessor contextAccessor, ILogger logger, 
-            IChatHubContext chatHubContext)
+            IEmailService emailService, IHttpContextAccessor contextAccessor, ILogger logger)
         {
             _logger = logger;
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
             _contextAccessor = contextAccessor;
-            _chatHubContext = chatHubContext;
         }
 
         public async Task RegisterUser(UserRegistrationRequest request)
@@ -123,7 +120,6 @@ namespace LapkaBackend.Application.Services
             }
 
             await SavingDataInCookies(result.Role.RoleName);
-            await _chatHubContext.OnConnectedAsync();
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),
@@ -272,7 +268,6 @@ namespace LapkaBackend.Application.Services
             result.RefreshToken = "";
             _dbContext.Users.Update(result);
             await _dbContext.SaveChangesAsync();
-            await _chatHubContext.OnDisconnectedAsync(new Exception());
         }
 
         public async Task RegisterShelter(ShelterWithUserRegistrationRequest request)

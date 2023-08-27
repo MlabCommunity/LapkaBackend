@@ -60,10 +60,9 @@ public class ChatService : IChatService
         await _dbContext.ChatMessages.AddAsync(newMessage);
         await _dbContext.SaveChangesAsync();
         
-        // Add actually logged user into SignalR group 
-        await AddToGroup(room.Id);
-        // Send notification about new message
-        await NotifyNewMessage(room.Id);
+        // Send notification about new message after called JoinToDictionary method in ChatHub
+        await _chatHubContext.Clients.Group(room.Id.ToString())
+            .SendAsync("NotificationMessage", "You've got new message");
     }
 
     public Task<List<ConversationWithLastMessageResultDto>> GetConversations(Guid userId)
@@ -141,28 +140,7 @@ public class ChatService : IChatService
         {
             room.User2Id = Guid.Empty;
         }
-
-        await RemoveFromGroup(roomId);
     }
     
-    private async Task NotifyNewMessage(Guid roomId)
-    {
-        _chatHubContext.Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage");
-    }
-
-    private async Task AddToGroup(Guid roomId)
-    {
-        await _chatHubContext
-            .Groups
-            .AddToGroupAsync(_httpContextAccessor.HttpContext.Items["ConnectionId"].ToString(),
-                roomId.ToString());
-    }
-
-    private async Task RemoveFromGroup(Guid roomId)
-    {
-        await _chatHubContext
-            .Groups
-            .RemoveFromGroupAsync(_httpContextAccessor.HttpContext.Items["ConnectionId"].ToString(),
-                roomId.ToString());
-    }
+    
 }
