@@ -1,31 +1,57 @@
-using LapkaBackend.API.Controllers;
-using LapkaBackend.Application.Functions.Queries;
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Moq;
 
-namespace LapkaBackend.Application.Tests
+namespace LapkaBackend.Application.Tests;
+
+public class Tests
 {
-    public class GetShelterByPosition
+    private Mock<IDataContext> _dbContext;
+    private Mock<IConfiguration> _configuration;
+    private AuthService _authService;
+    private UserService _userService;
+    private readonly ProxyGenerator _proxyGenerator = new();
+
+    [SetUp]
+    public void Setup()
     {
-        [Fact]
-        public async Task GetShelterByPosition_ReturnsOkResult()
+        var userMock = _proxyGenerator.CreateClassProxy<User>();
+        userMock.FirstName = "John";
+        userMock.LastName = "Doe";
+        userMock.Email = "john@example.com";
+        userMock.Password = "hashed_password";
+        userMock.VerificationToken = "token";
+
+        var usersMock = Mocker.MockDbSet(userMock);
+
+        _dbContext = new Mock<IDataContext>();
+        _dbContext.Setup(dc => dc.Users).Returns(usersMock.Object);
+
+        var tokenMock = new Mock<IConfigurationSection>();
+        tokenMock.SetupGet(t => t.Value).Returns("ulpgOBFxsvUAT4jYHYPyzAyfphyivEDB");
+
+        _configuration = new Mock<IConfiguration>();
+        _configuration.Setup(conf => conf.GetSection("AppSettings:Token")).Returns(tokenMock.Object);
+
+        _authService = new AuthService(_dbContext.Object,
+            _configuration.Object, null!, null!, null!);
+
+        _userService = new UserService(_dbContext.Object, null!, null!, null!);
+    }
+
+    [Test]
+    public void TestUserLoginNotVerified()
+    {
+        var credentials = new LoginRequest
         {
-            // Arrange
-            var mediatorMock = new Mock<IMediator>(); // Przygotowanie mocka dla IMediator
-            var controller = new ShelterController(mediatorMock.Object); // Utworzenie kontrolera
+            Email = "john@example.com",
+            Password = "hashed_password"
+        };
 
-            var query = new GetShelterByPositionQuery(34,34,332,1,2); // Tworzenie zapytania
+        Assert.ThrowsAsync<ForbiddenException>(async () => await _authService.LoginUser(credentials));
+    }
 
-            // Konfiguracja mediatora do obs³ugi asynchronicznych zadañ
-            //mediatorMock.Setup(m => m.Send(It.IsAny<GetShelterByPositionQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(new OkObjectResult("Test response"));
-
-            // Act
-            var result = await controller.GetShelterByPosition(query);
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result); // Oczekujemy wyniku typu OkObjectResult
-        }
-    
+    [Test]
+    public void TestUserVerifying()
+    {
+        _userService.VerifyEmail("token").Wait();
+        Assert.That(_dbContext.Object.Users.First().VerifiedAt, Is.Not.Null);
     }
 }
