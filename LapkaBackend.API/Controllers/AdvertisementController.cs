@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Functions.Command;
 using LapkaBackend.Application.Functions.Queries;
@@ -53,12 +54,12 @@ public class AdvertisementController : Controller
     }
     
     /// <summary>
-    ///     Pobieranie listy ogłoszeń schroniska
+    ///     Pobieranie szczegółów ogłoszenia schroniska
     /// </summary>
     /// <response code="200">advertisement found</response>
     /// <response code="404">advertisement not found</response>
     [HttpGet ("{petId:Guid}/{longitude:double}/{latitude:double}")]
-    [ProducesResponseType(typeof(ShelterPetAdvertisementDtoPagedResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ShelterPetAdvertisementDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize (Roles = "User, Admin, SuperAdmin")]
     public async Task<ActionResult> GetShelterAdvertisementDetails(Guid petId, double longitude, double latitude)
