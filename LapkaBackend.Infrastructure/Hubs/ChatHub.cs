@@ -1,19 +1,9 @@
-﻿using System.Text.RegularExpressions;
-using LapkaBackend.Application.Common;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
 
 namespace LapkaBackend.Infrastructure.Hubs;
 
 public class ChatHub : Hub
 {
-    private readonly IDataContext _dataContext;
-
-    public ChatHub(IDataContext dataContext)
-    {
-        _dataContext = dataContext;
-    }
-
     public async Task Test(string msg)
     {
         await Clients.All.SendAsync("ReceiveMessage", msg);
