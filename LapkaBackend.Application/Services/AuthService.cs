@@ -120,6 +120,7 @@ namespace LapkaBackend.Application.Services
             }
 
             await SavingDataInCookies(result.Role.RoleName);
+            
             return new LoginResultDto
             {
                 AccessToken = CreateAccessToken(result),

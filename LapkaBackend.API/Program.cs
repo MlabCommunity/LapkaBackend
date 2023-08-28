@@ -146,10 +146,10 @@ internal class Program
         }
 
         app.UseHttpsRedirection();
-
-        app.UseAuthentication();
-
+    
+        app.UseMiddleware<ErrorHandlerMiddleware>();
         
+        app.UseAuthentication();
         
         app.UseHangfireDashboard("/hangfire", new DashboardOptions()
         {
@@ -165,8 +165,6 @@ internal class Program
             e.MapHub<ChatHub>("/chathub");
         });
         
-        app.UseMiddleware<ErrorHandlerMiddleware>();
-
         app.MapControllers();
 
         app.Run();

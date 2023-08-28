@@ -54,7 +54,7 @@ public class ChatController : Controller
     }
     
     /// <summary>
-    /// Pobranie wszystkich konwersacji użytkownika zalogowanego, wraz z ostanią wiadomośćią do każdej konwersacji
+    /// Pobranie wszystkich konwersacji zalogowanego użytkownika, wraz z ostanią wiadomością do każdej konwersacji
     /// </summary>
     [HttpGet("conversations")]
     [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
@@ -67,21 +67,5 @@ public class ChatController : Controller
     {
         return Ok(await _chatService
             .GetConversations(new Guid(HttpContext.User.FindFirstValue("userId")!)));
-    }
-    
-    /// <summary>
-    /// Opuszczenie grupy przez aktualnie zalogowanego użytkownika
-    /// </summary>
-    [HttpPost("LeaveConversation")]
-    [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> LeaveConversation(string roomId)
-    {
-        await _chatService.LeaveConversation(new Guid(roomId));
-
-        return NoContent();
     }
 }

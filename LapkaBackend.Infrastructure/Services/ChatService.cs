@@ -1,12 +1,10 @@
-﻿using System.Security.Claims;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Infrastructure.Hubs;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,13 +14,11 @@ public class ChatService : IChatService
 {
     private readonly IHubContext<ChatHub> _chatHubContext;
     private readonly IDataContext _dbContext;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ChatService(IHubContext<ChatHub> chatHubContext, IDataContext dbContext, IHttpContextAccessor httpContextAccessor)
+    public ChatService(IHubContext<ChatHub> chatHubContext, IDataContext dbContext)
     {
         _chatHubContext = chatHubContext;
         _dbContext = dbContext;
-        _httpContextAccessor = httpContextAccessor;
     }
 
 
@@ -54,7 +50,8 @@ public class ChatService : IChatService
             RoomId = room.Id,
             UserId = sender,
             Content = message,
-            Date = DateTime.UtcNow
+            Date = DateTime.UtcNow,
+            IsRead = false
         };
             
         await _dbContext.ChatMessages.AddAsync(newMessage);
@@ -68,8 +65,7 @@ public class ChatService : IChatService
     public Task<List<ConversationWithLastMessageResultDto>> GetConversations(Guid userId)
     {
         var rooms = _dbContext.ChatRooms
-            .Where(x => x.User1Id == userId ||
-                        x.User2Id == userId)
+            .Where(x => x.User1Id == userId || x.User2Id == userId)
             .ToList();
 
         var results = (from room in rooms
@@ -104,10 +100,17 @@ public class ChatService : IChatService
 
         var messages = _dbContext.ChatMessages
             .Where(x => x.RoomId == roomId)
-            .OrderBy(x => x.Date)
-            .ToList()
-            .TakeLast(20);
+            .OrderByDescending(x => x.Date)
+            .Take(20)
+            .ToList();
 
+        foreach (var message in messages.Where(message => message.UserId != userId && message.IsRead == false))
+        {
+            message.IsRead = true;
+            _dbContext.ChatMessages.Update(message);
+            await _dbContext.SaveChangesAsync();
+        }
+        
         return messages
             .Select(message => new MessageResultDto
             {
@@ -123,24 +126,8 @@ public class ChatService : IChatService
             .ToList();
     }
 
-    public async Task LeaveConversation(Guid roomId)
+    public async Task TestSend(string msg)
     {
-        var room = await _dbContext.ChatRooms.FirstOrDefaultAsync(x => x.Id == roomId);
-
-        if (room is null)
-        {
-            throw new BadRequestException("invalid_room", "Invalid room Id");
-        }
-
-        if (room.User1Id == new Guid(_httpContextAccessor.HttpContext.User.FindFirstValue("userId")))
-        {
-            room.User1Id = Guid.Empty;
-        }
-        else
-        {
-            room.User2Id = Guid.Empty;
-        }
+        await _chatHubContext.Clients.All.SendAsync("ReceiveMessage", msg);
     }
-    
-    
 }
