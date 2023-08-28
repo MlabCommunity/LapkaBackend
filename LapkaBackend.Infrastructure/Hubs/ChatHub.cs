@@ -1,34 +1,28 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Text.RegularExpressions;
+using LapkaBackend.Application.Common;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Infrastructure.Hubs;
 
 public class ChatHub : Hub
 {
-    private readonly Dictionary<string, string?> _users = new();
+    private readonly IDataContext _dataContext;
+
+    public ChatHub(IDataContext dataContext)
+    {
+        _dataContext = dataContext;
+    }
 
     public async Task Test(string msg)
     {
         await Clients.All.SendAsync("ReceiveMessage", msg);
     }
     
-    public async Task JoinToDictionary(string userId)
+    public async Task AddConnectIdToGroup(string userId)
     {
-        _users.Add(userId, Context.ConnectionId);
+        await Groups.AddToGroupAsync(Context.ConnectionId, userId);
 
-        await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", "Add to Dictionary");
-    }
-
-    public async Task RemoveFromDictionary(string userId)
-    {
-        _users.Remove(userId);
-
-        await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", "Remove from Dictionary");
-    }
-
-    public async Task CreateGroup(string roomId)
-    {
-        await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
-
-        await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", "Add to group");
+        await Clients.Group(userId).SendAsync("CreateGroup", "Add to group");
     }
 }

@@ -58,8 +58,8 @@ public class ChatService : IChatService
         await _dbContext.SaveChangesAsync();
         
         // Send notification about new message after called JoinToDictionary method in ChatHub
-        await _chatHubContext.Clients.Group(room.Id.ToString())
-            .SendAsync("NotificationMessage", "You've got new message");
+        await _chatHubContext.Clients.Group(room.User1Id.ToString()).SendAsync("NotifyNewMessage", $"{room.Id}");
+        await _chatHubContext.Clients.Group(room.User2Id.ToString()).SendAsync("NotifyNewMessage", $"{room.Id}");
     }
 
     public Task<List<ConversationWithLastMessageResultDto>> GetConversations(Guid userId)
