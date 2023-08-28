@@ -1,1 +1,9 @@
-global using Xunit;
+global using NUnit.Framework;
+global using Castle.DynamicProxy;
+global using LapkaBackend.Application.Common;
+global using LapkaBackend.Application.Exceptions;
+global using LapkaBackend.Application.Requests;
+global using LapkaBackend.Application.Services;
+global using LapkaBackend.Domain.Entities;
+global using Microsoft.Extensions.Configuration;
+global using Moq;

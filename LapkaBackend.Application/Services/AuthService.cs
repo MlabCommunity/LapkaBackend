@@ -74,7 +74,7 @@ namespace LapkaBackend.Application.Services
 
             var link = $"{baseUrl}{endpoint}";
 
-            var mailRequest = new MailRequest()
+            var mailRequest = new MailRequest
             {
                 ToEmail = emailAddress,
                 Subject = "email confirmation",
