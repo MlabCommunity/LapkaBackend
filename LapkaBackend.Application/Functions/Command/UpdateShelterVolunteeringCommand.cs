@@ -27,22 +27,7 @@ namespace LapkaBackend.Application.Functions.Command
                 if (shelter is null)
                 {
                     throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
-                }
-                    ShelterVolunteering newShelterVolunteering = new()
-                    {
-                        ShelterId= request.ShelterId,
-                        Shelter = shelter,
-                        BankAccountNumber = request.BankAccountNumber,
-                        DailyHelpDescription = request.DailyHelpDescription,
-                        DonationDescription = request.DonationDescription,
-                        IsDailyHelpActive = request.IsDailyHelpActive,
-                        IsDonationActive = request.IsDonationActive,
-                        IsTakingDogsOutActive = request.IsTakingDogsOutActive,
-                        TakingDogsOutDesctiption = request.TakingDogsOutDescription
-                    };
-
-                    await _dbContext.SheltersVolunteering.AddAsync(newShelterVolunteering);
-                    await _dbContext.SaveChangesAsync();
+                }                   
             }
             else
             {

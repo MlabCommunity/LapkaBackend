@@ -40,7 +40,6 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateShelter(UpdateShelterRequest request)
         {
-            //Guid shelterId = await GetShelterIdByLoggedUser();
             var command = new UpdateShelterCommand(await GetShelterIdByLoggedUser(), request.OrganizationName, request.Longitude, request.Latitude, request.City, request.Street, request.ZipCode, request.Nip, request.Krs, request.PhoneNumber);
             await _mediator.Send(command);
             return NoContent();

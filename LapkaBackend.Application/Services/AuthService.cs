@@ -330,7 +330,24 @@ namespace LapkaBackend.Application.Services
                 ShelterId = newShelter.Id
             };
 
+
+
             await _dbContext.Users.AddAsync(newUser);
+            await _dbContext.SaveChangesAsync();
+
+            var newShelterVolunteering = new ShelterVolunteering()
+            {
+                ShelterId = newShelter.Id,
+                BankAccountNumber = null,
+                DailyHelpDescription = null,
+                DonationDescription = null,
+                IsDailyHelpActive = false,
+                IsDonationActive = false,
+                IsTakingDogsOutActive = false,
+                TakingDogsOutDesctiption = null,
+            };
+
+            await _dbContext.SheltersVolunteering.AddAsync(newShelterVolunteering);
             await _dbContext.SaveChangesAsync();
 
             await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
