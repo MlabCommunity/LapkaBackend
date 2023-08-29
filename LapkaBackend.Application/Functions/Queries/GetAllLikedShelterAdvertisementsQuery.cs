@@ -46,12 +46,12 @@ public class GetAllLikedShelterAdvertisementsQueryHandler : IRequestHandler<GetA
                     continue;
                 }
                 
-                if (query.Request.Type is not AnimalCategories.Undefined)
+                if (query.Request.Type is not AnimalCategories.Other)
                 {
                     petsFromShelter = petsFromShelter.Where(x => x.AnimalCategory.CategoryName == query.Request.Type.ToString()).ToList();
                 }
             
-                if (query.Request.Gender is not Genders.Undefined)
+                if (query.Request.Gender is not Genders.Other)
                 {
                     petsFromShelter = petsFromShelter.Where(x => x.Gender == query.Request.Gender.ToString()).ToList();
                 }

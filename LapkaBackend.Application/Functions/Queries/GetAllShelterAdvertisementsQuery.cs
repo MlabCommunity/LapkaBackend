@@ -43,7 +43,7 @@ public class GetAllShelterAdvertisementQueryHandler : IRequestHandler<GetAllShel
                     continue;
                 }
                 
-                if (query.Request.Type is not AnimalCategories.Undefined)
+                if (query.Request.Type is not AnimalCategories.Other)
                 {
                     petsFromShelter = petsFromShelter.Where(x => x.AnimalCategory.CategoryName == query.Request.Type.ToString()).ToList();
                 }
