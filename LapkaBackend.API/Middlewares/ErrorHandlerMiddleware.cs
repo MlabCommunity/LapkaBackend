@@ -67,7 +67,7 @@ public class ErrorHandlerMiddleware
             
             var response = context.Response;
             response.ContentType = "application/json";
-            var result = environment == Environments.Development ?
+            var result = environment == Environments.Development && context.Response.StatusCode == 500 ?
                 JsonSerializer.Serialize((LocalError)exception) : JsonSerializer.Serialize(exception);
             await response.WriteAsync(result);
         }
