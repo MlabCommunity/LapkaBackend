@@ -6,7 +6,7 @@ namespace LapkaBackend.Application.Requests;
 
 public class GetAllShelterAdvertisementsRequest
 {
-    public AnimalCategories Type { get; set; } = AnimalCategories.Other;
+    public AnimalCategories Type { get; set; } = AnimalCategories.Undefined;
     public Genders Gender { get; set; } = Genders.Undefined;
     [DefaultValue(1)]
     public int PageNumber { get; set; } = 1;
