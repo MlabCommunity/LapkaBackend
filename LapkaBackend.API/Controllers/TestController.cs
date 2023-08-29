@@ -21,15 +21,7 @@ public class TestController : ControllerBase
         _context = context;
         _chatService = chatService;
     }
-
-    [HttpGet]
-    public async Task<IActionResult> TestSockets([FromQuery] string message)
-    {
-        await _chatService.TestSend(message);
-        
-        return Ok();
-    }
-
+    
     [HttpGet("api/test/db-health-check")]
     public async Task<IActionResult> DataBaseHealthCheck()
     {

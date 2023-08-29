@@ -30,8 +30,9 @@ public class ChatService : IChatService
         }
             
         var room = await _dbContext.ChatRooms
-            .Where(x => x.User1Id == sender || x.User2Id == sender)
-            .FirstOrDefaultAsync(x => x.User2Id == receiver || x.User1Id == receiver);
+            .FirstOrDefaultAsync(x => 
+                (x.User1Id == sender && x.User2Id == receiver) || 
+                (x.User1Id == receiver && x.User2Id == sender));
         
         if (room is null)
         {
@@ -104,7 +105,7 @@ public class ChatService : IChatService
             .Take(20)
             .ToList();
 
-        foreach (var message in messages.Where(message => message.UserId != userId && message.IsRead == false))
+        foreach (var message in messages.Where(message => message.UserId != userId && !message.IsRead))
         {
             message.IsRead = true;
             _dbContext.ChatMessages.Update(message);
@@ -124,10 +125,5 @@ public class ChatService : IChatService
                 }
             })
             .ToList();
-    }
-
-    public async Task TestSend(string msg)
-    {
-        await _chatHubContext.Clients.All.SendAsync("ReceiveMessage", msg);
     }
 }
