@@ -1,11 +1,10 @@
 ﻿using EntityFrameworkCore.Testing.Common;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.EntityFrameworkCore;
-using Moq;
 
 namespace LapkaBackend.Application.Tests;
 
-public class Mocker
+public abstract class Mocker
 {
     internal static Mock<DbSet<T>> MockDbSet<T>(T initialObject) where T : class
     {
@@ -14,7 +13,7 @@ public class Mocker
         mock.As<IQueryable<T>>().Setup(m => m.Provider).Returns(data.Provider);
         mock.As<IQueryable<T>>().Setup(m => m.Expression).Returns(data.Expression);
         mock.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(data.ElementType);
-        
+
         var asyncData = new List<T> { initialObject };
         var asyncQueryable = asyncData.AsQueryable();
         var asyncProvider = new AsyncQueryProvider<T>(data.AsEnumerable());
@@ -37,5 +36,5 @@ public class Mocker
             .Returns(asyncQueryable.ElementType);
 
         return mock;
-    } 
+    }
 }

@@ -52,7 +52,7 @@ public class ErrorHandlerMiddleware
                     context.Response.StatusCode = 500;
                     if (environment == Environments.Development)
                     {
-                        exception = new LocalError("error", error.Message.Replace(Environment.NewLine, " "), 
+                        exception =  new LocalError("error", error.Message.Replace(Environment.NewLine," "), 
                             error.StackTrace!.Split(Environment.NewLine).ToList());
                     }
                     
