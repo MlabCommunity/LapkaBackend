@@ -2,10 +2,10 @@
 {
     public enum AnimalCategories
     {
-        Other=1,
-        Dog=2,
-        Cat=3,
-        Rabbit=4,
-        Undefined=5,
+        Undefined=1,
+        Other=2,
+        Dog=3,
+        Cat=4,
+        Rabbit=5,
     }
 }
