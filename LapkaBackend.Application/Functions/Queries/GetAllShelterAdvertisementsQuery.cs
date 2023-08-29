@@ -43,7 +43,7 @@ public class GetAllShelterAdvertisementQueryHandler : IRequestHandler<GetAllShel
                     continue;
                 }
                 
-                if (query.Request.Type is not AnimalCategories.Other)
+                if (query.Request.Type is not AnimalCategories.Undefined)
                 {
                     petsFromShelter = petsFromShelter.Where(x => x.AnimalCategory.CategoryName == query.Request.Type.ToString()).ToList();
                 }
@@ -76,8 +76,7 @@ public class GetAllShelterAdvertisementQueryHandler : IRequestHandler<GetAllShel
                         IsLiked = _dbContext.Reactions.Any(reaction => reaction.AnimalId == x.Id && reaction.UserId == query.UserId),
                         Gender = (Genders)Enum.Parse(typeof(Genders), x.Gender),
                         Breed = x.Species,
-                        //TODO when fixes are gonna be done, update this
-                        ProfilePicture = "",
+                        ProfilePicture = x.ProfilePhoto ?? "",
                         Distance = DistanceCalculator.CalculateDistance(
                             shelter.Latitude, shelter.Longitude, 
                             query.Latitude, query.Longitude),

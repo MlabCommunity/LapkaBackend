@@ -5,6 +5,7 @@
         Other=1,
         Dog=2,
         Cat=3,
-        Rabbit=4
+        Rabbit=4,
+        Undefined=5,
     }
 }
