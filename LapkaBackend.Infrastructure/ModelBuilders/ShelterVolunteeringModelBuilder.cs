@@ -15,9 +15,6 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 a.HasOne(s => s.Shelter)
                 .WithOne(s => s.ShelterVolunteering)
                 .HasForeignKey<ShelterVolunteering>(sv => sv.ShelterId);
-
-                a.Property(s => s.BankAccountNumber)
-                .IsRequired();
             });
         }
     }

@@ -1,5 +1,7 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
+using LapkaBackend.Application.Interfaces;
+using LapkaBackend.Application.Services;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Domain.Enums;
 using MediatR;
@@ -7,43 +9,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Color, AnimalCategories AnimalCategory, string Breed, string ProfilePhoto, List<string> Photos,string ShelterId) : IRequest;
+    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Color, AnimalCategories AnimalCategory, string Breed, string ProfilePhoto, List<string> Photos,Guid ShelterId) : IRequest;
 
 
     public class CreateCatCardCommandHandler : IRequestHandler<CreatePetCardCommand>
     {
         private readonly IDataContext _dbContext;
+        private readonly IBlobService _blobService;
+        private readonly IUserService _userService;
 
-        public CreateCatCardCommandHandler(IDataContext dbContext)
+        public CreateCatCardCommandHandler(IDataContext dbContext, IBlobService blobService, IUserService userService)
         {
 
             _dbContext = dbContext;
+            _blobService = blobService;
+            _userService = userService;
         }
 
         public async Task Handle(CreatePetCardCommand request, CancellationToken cancellationToken)
         {
-            var photosList = new List<Photo>();
-            photosList.Add(new Photo { IsProfilePhoto = true });//dodać zapisywanie zdjęć
-
-            for (int i = 0; i < request.Photos.Count; i++)
-            {
-                    photosList.Add(new Photo());//dodać zapisywanie zdjęć
-            }
-            
-
-            Guid shelterId;
-            try
-            {
-                shelterId = new Guid(request.ShelterId);
-            }
-            catch 
-            {
-                throw new BadRequestException("invalid_Id", "Invalid format of Id");
-            }
-            var animalCategory = await _dbContext.AnimalCategories
-                .FirstAsync(r => r.CategoryName == request.AnimalCategory.ToString(), cancellationToken: cancellationToken);
-            var shelter = await _dbContext.Shelters.FirstOrDefaultAsync(r => r.Id == shelterId, cancellationToken: cancellationToken);
-            if (shelter == null)
+            var animalCategory =await _dbContext.AnimalCategories.FirstAsync(r => r.CategoryName == request.AnimalCategory.ToString());
+            var Shelter = await _dbContext.Shelters.FirstOrDefaultAsync(r => r.Id == request.ShelterId);
+            if (Shelter == null)
             {
                 throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
             }
@@ -60,18 +47,53 @@ namespace LapkaBackend.Application.Functions.Command
                 IsVisible = request.IsVisible,
                 Months = request.Months,
                 AnimalCategory = animalCategory,
-                Photos = photosList,
-                Shelter = shelter
+                Shelter = Shelter,
+                CreatedAt = DateTime.Now
             };
-            shelter.Animals.Add(newAnimal);
 
-            await _dbContext.Animals.AddAsync(newAnimal, cancellationToken);
-            _dbContext.Shelters.Update(shelter);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.Animals.AddAsync(newAnimal);
+            await _dbContext.SaveChangesAsync();
+
+
+            
+            if (!string.IsNullOrEmpty(request.ProfilePhoto))
+            {
+                newAnimal.ProfilePhoto = request.ProfilePhoto;
+                var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
+                fileProfile.ParentEntityId = newAnimal.Id;
+            }
+            
+
+            for (int i = 0; i < request.Photos.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(request.Photos[i]))
+                {
+                    var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
+                    file.ParentEntityId = newAnimal.Id;
+                }            
+                
+            }
+
+            _dbContext.Animals.Update(newAnimal);
+            await _dbContext.SaveChangesAsync();
         }
     }
 
-
+    public class CreatePetCardRequest
+    {
+        public string Name { get; set; } = null!;
+        public Genders Gender { get; set; }
+        public string Description { get; set; } = null!;
+        public bool IsVisible { get; set; }
+        public int Months { get; set; }
+        public bool IsSterilized { get; set; }
+        public decimal Weight { get; set; }
+        public string Color { get; set; } = null!;
+        public AnimalCategories AnimalCategory { get; set; }
+        public string Breed { get; set; } = null!;
+        public string? ProfilePhoto { get; set; }
+        public List<string>? Photos { get; set; }
+    }
 }
 
 

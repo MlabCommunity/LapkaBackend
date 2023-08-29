@@ -304,7 +304,24 @@ namespace LapkaBackend.Application.Services
                 ShelterId = newShelter.Id
             };
 
+
+
             await _dbContext.Users.AddAsync(newUser);
+            await _dbContext.SaveChangesAsync();
+
+            var newShelterVolunteering = new ShelterVolunteering()
+            {
+                ShelterId = newShelter.Id,
+                BankAccountNumber = null,
+                DailyHelpDescription = null,
+                DonationDescription = null,
+                IsDailyHelpActive = false,
+                IsDonationActive = false,
+                IsTakingDogsOutActive = false,
+                TakingDogsOutDesctiption = null,
+            };
+
+            await _dbContext.SheltersVolunteering.AddAsync(newShelterVolunteering);
             await _dbContext.SaveChangesAsync();
 
             await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
@@ -318,7 +335,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new BadRequestException("invalid_mail", "User with that email does not exists");
+                throw new BadRequestException("invalid_email", "User with that email does not exists");
             }
             
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());

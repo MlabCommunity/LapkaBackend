@@ -1,5 +1,7 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
+using LapkaBackend.Application.Interfaces;
+using LapkaBackend.Application.Services;
 using LapkaBackend.Domain.Entities;
 using LapkaBackend.Domain.Enums;
 using MediatR;
@@ -8,42 +10,56 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record UpdatePetCommand(string PetId, string Description, string Name,Genders Gender, bool IsSterilized, decimal Weight, int Months, string ProfilePhoto, List<string> Photos, bool IsVisible, AnimalCategories Category, string Breed, string Marking):IRequest;
+    public record UpdatePetCommand(Guid PetId, string Description, string Name,Genders Gender, bool IsSterilized, decimal Weight, int Months, string ProfilePhoto, List<string> Photos, bool IsVisible, AnimalCategories Category, string Breed, string Marking):IRequest;
 
 
     public class UpdatePetCommandHandler : IRequestHandler<UpdatePetCommand>
     {
         private readonly IDataContext _dbContext;
+        private readonly IBlobService _blobService;
 
-        public UpdatePetCommandHandler(IDataContext dbContext)
+        public UpdatePetCommandHandler(IDataContext dbContext, IBlobService blobService)
         {
-
             _dbContext = dbContext;
+            _blobService = blobService;
         }
 
         public async Task Handle(UpdatePetCommand request, CancellationToken cancellationToken)
         {
-            Guid petId = new Guid(request.PetId);
-            var result = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == petId);
+            var result = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == request.PetId);
 
             if (result is null)
             {
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
             }
 
-            var photosList = new List<Photo>();
-            photosList.Add(new Photo() { IsProfilePhoto = true });//dodać zapisywanie zdjęć
+            var PhotosIds = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.Id.ToString()).ToListAsync();
+            await _blobService.DeleteListOfFiles(PhotosIds);
 
-            for (int i = 0; i < request.Photos.Count; i++)
-            {
-                photosList.Add(new Photo());//dodać zapisywanie zdjęć
-            }
+            
 
 
             var animalCategory = await _dbContext.AnimalCategories.FirstOrDefaultAsync(r => r.CategoryName == request.Category.ToString());
             if (animalCategory is null)
             {
                 throw new BadRequestException("invalid_AnimalCategory", "Animal category doesn't exists");
+            }
+
+            if (!string.IsNullOrEmpty(request.ProfilePhoto))
+            {
+                result.ProfilePhoto = request.ProfilePhoto;
+                var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
+                fileProfile.ParentEntityId = result.Id;
+            }
+            
+
+            for (int i = 0; i < request.Photos.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(request.Photos[i]))
+                {
+                    var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
+                    file.ParentEntityId = result.Id;
+                }               
             }
 
             result.AnimalCategory = animalCategory;
@@ -54,8 +70,7 @@ namespace LapkaBackend.Application.Functions.Command
             result.Marking = request.Marking;
             result.Months = request.Months;
             result.Name = request.Name;
-            result.Photos = photosList;
-            result.Species = request.Breed;
+            result.Species = request.Breed.ToString();
             result.Weight = request.Weight;
 
             _dbContext.Animals.Update(result);
