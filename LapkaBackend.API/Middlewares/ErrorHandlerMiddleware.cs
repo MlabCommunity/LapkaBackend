@@ -52,7 +52,7 @@ public class ErrorHandlerMiddleware
                     context.Response.StatusCode = 500;
                     if (environment == Environments.Development)
                     {
-                        exception = new LocalError("error", error.Message.Replace(Environment.NewLine, " "), 
+                        exception =  new LocalError("error", error.Message.Replace(Environment.NewLine," "), 
                             error.StackTrace!.Split(Environment.NewLine).ToList());
                     }
                     
@@ -67,7 +67,7 @@ public class ErrorHandlerMiddleware
             
             var response = context.Response;
             response.ContentType = "application/json";
-            var result = environment == Environments.Development ?
+            var result = environment == Environments.Development && context.Response.StatusCode == 500 ?
                 JsonSerializer.Serialize((LocalError)exception) : JsonSerializer.Serialize(exception);
             await response.WriteAsync(result);
         }
