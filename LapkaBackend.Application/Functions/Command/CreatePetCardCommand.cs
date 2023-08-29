@@ -35,10 +35,10 @@ namespace LapkaBackend.Application.Functions.Command
                 throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
             }
 
-            var newAnimal = new Animal()
+            var newAnimal = new Animal
             {
                 Name = request.Name,
-                Species = request.Breed.ToString(),
+                Species = request.Breed,
                 Gender = request.Gender.ToString(),
                 Marking = request.Color,
                 Weight = request.Weight,

@@ -126,7 +126,8 @@ public class BlobService : IBlobService
         var idFileList = new List<string>();
         foreach (var file in files)
         {
-            idFileList.Add(await UploadFileAsync(file, parentId, "lappka-others"));
+            var containerName = _pictureTypes.Contains(file.ContentType) ? "lappka-img" : "lappka-others";
+            idFileList.Add(await UploadFileAsync(file, parentId, containerName));
         }
 
         return idFileList;

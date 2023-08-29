@@ -23,7 +23,7 @@ namespace LapkaBackend.Infrastructure
             services.AddTransient<UpdateDeleteJob>();
             services.AddDbContext<DataContext>(options =>
             {
-                options.UseSqlServer(configuration.GetConnectionString("MySql"));
+                options.UseLazyLoadingProxies().UseSqlServer(configuration.GetConnectionString("MySql"));
             });
             
             services.AddHangfire(options => options

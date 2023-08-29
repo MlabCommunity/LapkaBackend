@@ -1,18 +1,7 @@
 ﻿using AutoMapper;
 using LapkaBackend.Application.Common;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using LapkaBackend.Application.Functions.Queries;
-using LapkaBackend.Application.Dtos.Result;
-using LapkaBackend.Application.Dtos;
-using LapkaBackend.Domain.Entities;
 
 namespace LapkaBackend.Application.Functions.Queries
 {

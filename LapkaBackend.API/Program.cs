@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
@@ -14,12 +13,10 @@ using LapkaBackend.Application.Intercepters;
 using LapkaBackend.Application.Mappers;
 using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
-using MediatR;
 using LapkaBackend.Infrastructure.Data;
 using LapkaBackend.Infrastructure.Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -99,6 +96,7 @@ internal class Program
             options.IncludeXmlComments(xmlPath);
             options.SupportNonNullableReferenceTypes();
             options.OperationFilter<SecurityRequirementsOperationFilter>();
+            options.EnableAnnotations();
         });
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

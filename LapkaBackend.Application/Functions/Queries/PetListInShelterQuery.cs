@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
