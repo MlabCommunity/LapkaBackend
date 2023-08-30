@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class RemovePhotosEntity : Migration
+    public partial class RemovePhotoTableAndModifyShelterVolunteeringAndAnimalTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,6 +17,14 @@ namespace LapkaBackend.Infrastructure.Migrations
             migrationBuilder.DropColumn(
                 name: "PhotoName",
                 table: "Animals");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "BankAccountNumber",
+                table: "SheltersVolunteering",
+                type: "nvarchar(max)",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)");
 
             migrationBuilder.AddColumn<string>(
                 name: "ProfilePhoto",
@@ -31,6 +39,16 @@ namespace LapkaBackend.Infrastructure.Migrations
             migrationBuilder.DropColumn(
                 name: "ProfilePhoto",
                 table: "Animals");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "BankAccountNumber",
+                table: "SheltersVolunteering",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)",
+                oldNullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "PhotoName",
