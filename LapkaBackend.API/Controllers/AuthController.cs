@@ -70,7 +70,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> LoginWeb(LoginRequest request)
         {
-           var result = await _authService.LoginUser(request);
+           var result = await _authService.LoginShelter(request);
 
             return Ok(result);
         }
@@ -82,7 +82,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-          public async Task<ActionResult> UserLogin(LoginRequest request)
+          public async Task<ActionResult> UserLogin(LoginMobileRequest request)
           { 
               var result = await _authService.LoginUser(request);
               
