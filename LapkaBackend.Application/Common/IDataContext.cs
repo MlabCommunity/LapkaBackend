@@ -10,12 +10,12 @@ namespace LapkaBackend.Application.Common
         public DbSet<Role> Roles { get; }
         public DbSet<Animal> Animals { get; }
         public DbSet<AnimalCategory> AnimalCategories { get; }
-        public DbSet<Photo> Photos { get; }
         public DbSet<Reaction> Reactions { get; }
         public DbSet<AnimalView> AnimalViews { get; }
         public DbSet<ShelterVolunteering> SheltersVolunteering { get; }
         public DbSet<FileBlob> Blobs { get; }
-
+        public DbSet<ChatRoom> ChatRooms { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

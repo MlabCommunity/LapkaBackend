@@ -5,7 +5,9 @@ using LapkaBackend.Infrastructure.Data;
 using LapkaBackend.Infrastructure.Email;
 using LapkaBackend.Infrastructure.FileStorage;
 using LapkaBackend.Infrastructure.Hangfire;
+using LapkaBackend.Infrastructure.Hubs;
 using LapkaBackend.Infrastructure.ModelBuilders;
+using LapkaBackend.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +22,7 @@ namespace LapkaBackend.Infrastructure
             services.AddTransient<IDataContext, DataContext>();
             services.AddTransient<IAzureStorageContext, AzureStorageContext>();
             services.AddTransient<IEmailWrapper, EmailWrapper>();
+            services.AddTransient<IChatService, ChatService>();
             services.AddTransient<UpdateDeleteJob>();
             services.AddDbContext<DataContext>(options =>
             {
@@ -42,6 +45,8 @@ namespace LapkaBackend.Infrastructure
             ReactionModelBuilder.BuildReactionModel(modelBuilder);
             AnimalViewsModelBuilder.BuildAnimalViewModel(modelBuilder);
             ShelterVolunteeringModelBuilder.BuildShelterVolunteeringModel(modelBuilder);
+            ChatRoomModelBuilder.BuildChatRoomModel(modelBuilder);
+            ChatMessageModelBuilder.BuildChatMessageModel(modelBuilder);
         }
 
         public static void Seed(DbContextOptions<DataContext> options)

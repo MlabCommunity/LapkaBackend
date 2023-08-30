@@ -22,16 +22,6 @@ public class GetAllLikedShelterAdvertisementsQueryHandler : IRequestHandler<GetA
 
         public async Task<ShelterPetAdvertisementDtoPagedResult> Handle(GetAllLikedShelterAdvertisementsQuery query, CancellationToken cancellationToken)
         {
-            if (query.Request.PageSize <= 0)
-            {
-                throw new BadRequestException("invalid_page_size", "Page size must be greater than 0");
-            }
-            
-            if (query.Request.PageNumber <= 0)
-            {
-                throw new BadRequestException("invalid_page_number", "Page number must be greater than 0");
-            }
-            
             var petsAdvertisementsFromShelters = new List<ShelterPetAdvertisementDto>();
             var shelters = _dbContext.Shelters.ToList();
             
@@ -56,6 +46,11 @@ public class GetAllLikedShelterAdvertisementsQueryHandler : IRequestHandler<GetA
                     petsFromShelter = petsFromShelter.Where(x => x.Gender == query.Request.Gender.ToString()).ToList();
                 }
                 
+                petsFromShelter = petsFromShelter.Where(pet => 
+                    pet.Name.Contains(query.Request.SearchText) 
+                    || shelter.OrganizationName.Contains(query.Request.SearchText) 
+                    || shelter.City.Contains(query.Request.SearchText)).ToList();
+                
                 petsFromShelter = petsFromShelter.Skip((query.Request.PageNumber - 1) * query.Request.PageSize)
                     .Take(query.Request.PageSize).ToList();
                 
@@ -79,8 +74,7 @@ public class GetAllLikedShelterAdvertisementsQueryHandler : IRequestHandler<GetA
                         IsLiked = _dbContext.Reactions.Any(reaction => reaction.AnimalId == x.Id && reaction.UserId == query.UserId),
                         Gender = (Genders)Enum.Parse(typeof(Genders), x.Gender),
                         Breed = x.Species,
-                        //TODO when fixes are gonna be done, update this
-                        ProfilePicture = "",
+                        ProfilePicture = x.ProfilePhoto ?? "",
                         Distance = DistanceCalculator.CalculateDistance(
                             shelter.Latitude, shelter.Longitude, 
                             query.Latitude, query.Longitude),

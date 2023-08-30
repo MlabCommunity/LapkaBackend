@@ -83,8 +83,8 @@ namespace LapkaBackend.Application.Services
 
             await _emailService.SendEmail(mailRequest);
         }
-
-        public async Task<LoginResultDto> LoginUser(LoginRequest request)
+        
+        public async Task<LoginResultDto> LoginShelter(LoginRequest request)
         {
             var result = await _dbContext.Users
                 .Include(u => u.Role)
@@ -104,6 +104,11 @@ namespace LapkaBackend.Application.Services
             if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
             {
                 throw new BadRequestException("invalid_password", "Wrong password");
+            }
+            
+            if(result.Role.RoleName == Roles.User.ToString() || result.Role.RoleName == Roles.Undefined.ToString())
+            {
+                throw new BadRequestException("invalid_role", "Wrong role");
             }
 
             string refreshToken;
@@ -128,7 +133,59 @@ namespace LapkaBackend.Application.Services
                 RefreshToken = refreshToken
             };
         }
-        
+
+        public async Task<LoginResultDto> LoginUser(LoginMobileRequest request)
+        {
+            var result = await _dbContext.Users
+                .Include(u => u.Role)
+                .Where(x => x.SoftDeleteAt == null)
+                .FirstOrDefaultAsync(x => x.Email == request.Email);
+
+            if (result == null)
+            {
+                throw new BadRequestException("invalid_email", "User doesn't exists");
+            }
+
+            if (result.VerifiedAt == null)
+            {
+                throw new ForbiddenException("not_verified", "Not verified");
+            }
+            
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
+            {
+                throw new BadRequestException("invalid_password", "Wrong password");
+            }
+            
+            if(result.Role.RoleName == Roles.Shelter.ToString() || result.Role.RoleName == Roles.Undefined.ToString())
+            {
+                throw new BadRequestException("invalid_role", "Wrong role");
+            }
+
+            result.RegistrationToken = request.RegistrationToken;
+
+            string refreshToken;
+            
+            if (IsTokenValid(result.RefreshToken))
+            {
+                refreshToken = result.RefreshToken;
+            }
+            else
+            {
+                refreshToken = CreateRefreshToken();
+                result.RefreshToken = refreshToken;
+            }
+            
+            _dbContext.Users.Update(result);
+            await _dbContext.SaveChangesAsync();
+
+            await SavingDataInCookies(result.Role.RoleName);
+            
+            return new LoginResultDto
+            {
+                AccessToken = CreateAccessToken(result),
+                RefreshToken = refreshToken
+            };
+        }
 
         public async Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request)
         {
@@ -144,7 +201,12 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_token", "Invalid token");
             }
             
-            var emailClaim = jwtAccessToken.Claims.ToList().First(x => x.Type.Equals(ClaimTypes.Email));
+            var emailClaim = jwtAccessToken.Claims.ToList().FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
+
+            if (emailClaim is null)
+            {
+                throw new BadRequestException("invalid_token", "Access token is invalid");
+            }
             
             var user = await _dbContext.Users
                 .Include(x => x.Role)
@@ -307,6 +369,21 @@ namespace LapkaBackend.Application.Services
             await _dbContext.Users.AddAsync(newUser);
             await _dbContext.SaveChangesAsync();
 
+            var newShelterVolunteering = new ShelterVolunteering()
+            {
+                ShelterId = newShelter.Id,
+                BankAccountNumber = null,
+                DailyHelpDescription = null,
+                DonationDescription = null,
+                IsDailyHelpActive = false,
+                IsDonationActive = false,
+                IsTakingDogsOutActive = false,
+                TakingDogsOutDesctiption = null,
+            };
+
+            await _dbContext.SheltersVolunteering.AddAsync(newShelterVolunteering);
+            await _dbContext.SaveChangesAsync();
+
             await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
         }
 
@@ -318,7 +395,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new BadRequestException("invalid_mail", "User with that email does not exists");
+                throw new BadRequestException("invalid_email", "User with that email does not exists");
             }
             
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
@@ -344,11 +421,6 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_token", "Token is invalid");
             }
 
-            if (resetPasswordRequest.Password != resetPasswordRequest.ConfirmPassword)
-            {
-                throw new BadRequestException("invalid_password", "Passwords aren't matching");
-            }
-
             var userToken = new JwtSecurityToken(token);
             var userEmail = userToken.Claims.ToList().
                 First(x => x.Type.Equals(ClaimTypes.Email));
@@ -356,7 +428,7 @@ namespace LapkaBackend.Application.Services
             var user = await _dbContext.Users
                 .Include(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Email == userEmail.Value);
-
+            
             if (user is null)
             {
                 throw new BadRequestException("invalid_email", "User doesn't exists");

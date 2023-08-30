@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record GetShelterByPositionQuery(float Longitude,float Latitude, int RadiusKm, int PageNumber, int PageSize) : IRequest<ShelterByPositionResponse>;
+    public record GetShelterByPositionQuery(float Longitude,float Latitude, int RadiusKm, int PageNumber=1, int PageSize=10) : IRequest<ShelterByPositionResponse>;
     
     public class GetShelterByPositionQueryHandler : IRequestHandler<GetShelterByPositionQuery, ShelterByPositionResponse>
     {

@@ -4,6 +4,7 @@ using LapkaBackend.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230830100455_AddingColumnRegistrationTokenIntoUserTable")]
+    partial class AddingColumnRegistrationTokenIntoUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,58 +130,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AnimalViews");
-                });
-
-            modelBuilder.Entity("LapkaBackend.Domain.Entities.ChatMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("RoomId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoomId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ChatMessages", (string)null);
-                });
-
-            modelBuilder.Entity("LapkaBackend.Domain.Entities.ChatRoom", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("User1Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("User2Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("User1Id");
-
-                    b.HasIndex("User2Id");
-
-                    b.ToTable("ChatRooms", (string)null);
                 });
 
             modelBuilder.Entity("LapkaBackend.Domain.Entities.FileBlob", b =>
@@ -437,44 +388,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("LapkaBackend.Domain.Entities.ChatMessage", b =>
-                {
-                    b.HasOne("LapkaBackend.Domain.Entities.ChatRoom", "Room")
-                        .WithMany("Messages")
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LapkaBackend.Domain.Entities.User", "User")
-                        .WithMany("Messages")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Room");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("LapkaBackend.Domain.Entities.ChatRoom", b =>
-                {
-                    b.HasOne("LapkaBackend.Domain.Entities.User", "User1")
-                        .WithMany("ChatRoomsAsUser1")
-                        .HasForeignKey("User1Id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("LapkaBackend.Domain.Entities.User", "User2")
-                        .WithMany("ChatRoomsAsUser2")
-                        .HasForeignKey("User2Id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("User1");
-
-                    b.Navigation("User2");
-                });
-
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Reaction", b =>
                 {
                     b.HasOne("LapkaBackend.Domain.Entities.Animal", "Animal")
@@ -534,11 +447,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.Navigation("Animals");
                 });
 
-            modelBuilder.Entity("LapkaBackend.Domain.Entities.ChatRoom", b =>
-                {
-                    b.Navigation("Messages");
-                });
-
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Role", b =>
                 {
                     b.Navigation("Users");
@@ -554,12 +462,6 @@ namespace LapkaBackend.Infrastructure.Migrations
             modelBuilder.Entity("LapkaBackend.Domain.Entities.User", b =>
                 {
                     b.Navigation("AnimalViews");
-
-                    b.Navigation("ChatRoomsAsUser1");
-
-                    b.Navigation("ChatRoomsAsUser2");
-
-                    b.Navigation("Messages");
 
                     b.Navigation("Reactions");
                 });
