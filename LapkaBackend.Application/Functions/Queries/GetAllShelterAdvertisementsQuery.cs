@@ -21,16 +21,6 @@ public class GetAllShelterAdvertisementQueryHandler : IRequestHandler<GetAllShel
 
         public async Task<ShelterPetAdvertisementDtoPagedResult> Handle(GetAllShelterAdvertisementsQuery query, CancellationToken cancellationToken)
         {
-            if (query.Request.PageSize <= 0)
-            {
-                throw new BadRequestException("invalid_page_size", "Page size must be greater than 0");
-            }
-            
-            if (query.Request.PageNumber <= 0)
-            {
-                throw new BadRequestException("invalid_page_number", "Page number must be greater than 0");
-            }
-            
             var petsAdvertisementsFromShelters = new List<ShelterPetAdvertisementDto>();
             var shelters = _dbContext.Shelters.Include(x => x.Animals).ToList();
             
@@ -52,6 +42,11 @@ public class GetAllShelterAdvertisementQueryHandler : IRequestHandler<GetAllShel
                 {
                     petsFromShelter = petsFromShelter.Where(x => x.Gender == query.Request.Gender.ToString()).ToList();
                 }
+                
+                petsFromShelter = petsFromShelter.Where(pet => 
+                    pet.Name.Contains(query.Request.SearchText) 
+                    || shelter.OrganizationName.Contains(query.Request.SearchText) 
+                    || shelter.City.Contains(query.Request.SearchText)).ToList();
                 
                 petsFromShelter = petsFromShelter.Skip((query.Request.PageNumber - 1) * query.Request.PageSize)
                     .Take(query.Request.PageSize).ToList();

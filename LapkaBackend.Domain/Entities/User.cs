@@ -8,6 +8,7 @@
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
+        public string? RegistrationToken { get; set; }
         public string RefreshToken { get; set; } = string.Empty;
         public string? VerificationToken { get; set; }
         public DateTime? VerifiedAt { get; set; }

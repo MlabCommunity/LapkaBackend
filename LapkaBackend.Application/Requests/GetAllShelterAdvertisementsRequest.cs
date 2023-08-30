@@ -15,4 +15,5 @@ public class GetAllShelterAdvertisementsRequest
     public SortAdvertisementOptions SortOption { get; set; } = SortAdvertisementOptions.Distance;
     public bool AscendingSort { get; set; } = true;
     // true - ascending, false - descending
+    public string? SearchText { get; set; } = "";
 }

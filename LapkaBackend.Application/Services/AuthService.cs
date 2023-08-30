@@ -83,8 +83,8 @@ namespace LapkaBackend.Application.Services
 
             await _emailService.SendEmail(mailRequest);
         }
-
-        public async Task<LoginResultDto> LoginUser(LoginRequest request)
+        
+        public async Task<LoginResultDto> LoginShelter(LoginRequest request)
         {
             var result = await _dbContext.Users
                 .Include(u => u.Role)
@@ -105,6 +105,11 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_password", "Wrong password");
             }
+            
+            if(result.Role.RoleName == Roles.User.ToString() || result.Role.RoleName == Roles.Undefined.ToString())
+            {
+                throw new BadRequestException("invalid_role", "Wrong role");
+            }
 
             string refreshToken;
             
@@ -119,6 +124,59 @@ namespace LapkaBackend.Application.Services
                 _dbContext.Users.Update(result);
                 await _dbContext.SaveChangesAsync();
             }
+
+            await SavingDataInCookies(result.Role.RoleName);
+            
+            return new LoginResultDto
+            {
+                AccessToken = CreateAccessToken(result),
+                RefreshToken = refreshToken
+            };
+        }
+
+        public async Task<LoginResultDto> LoginUser(LoginMobileRequest request)
+        {
+            var result = await _dbContext.Users
+                .Include(u => u.Role)
+                .Where(x => x.SoftDeleteAt == null)
+                .FirstOrDefaultAsync(x => x.Email == request.Email);
+
+            if (result == null)
+            {
+                throw new BadRequestException("invalid_email", "User doesn't exists");
+            }
+
+            if (result.VerifiedAt == null)
+            {
+                throw new ForbiddenException("not_verified", "Not verified");
+            }
+            
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, result.Password))
+            {
+                throw new BadRequestException("invalid_password", "Wrong password");
+            }
+            
+            if(result.Role.RoleName == Roles.Shelter.ToString() || result.Role.RoleName == Roles.Undefined.ToString())
+            {
+                throw new BadRequestException("invalid_role", "Wrong role");
+            }
+
+            result.RegistrationToken = request.RegistrationToken;
+
+            string refreshToken;
+            
+            if (IsTokenValid(result.RefreshToken))
+            {
+                refreshToken = result.RefreshToken;
+            }
+            else
+            {
+                refreshToken = CreateRefreshToken();
+                result.RefreshToken = refreshToken;
+            }
+            
+            _dbContext.Users.Update(result);
+            await _dbContext.SaveChangesAsync();
 
             await SavingDataInCookies(result.Role.RoleName);
             
