@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230828102045_Add_ChatRoom_and_ChatMessage_Table")]
+    [Migration("20230830085849_Add_ChatRoom_and_ChatMessage_Table")]
     partial class Add_ChatRoom_and_ChatMessage_Table
     {
         /// <inheritdoc />
@@ -68,12 +68,10 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PhotoName")
-                        .IsRequired()
+                    b.Property<string>("ProfilePhoto")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ShelterId")
-                        .IsRequired()
+                    b.Property<Guid>("ShelterId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Species")
@@ -212,25 +210,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.ToTable("Blobs");
                 });
 
-            modelBuilder.Entity("LapkaBackend.Domain.Entities.Photo", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("AnimalId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsProfilePhoto")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AnimalId");
-
-                    b.ToTable("Photos");
-                });
-
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Reaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -333,7 +312,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("BankAccountNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DailyHelpDescription")
@@ -497,15 +475,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.Navigation("User2");
                 });
 
-            modelBuilder.Entity("LapkaBackend.Domain.Entities.Photo", b =>
-                {
-                    b.HasOne("LapkaBackend.Domain.Entities.Animal", "Animal")
-                        .WithMany("Photos")
-                        .HasForeignKey("AnimalId");
-
-                    b.Navigation("Animal");
-                });
-
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Reaction", b =>
                 {
                     b.HasOne("LapkaBackend.Domain.Entities.Animal", "Animal")
@@ -556,8 +525,6 @@ namespace LapkaBackend.Infrastructure.Migrations
             modelBuilder.Entity("LapkaBackend.Domain.Entities.Animal", b =>
                 {
                     b.Navigation("AnimalViews");
-
-                    b.Navigation("Photos");
 
                     b.Navigation("Reactions");
                 });
