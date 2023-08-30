@@ -12,15 +12,18 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LapkaBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230828092532_ChangingShelterRegister")]
-    partial class ChangingShelterRegister
+    [Migration("20230830081033_RemovePhotoTableAndModifyShelterVolunteeringAndAnimalTables")]
+    partial class RemovePhotoTableAndModifyShelterVolunteeringAndAnimalTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.8")
+                .HasAnnotation("ProductVersion", "7.0.10")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true)
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -68,8 +71,7 @@ namespace LapkaBackend.Infrastructure.Migrations
                     b.Property<string>("ProfilePhoto")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ShelterId")
-                        .IsRequired()
+                    b.Property<Guid>("ShelterId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Species")
@@ -258,7 +260,6 @@ namespace LapkaBackend.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("BankAccountNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DailyHelpDescription")
