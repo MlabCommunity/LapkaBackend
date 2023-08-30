@@ -2,9 +2,9 @@
 {
     public enum Genders
     {
-        Undefined=1,
-        Male=2,
-        Female=3,
-        Other=4,
+        Undefined=0,
+        Male=1,
+        Female=2,
+        Other=3,
     }
 }
