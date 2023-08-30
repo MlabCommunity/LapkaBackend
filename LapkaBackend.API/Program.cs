@@ -98,6 +98,7 @@ internal class Program
             options.IncludeXmlComments(xmlPath);
             options.SupportNonNullableReferenceTypes();
             options.OperationFilter<SecurityRequirementsOperationFilter>();
+            options.EnableAnnotations();
         });
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

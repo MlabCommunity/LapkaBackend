@@ -1,12 +1,12 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record PetListInShelterQuery(string ShelterId, int PageNumber, int PageSize) : IRequest<PetListInShelterResponse>;
+    public record PetListInShelterQuery(Guid ShelterId, int PageNumber=1, int PageSize=10,string SortParam="", bool Asc=false) : IRequest<PetListInShelterResponse>;
 
     public class PetListInShelterQueryHandler : IRequestHandler<PetListInShelterQuery, PetListInShelterResponse>
     {
@@ -19,19 +19,89 @@ namespace LapkaBackend.Application.Functions.Queries
 
         public async Task<PetListInShelterResponse> Handle(PetListInShelterQuery request, CancellationToken cancellationToken)
         {
-            Guid ShelterId = new Guid(request.ShelterId);
-            int totalItemsCount = await _dbContext.Animals.Where(x => x.ShelterId == ShelterId).CountAsync();
+            int totalItemsCount = await _dbContext.Animals.Where(x => x.ShelterId == request.ShelterId).CountAsync();
             int numberOfPages =  (int)Math.Ceiling((double)((float)totalItemsCount / (float)request.PageSize));
 
-            var FoundAnimals = await _dbContext.Animals
-                .Include(a => a.Photos).Include(a => a.AnimalCategory)
+            var query = _dbContext.Animals
+                .Include(a => a.AnimalCategory)
                 .Where(a => a.IsVisible)
-                .Where(a => a.ShelterId == ShelterId)
-                .OrderBy(x => x.Name)
-                .Skip(request.PageSize * (request.PageNumber-1)).Take(request.PageSize)
+                .Where(a => a.ShelterId == request.ShelterId);
+
+            if (!string.IsNullOrEmpty(request.SortParam))
+            {
+                switch (request.SortParam.ToLower())
+                {
+                    case "name":
+                        if (request.Asc == true)
+                            query = query.OrderBy(x => x.Name);
+                        else
+                            query = query.OrderByDescending(x => x.Name);
+                        break;
+                    case "species":
+                        if (request.Asc == true)
+                            query = query.OrderBy(x => x.Species);
+                        else
+                            query = query.OrderByDescending(x => x.Species);
+                        break;
+                    case "gender":
+                        if (request.Asc == true)
+                            query = query.OrderBy(x => x.Gender);
+                        else
+                            query = query.OrderByDescending(x => x.Gender);
+                        break;
+                    case "marking":
+                        if (request.Asc == true)
+                            query = query.OrderBy(x => x.Marking);
+                        else
+                            query = query.OrderByDescending(x => x.Marking);
+                        break;
+                    case "weight":
+                        if (request.Asc == true)
+                            query = query.OrderBy(x => x.Weight);
+                        else
+                            query = query.OrderByDescending(x => x.Weight);
+                        break;
+                    case "issterilized":
+                        if (request.Asc == true)
+                            query = query.OrderBy(x => x.IsSterilized);
+                        else
+                            query = query.OrderByDescending(x => x.IsSterilized);
+                        break;
+                    case "age":
+                        if (request.Asc == true)
+                            query = query.OrderBy(x => x.Months);
+                        else
+                            query = query.OrderByDescending(x => x.Months);
+                        break;
+                    case "category":
+                        if (request.Asc == true)
+                            query = query.OrderBy(x => x.AnimalCategory.CategoryName);
+                        else
+                            query = query.OrderByDescending(x => x.AnimalCategory.CategoryName);
+                        break;                 
+                    case "views":
+                        if (request.Asc == true)
+                            query = query.OrderBy(x => x.AnimalViews.Count);
+                        else
+                            query = query.OrderByDescending(x => x.AnimalViews.Count);
+                        break;
+                    case "createdat":
+                        if (request.Asc == true)
+                            query = query.OrderBy(x => x.CreatedAt);
+                        else
+                            query = query.OrderByDescending(x => x.CreatedAt);                      
+                        break;
+                    default:
+                        query = query.OrderBy(x => x.Name);
+                        break;
+                }
+            }
+
+            var FoundAnimals = await query
+                .Skip(request.PageSize * (request.PageNumber - 1)).Take(request.PageSize)
                 .ToListAsync();
 
-            var petsList = FoundAnimals.Select(p => new PetInListInShelterDto()
+            var petsList =  FoundAnimals.Select( p => new PetInListInShelterDto()
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -40,14 +110,12 @@ namespace LapkaBackend.Application.Functions.Queries
                 Breed = p.Species,
                 Color = p.Marking,
                 Weight = (float)p.Weight,
-                ProfilePhoto = p.Photos.FirstOrDefault(p => p.IsProfilePhoto = true).Id.ToString(),
-                Photos = p.Photos.Where(photo => !photo.IsProfilePhoto).Select(photo => photo.Id.ToString()).ToArray(),
+                ProfilePhoto = p.ProfilePhoto,
+                Photos = _dbContext.Blobs.Where(x => x.ParentEntityId == p.Id).Select(blob => blob.ParentEntityId.ToString()).ToArray(),
                 Months = p.Months,
                 CreatedAt = p.CreatedAt,
                 IsSterilized = p.IsSterilized,
                 Description = p.Description,
-                
-
             })
             .ToList();
 
@@ -87,5 +155,13 @@ namespace LapkaBackend.Application.Functions.Queries
         public List<PetInListInShelterDto>? PetInListInShelterDto { get; set; }
         public int TotalPages { get; set; }
         public int TotalItemsCount { get; set; }
+    }
+
+    public class PetListInShelterRequest
+    {
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public string? SortParam { get; set; } = null;
+        public bool Asc { get; set; } = false;
     }
 }

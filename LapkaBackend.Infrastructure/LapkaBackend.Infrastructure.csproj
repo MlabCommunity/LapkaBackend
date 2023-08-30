@@ -26,5 +26,6 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\LapkaBackend.Application\LapkaBackend.Application.csproj" />
+        <ProjectReference Include="..\LapkaBackend.Domain\LapkaBackend.Domain.csproj" />
     </ItemGroup>
 </Project>

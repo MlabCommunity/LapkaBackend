@@ -2,12 +2,13 @@
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record GetPetQuery(Guid Id) : IRequest<PetDto>;
+    public record GetPetQuery(Guid PetId, Guid UserId) : IRequest<PetDto>;
 
     public class GetPetQueryHandler : IRequestHandler<GetPetQuery, PetDto>
     {
@@ -20,7 +21,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
         public async Task<PetDto> Handle(GetPetQuery request, CancellationToken cancellationToken)
         {
-            var FoundAnimal = await _dbContext.Animals.Include(a => a.Photos).Include(a => a.AnimalCategory).FirstOrDefaultAsync(x => x.Id == request.Id && x.IsVisible);
+            var FoundAnimal = await _dbContext.Animals.Include(a => a.AnimalCategory).FirstOrDefaultAsync(x => x.Id == request.PetId && x.IsVisible);
             if (FoundAnimal is null)
             {
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
@@ -29,11 +30,11 @@ namespace LapkaBackend.Application.Functions.Queries
             var newAnimalView = new AnimalView()
             {
                 Animal = FoundAnimal,
-                ViewDate=DateTime.Now
+                UserId = request.UserId,
+                ViewDate = DateTime.Now
             };
 
-            await _dbContext.AnimalViews.AddAsync(newAnimalView);
-
+            await _dbContext.AnimalViews.AddAsync(newAnimalView); 
             await _dbContext.SaveChangesAsync();
 
             var petDto = new PetDto()
@@ -45,16 +46,17 @@ namespace LapkaBackend.Application.Functions.Queries
                 Breed = FoundAnimal.Species,
                 Color = FoundAnimal.Marking,
                 Weight = (float)FoundAnimal.Weight,
-                ProfilePhoto = FoundAnimal.Photos.FirstOrDefault(p => p.IsProfilePhoto = true).Id.ToString(),
-                Photos = FoundAnimal.Photos.Where(photo => !photo.IsProfilePhoto).Select(photo => photo.Id.ToString()).ToArray(),
+                ProfilePhoto = FoundAnimal.ProfilePhoto,
+                Photos = await _dbContext.Blobs
+                            .Where(x => x.ParentEntityId == FoundAnimal.Id && x.Id.ToString() != FoundAnimal.ProfilePhoto)
+                            .Select(blob => blob.ParentEntityId.ToString())
+                            .ToArrayAsync(),
                 Age = FoundAnimal.Months,
                 CreatedAt = FoundAnimal.CreatedAt,
                 IsSterilized = FoundAnimal.IsSterilized,
                 IsVisible = FoundAnimal.IsVisible,
                 Description = FoundAnimal.Description
             };
-
-           
 
             return petDto;
         }
@@ -73,8 +75,8 @@ namespace LapkaBackend.Application.Functions.Queries
         public string Breed { get; set; } = null!;
         public string Color { get; set; } = null!;
         public float Weight { get; set; }
-        public string ProfilePhoto { get; set; } = null!;
-        public string[] Photos { get; set; } = null!;
+        public string? ProfilePhoto { get; set; }
+        public string[]? Photos { get; set; }
         public int Age { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsSterilized { get; set; }

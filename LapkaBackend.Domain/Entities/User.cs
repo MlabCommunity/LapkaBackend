@@ -1,6 +1,4 @@
-﻿using LapkaBackend.Domain.Enums;
-
-namespace LapkaBackend.Domain.Entities
+﻿namespace LapkaBackend.Domain.Entities
 {
     public class User
     {

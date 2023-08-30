@@ -1,10 +1,5 @@
 ﻿using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LapkaBackend.Infrastructure.ModelBuilders
 {
@@ -20,9 +15,6 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                 a.HasOne(s => s.Shelter)
                 .WithOne(s => s.ShelterVolunteering)
                 .HasForeignKey<ShelterVolunteering>(sv => sv.ShelterId);
-
-                a.Property(s => s.BankAccountNumber)
-                .IsRequired();
             });
         }
     }

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace LapkaBackend.Domain.Entities
+﻿namespace LapkaBackend.Domain.Entities
 {
     public class Animal
     {
@@ -10,7 +8,6 @@ namespace LapkaBackend.Domain.Entities
         public string Gender { get; set; } = string.Empty;
         public string Marking { get; set; } = string.Empty;
         public decimal Weight { get; set; }
-        public string PhotoName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public bool IsSterilized { get; set; }
@@ -20,10 +17,10 @@ namespace LapkaBackend.Domain.Entities
         public int CategoryId { get; set; }
         public virtual AnimalCategory AnimalCategory { get; set; }
 
-        public Guid? ShelterId { get; set; }
+        public Guid ShelterId { get; set; }
         public virtual Shelter Shelter { get; set; }
 
-        public virtual List<Photo> Photos { get; set; }
+        public string? ProfilePhoto { get; set; }
 
         public virtual List<Reaction> Reactions { get; set; }
 

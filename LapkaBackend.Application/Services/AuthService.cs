@@ -39,6 +39,7 @@ namespace LapkaBackend.Application.Services
 
         public async Task RegisterUser(UserRegistrationRequest request)
         {
+
             if (_dbContext.Users.Any(x => x.Email == request.EmailAddress))
             {
                 throw new BadRequestException("invalid_email", "User with this email already exists");
@@ -199,7 +200,6 @@ namespace LapkaBackend.Application.Services
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(5),
                 signingCredentials: credentials
-                
             );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
@@ -246,7 +246,7 @@ namespace LapkaBackend.Application.Services
                     ClockSkew = TimeSpan.Zero
                 }, out _);
             }
-            catch (SecurityTokenValidationException e)
+            catch (SecurityTokenValidationException)
             {
                 return false;
             }
@@ -311,6 +311,21 @@ namespace LapkaBackend.Application.Services
             await _dbContext.Users.AddAsync(newUser);
             await _dbContext.SaveChangesAsync();
 
+            var newShelterVolunteering = new ShelterVolunteering()
+            {
+                ShelterId = newShelter.Id,
+                BankAccountNumber = null,
+                DailyHelpDescription = null,
+                DonationDescription = null,
+                IsDailyHelpActive = false,
+                IsDonationActive = false,
+                IsTakingDogsOutActive = false,
+                TakingDogsOutDesctiption = null,
+            };
+
+            await _dbContext.SheltersVolunteering.AddAsync(newShelterVolunteering);
+            await _dbContext.SaveChangesAsync();
+
             await SendEmailToConfirmEmail(newUser.Email, newUser.VerificationToken);
         }
 
@@ -322,7 +337,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null)
             {
-                throw new BadRequestException("invalid_mail", "User with that email does not exists");
+                throw new BadRequestException("invalid_email", "User with that email does not exists");
             }
             
             var myUrl = new Uri(_contextAccessor.HttpContext!.Request.GetDisplayUrl());
@@ -359,11 +374,6 @@ namespace LapkaBackend.Application.Services
             if (user is null)
             {
                 throw new BadRequestException("invalid_email", "User doesn't exists");
-            }
-            
-            if (user.Password == resetPasswordRequest.Password)
-            {
-                throw new BadRequestException("invalid_password", "New password match the old one");
             }
             
             user.Password = BCrypt.Net.BCrypt.HashPassword(resetPasswordRequest.Password);
@@ -412,7 +422,7 @@ namespace LapkaBackend.Application.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        private async Task SavingDataInCookies(string data)
+        private Task SavingDataInCookies(string data)
         {
             var claims = new List<Claim>()
             {
@@ -438,6 +448,7 @@ namespace LapkaBackend.Application.Services
             };
             
             _contextAccessor.HttpContext!.Response.Cookies.Append("token", jwt, options);
+            return Task.CompletedTask;
         }
     }
 }

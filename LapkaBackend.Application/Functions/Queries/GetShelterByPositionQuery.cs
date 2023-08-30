@@ -3,11 +3,10 @@ using LapkaBackend.Application.Helper;
 using LapkaBackend.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record GetShelterByPositionQuery(float Longitude,float Latitude, int RadiusKm, int PageNumber, int PageSize) : IRequest<ShelterByPositionResponse>;
+    public record GetShelterByPositionQuery(float Longitude,float Latitude, int RadiusKm, int PageNumber=1, int PageSize=10) : IRequest<ShelterByPositionResponse>;
     
     public class GetShelterByPositionQueryHandler : IRequestHandler<GetShelterByPositionQuery, ShelterByPositionResponse>
     {
