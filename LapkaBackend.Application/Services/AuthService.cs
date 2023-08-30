@@ -186,7 +186,6 @@ namespace LapkaBackend.Application.Services
                 RefreshToken = refreshToken
             };
         }
-        
 
         public async Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request)
         {
@@ -202,7 +201,12 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_token", "Invalid token");
             }
             
-            var emailClaim = jwtAccessToken.Claims.ToList().First(x => x.Type.Equals(ClaimTypes.Email));
+            var emailClaim = jwtAccessToken.Claims.ToList().FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
+
+            if (emailClaim is null)
+            {
+                throw new BadRequestException("invalid_token", "Access token is invalid");
+            }
             
             var user = await _dbContext.Users
                 .Include(x => x.Role)
@@ -362,8 +366,6 @@ namespace LapkaBackend.Application.Services
                 ShelterId = newShelter.Id
             };
 
-
-
             await _dbContext.Users.AddAsync(newUser);
             await _dbContext.SaveChangesAsync();
 
@@ -419,11 +421,6 @@ namespace LapkaBackend.Application.Services
                 throw new BadRequestException("invalid_token", "Token is invalid");
             }
 
-            if (resetPasswordRequest.Password != resetPasswordRequest.ConfirmPassword)
-            {
-                throw new BadRequestException("invalid_password", "Passwords aren't matching");
-            }
-
             var userToken = new JwtSecurityToken(token);
             var userEmail = userToken.Claims.ToList().
                 First(x => x.Type.Equals(ClaimTypes.Email));
@@ -431,7 +428,7 @@ namespace LapkaBackend.Application.Services
             var user = await _dbContext.Users
                 .Include(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Email == userEmail.Value);
-
+            
             if (user is null)
             {
                 throw new BadRequestException("invalid_email", "User doesn't exists");
