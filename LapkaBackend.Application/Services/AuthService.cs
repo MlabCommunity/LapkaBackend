@@ -173,8 +173,9 @@ namespace LapkaBackend.Application.Services
             {
                 refreshToken = CreateRefreshToken();
                 result.RefreshToken = refreshToken;
-                _dbContext.Users.Update(result);
             }
+            
+            _dbContext.Users.Update(result);
             await _dbContext.SaveChangesAsync();
 
             await SavingDataInCookies(result.Role.RoleName);
