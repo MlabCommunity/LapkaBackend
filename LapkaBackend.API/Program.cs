@@ -15,6 +15,7 @@ using LapkaBackend.Domain.Records;
 using LapkaBackend.Infrastructure;
 using LapkaBackend.Infrastructure.Data;
 using LapkaBackend.Infrastructure.Hangfire;
+using LapkaBackend.Infrastructure.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +68,9 @@ internal class Program
         builder.Services
             .AddControllers()
             .AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
         builder.Services.AddValidatorsFromAssembly(Assembly.Load("LapkaBackend.Application"));
         builder.Services.AddFluentValidationAutoValidation();
@@ -77,7 +80,6 @@ internal class Program
         builder.Services.AddAutoMapper(typeof(UserMappingProfile));
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
         builder.Services.AddHttpContextAccessor();
-        
         
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -145,18 +147,25 @@ internal class Program
         }
 
         app.UseHttpsRedirection();
-
+    
+        app.UseMiddleware<ErrorHandlerMiddleware>();
+        
         app.UseAuthentication();
-
-        app.UseAuthorization();
         
         app.UseHangfireDashboard("/hangfire", new DashboardOptions()
         {
             Authorization = new [] { new HangfireAuthorizationFilter() }
         });
-        
-        app.UseMiddleware<ErrorHandlerMiddleware>();
 
+        app.UseRouting();
+        
+        app.UseAuthorization();
+        
+        app.UseEndpoints(e =>
+        {
+            e.MapHub<ChatHub>("/chathub");
+        });
+        
         app.MapControllers();
 
         app.Run();
