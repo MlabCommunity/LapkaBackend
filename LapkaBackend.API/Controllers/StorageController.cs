@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using LapkaBackend.Application.Exceptions;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LapkaBackend.API.Controllers;
 
@@ -26,7 +27,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> GetFile([Required][FromQuery]List<string> ids)
     {
-        var parsedIds = ids.Select(Guid.Parse).ToList();
+        var parsedIds = ids.Select(x => x.IsNullOrEmpty() ? Guid.Empty : Guid.Parse(x)).ToList();
         return Ok(await _blobService.GetFilesUrlsAsync(parsedIds));
     }
     
