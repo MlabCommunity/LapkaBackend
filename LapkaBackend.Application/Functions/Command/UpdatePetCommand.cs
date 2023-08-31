@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record UpdatePetCommand(Guid PetId, string Description, string Name,Genders Gender, bool IsSterilized, decimal Weight, int Months, string ProfilePhoto, List<string> Photos, bool IsVisible, AnimalCategories Category, string Breed, string Marking):IRequest;
+    public record UpdatePetCommand(Guid PetId, string Description, string Name, Genders Gender, bool IsSterilized, decimal Weight, int Months, string ProfilePhoto, List<string> Photos, bool IsVisible, AnimalCategories AnimalCategory, string Species, string Marking):IRequest;
 
 
     public class UpdatePetCommandHandler : IRequestHandler<UpdatePetCommand>
@@ -39,27 +39,42 @@ namespace LapkaBackend.Application.Functions.Command
             
 
 
-            var animalCategory = await _dbContext.AnimalCategories.FirstOrDefaultAsync(r => r.CategoryName == request.Category.ToString());
+            var animalCategory = await _dbContext.AnimalCategories.FirstOrDefaultAsync(r => r.CategoryName == request.AnimalCategory.ToString());
             if (animalCategory is null)
             {
                 throw new BadRequestException("invalid_AnimalCategory", "Animal category doesn't exists");
             }
 
             if (!string.IsNullOrEmpty(request.ProfilePhoto))
-            {
-                result.ProfilePhoto = request.ProfilePhoto;
-                var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
-                fileProfile.ParentEntityId = result.Id;
+            {                              
+                try
+                {                  
+                    var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
+                    fileProfile.ParentEntityId = result.Id;
+                    result.ProfilePhoto = request.ProfilePhoto;
+                }
+                catch (Exception)
+                {
+                    throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
+                }             
             }
-            
+
 
             for (int i = 0; i < request.Photos.Count; i++)
             {
                 if (!string.IsNullOrEmpty(request.Photos[i]))
                 {
-                    var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
-                    file.ParentEntityId = result.Id;
-                }               
+                    try
+                    {
+                        var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
+                        file.ParentEntityId = result.Id;
+                    }
+                    catch (Exception)
+                    {
+
+                        throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
+                    }
+                }
             }
 
             result.AnimalCategory = animalCategory;
@@ -70,7 +85,7 @@ namespace LapkaBackend.Application.Functions.Command
             result.Marking = request.Marking;
             result.Months = request.Months;
             result.Name = request.Name;
-            result.Species = request.Breed.ToString();
+            result.Species = request.Species;
             result.Weight = request.Weight;
 
             _dbContext.Animals.Update(result);

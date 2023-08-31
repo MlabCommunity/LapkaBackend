@@ -2,6 +2,8 @@
 using LapkaBackend.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using LapkaBackend.Application.Functions.Queries;
+using LapkaBackend.Application.Dtos.Result;
 
 namespace LapkaBackend.API.Controllers
 {
@@ -53,7 +55,7 @@ namespace LapkaBackend.API.Controllers
         /// </summary>
         [HttpGet("/Management")]
         [Authorize(Roles = "SuperAdmin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetUsersByRoleQueryResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

@@ -4,7 +4,7 @@ using LapkaBackend.Application.Functions.Command;
 
 namespace LapkaBackend.Application.Validators;
 
-    public class CreatePetCardCommandValidator : AbstractValidator<CreatePetCardCommand>
+    public class CreatePetCardCommandValidator : AbstractValidator<CreatePetCardRequest>
     {
         public CreatePetCardCommandValidator()
         {
@@ -22,24 +22,24 @@ namespace LapkaBackend.Application.Validators;
             RuleFor(x => x.Description)
                 .NotEmpty()
                 .MaximumLength(200)
-                .WithMessage("Invalid Description. Description must be up to 150 characters")
+                .WithMessage("Invalid Description. Description must be up to 200 characters")
                 .WithErrorCode("invalid_description");
 
             RuleFor(x => x.Months)
-                .NotEmpty()
+                .Must(m => m > 0)
                 .WithMessage("Invalid Value. Number of nonths must be greater than 0")
                 .WithErrorCode("invalid_number_of_months");
 
             RuleFor(x => x.Weight)
                 .Must(m => m > 0)
                 .WithMessage("Invalid Value. Weight must be greater than 0")
-                .WithErrorCode("invalid_Weight");
+                .WithErrorCode("invalid_weight");
 
-            RuleFor(x => x.Color)
+            RuleFor(x => x.Marking)
                 .NotEmpty()
                 .MaximumLength(50)
-                .WithMessage("Invalid Description. Description must have less then 150 chars")
-                .WithErrorCode("invalid_color");
+                .WithMessage("Invalid marking. Marking must have less then 50 chars")
+                .WithErrorCode("invalid_marking");
 
             RuleFor(x => x.AnimalCategory)
                 .NotEmpty()
@@ -47,16 +47,16 @@ namespace LapkaBackend.Application.Validators;
                 .WithMessage("Invalid animal category")
                 .WithErrorCode("invalid_animal_category");
 
-            RuleFor(x => x.Breed)
+            RuleFor(x => x.Species)
                 .NotEmpty()
                 .MaximumLength(50)
-                .WithMessage("Invalid animal category")
-                .WithErrorCode("invalid_breed");
+                .WithMessage("Invalid animal Species")
+                .WithErrorCode("invalid_species");
 
             RuleFor(x => x.ProfilePhoto)
                 .MaximumLength(50)
-                .WithMessage("Invalid Photo")
-                .WithErrorCode("invalid_photo");
+                .WithMessage("Invalid profile photo")
+                .WithErrorCode("invalid_profile_photo");
 
             RuleFor(x => x.Photos)
                 .Must(photos => photos.Count <= 5)

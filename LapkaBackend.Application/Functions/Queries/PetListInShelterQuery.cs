@@ -111,7 +111,7 @@ namespace LapkaBackend.Application.Functions.Queries
                 Color = p.Marking,
                 Weight = (float)p.Weight,
                 ProfilePhoto = p.ProfilePhoto,
-                Photos = _dbContext.Blobs.Where(x => x.ParentEntityId == p.Id).Select(blob => blob.ParentEntityId.ToString()).ToArray(),
+                Photos = _dbContext.Blobs.Where(x => x.ParentEntityId == p.Id).Select(blob => blob.Id.ToString()).ToArray(),
                 Months = p.Months,
                 CreatedAt = p.CreatedAt,
                 IsSterilized = p.IsSterilized,

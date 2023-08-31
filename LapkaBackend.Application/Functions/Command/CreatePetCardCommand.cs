@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Color, AnimalCategories AnimalCategory, string Breed, string ProfilePhoto, List<string> Photos,Guid ShelterId) : IRequest;
+    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Marking, AnimalCategories AnimalCategory, string Species, string ProfilePhoto, List<string> Photos, Guid ShelterId) : IRequest;
 
 
     public class CreateCatCardCommandHandler : IRequestHandler<CreatePetCardCommand>
@@ -28,7 +28,11 @@ namespace LapkaBackend.Application.Functions.Command
 
         public async Task Handle(CreatePetCardCommand request, CancellationToken cancellationToken)
         {
-            var animalCategory =await _dbContext.AnimalCategories.FirstAsync(r => r.CategoryName == request.AnimalCategory.ToString());
+            var animalCategory =await _dbContext.AnimalCategories.FirstOrDefaultAsync(r => r.CategoryName == request.AnimalCategory.ToString());
+            if (animalCategory == null)
+            {
+                throw new BadRequestException("invalid_animal_category", "That animal category does not exists");
+            }
             var Shelter = await _dbContext.Shelters.FirstOrDefaultAsync(r => r.Id == request.ShelterId);
             if (Shelter == null)
             {
@@ -38,9 +42,9 @@ namespace LapkaBackend.Application.Functions.Command
             var newAnimal = new Animal
             {
                 Name = request.Name,
-                Species = request.Breed,
+                Species = request.Species,
                 Gender = request.Gender.ToString(),
-                Marking = request.Color,
+                Marking = request.Marking,
                 Weight = request.Weight,
                 Description = request.Description,
                 IsSterilized = request.IsSterilized,
@@ -57,10 +61,17 @@ namespace LapkaBackend.Application.Functions.Command
 
             
             if (!string.IsNullOrEmpty(request.ProfilePhoto))
-            {
-                newAnimal.ProfilePhoto = request.ProfilePhoto;
-                var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
-                fileProfile.ParentEntityId = newAnimal.Id;
+            {                              
+                try
+                {                  
+                    var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
+                    fileProfile.ParentEntityId = newAnimal.Id;
+                    newAnimal.ProfilePhoto = request.ProfilePhoto;
+                }
+                catch (Exception)
+                {
+                    throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
+                }             
             }
             
 
@@ -68,12 +79,18 @@ namespace LapkaBackend.Application.Functions.Command
             {
                 if (!string.IsNullOrEmpty(request.Photos[i]))
                 {
-                    var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
-                    file.ParentEntityId = newAnimal.Id;
-                }            
-                
-            }
+                    try
+                    {
+                        var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
+                        file.ParentEntityId = newAnimal.Id;
+                    }
+                    catch (Exception)
+                    {
 
+                        throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
+                    }                    
+                }                           
+            }
             _dbContext.Animals.Update(newAnimal);
             await _dbContext.SaveChangesAsync();
         }
@@ -88,9 +105,9 @@ namespace LapkaBackend.Application.Functions.Command
         public int Months { get; set; }
         public bool IsSterilized { get; set; }
         public decimal Weight { get; set; }
-        public string Color { get; set; } = null!;
+        public string Marking { get; set; } = null!;
         public AnimalCategories AnimalCategory { get; set; }
-        public string Breed { get; set; } = null!;
+        public string Species { get; set; } = null!;
         public string? ProfilePhoto { get; set; }
         public List<string>? Photos { get; set; }
     }

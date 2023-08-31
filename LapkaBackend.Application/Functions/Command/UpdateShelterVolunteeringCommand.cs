@@ -23,11 +23,7 @@ namespace LapkaBackend.Application.Functions.Command
 
             if (shelterVolunteering is null)
             {
-                var shelter = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == request.ShelterId);
-                if (shelter is null)
-                {
-                    throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
-                }                   
+                    throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");                 
             }
             else
             {
