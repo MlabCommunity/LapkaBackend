@@ -135,7 +135,6 @@ internal class Program
             var job = scope.ServiceProvider.GetRequiredService<UpdateDeleteJob>();
             RecurringJob.AddOrUpdate("deleteJob",() => job.PermDelete(), Cron.Daily);
             RecurringJob.TriggerJob("deleteJob");
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
         }
 
         app.MapHealthChecks("/healthcheck");
