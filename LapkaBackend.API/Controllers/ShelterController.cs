@@ -90,7 +90,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CreatePet(CreatePetCardRequest request)
         {
-            var command = new CreatePetCardCommand(request.Name, request.Gender, request.Description, request.IsVisible, request.Months, request.IsSterilized, request.Weight, request.Color, request.AnimalCategory, request.Breed, request.ProfilePhoto, request.Photos, await GetShelterIdByLoggedUser());
+            var command = new CreatePetCardCommand(request.Name, request.Gender, request.Description, request.IsVisible, request.Months, request.IsSterilized, request.Weight, request.Marking, request.AnimalCategory, request.Species, request.ProfilePhoto, request.Photos, await GetShelterIdByLoggedUser());
             await _mediator.Send(command);
             return NoContent();
         }

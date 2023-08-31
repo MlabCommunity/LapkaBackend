@@ -20,7 +20,7 @@ namespace LapkaBackend.Application.Validators;
             RuleFor(x => x.Name)
                     .NotEmpty()
                     .MaximumLength(50)
-                .WithMessage("Invalid Name")
+                .WithMessage("Invalid Name. Name must be up to 200 characters")
                 .WithErrorCode("invalid_name");
 
             RuleFor(x => x.Gender)
@@ -31,7 +31,7 @@ namespace LapkaBackend.Application.Validators;
             RuleFor(x => x.Description)
                     .NotEmpty()
                     .MaximumLength(200)
-                    .WithMessage("Invalid Description. Description must be up to 150 characters")
+                    .WithMessage("Invalid Description. Description must be up to 200 characters")
                     .WithErrorCode("invalid_description");
 
             RuleFor(x => x.Months)
@@ -41,26 +41,26 @@ namespace LapkaBackend.Application.Validators;
 
             RuleFor(x => x.Weight)
                     .Must(m => m > 0)
-                    .WithMessage("Invalid Value. Weight must be greater than 0")
+                    .WithMessage("Invalid Weight. Weight must be greater than 0")
                     .WithErrorCode("invalid_weight");
 
             RuleFor(x => x.Marking)
                     .NotEmpty()
                     .MaximumLength(50)
-                    .WithMessage("Invalid color. Color must have less then 50 chars")
+                    .WithMessage("Invalid marking. Marking must be up to 50 characters")
                     .WithErrorCode("invalid_marking");
 
-            RuleFor(x => x.Category)
+            RuleFor(x => x.AnimalCategory)
                     .NotEmpty()
                     .IsInEnum()
                     .WithMessage("Invalid animal category")
-                    .WithErrorCode("invalid_category");
+                    .WithErrorCode("invalid_animal_category");
 
-            RuleFor(x => x.Breed)
+            RuleFor(x => x.Species)
                     .NotEmpty()
                     .MaximumLength(50)
-                    .WithMessage("Invalid animal category")
-                    .WithErrorCode("invalid_breed");
+                    .WithMessage("Invalid Species. Species must be up to 50 characters")
+                    .WithErrorCode("invalid_species");
 
             RuleFor(x => x.ProfilePhoto)
                     .MaximumLength(50)

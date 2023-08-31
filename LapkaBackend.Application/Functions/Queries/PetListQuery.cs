@@ -50,7 +50,7 @@ namespace LapkaBackend.Application.Functions.Queries
                 ProfilePhoto = p.ProfilePhoto,
                 Photos = _dbContext.Blobs
                             .Where(x => x.ParentEntityId == p.Id && x.Id.ToString() != p.ProfilePhoto)
-                            .Select(blob => blob.ParentEntityId.ToString())
+                            .Select(blob => blob.Id.ToString())
                             .ToArray(),
                 Months = p.Months,
                 CreatedAt = p.CreatedAt,

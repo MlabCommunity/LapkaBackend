@@ -49,7 +49,7 @@ namespace LapkaBackend.Application.Functions.Queries
                 ProfilePhoto = FoundAnimal.ProfilePhoto,
                 Photos = await _dbContext.Blobs
                             .Where(x => x.ParentEntityId == FoundAnimal.Id && x.Id.ToString() != FoundAnimal.ProfilePhoto)
-                            .Select(blob => blob.ParentEntityId.ToString())
+                            .Select(blob => blob.Id.ToString())
                             .ToArrayAsync(),
                 Age = FoundAnimal.Months,
                 CreatedAt = FoundAnimal.CreatedAt,
