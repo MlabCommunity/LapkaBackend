@@ -55,7 +55,7 @@ public class TestController : ControllerBase
     [HttpGet("api/test/set-env")]
     public async Task<IActionResult> SetEnv()
     {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
         return Ok();
     }
