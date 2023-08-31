@@ -26,7 +26,7 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> GetFile([Required][FromQuery]List<string> ids)
     {
-        var parsedIds = ids.Select(Guid.Parse).ToList();
+        var parsedIds = ids.Select(x => Guid.TryParse(x, out var y) ? y : Guid.Empty).ToList();
         return Ok(await _blobService.GetFilesUrlsAsync(parsedIds));
     }
     

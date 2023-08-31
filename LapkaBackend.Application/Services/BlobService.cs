@@ -45,9 +45,12 @@ public class BlobService : IBlobService
 
             if (file is null)
             {
-                throw new NotFoundException("invalid_id", "File does not exist");
+                links.Add(string.Empty);
             }
-            links.Add(await _storageContext.GetFileUrlAsync(file.BlobName));
+            else
+            {
+                links.Add(await _storageContext.GetFileUrlAsync(file.BlobName));
+            }
         }
 
         return links;
