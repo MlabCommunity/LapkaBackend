@@ -33,7 +33,6 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
         var builder = WebApplication.CreateBuilder(args);
         var log = new LoggerConfiguration()
             .MinimumLevel.Information()
