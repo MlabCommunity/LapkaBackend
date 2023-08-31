@@ -39,7 +39,7 @@ public class Tests
     [Test]
     public void TestUserLoginNotVerified()
     {
-        var credentials = new LoginRequest
+        var credentials = new LoginMobileRequest
         {
             Email = "john@example.com",
             Password = "hashed_password"
