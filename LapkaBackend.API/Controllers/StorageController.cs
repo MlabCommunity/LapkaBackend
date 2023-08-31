@@ -24,9 +24,10 @@ public class StorageController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> GetFile([Required]List<Guid> ids)
+    public async Task<ActionResult> GetFile([Required][FromQuery]List<string> ids)
     {
-        return Ok(await _blobService.GetFilesUrlsAsync(ids));
+        var parsedIds = ids.Select(Guid.Parse).ToList();
+        return Ok(await _blobService.GetFilesUrlsAsync(parsedIds));
     }
     
     

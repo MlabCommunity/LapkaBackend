@@ -14,7 +14,8 @@ namespace LapkaBackend.Application.Common
         public DbSet<AnimalView> AnimalViews { get; }
         public DbSet<ShelterVolunteering> SheltersVolunteering { get; }
         public DbSet<FileBlob> Blobs { get; }
-
+        public DbSet<ChatRoom> ChatRooms { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
