@@ -22,7 +22,8 @@ public class ChatRoomModelBuilder
             
             u.HasMany(e => e.Messages)
                 .WithOne(e => e.Room)
-                .HasForeignKey(e => e.RoomId);
+                .HasForeignKey(e => e.RoomId)
+                .OnDelete(DeleteBehavior.Cascade);
             
         });
     }

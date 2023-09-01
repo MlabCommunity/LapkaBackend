@@ -133,7 +133,7 @@ internal class Program
             db.Database.Migrate();
             Extensions.Seed(options);
             var job = scope.ServiceProvider.GetRequiredService<UpdateDeleteJob>();
-            RecurringJob.AddOrUpdate("deleteJob",() => job.PermDelete(), Cron.Daily);
+            RecurringJob.AddOrUpdate("deleteJob", () => job.PermDelete(), Cron.Daily);
             RecurringJob.TriggerJob("deleteJob");
         }
 
@@ -160,12 +160,9 @@ internal class Program
         app.UseRouting();
         
         app.UseAuthorization();
-        
-        app.UseEndpoints(e =>
-        {
-            e.MapHub<ChatHub>("/chathub");
-        });
-        
+
+        app.MapHub<ChatHub>("/chathub");
+
         app.MapControllers();
 
         app.Run();
