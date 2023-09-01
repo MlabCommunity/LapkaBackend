@@ -33,11 +33,10 @@ public class UpdateDeleteJob
 
             var chatRooms = _dbContext.ChatRooms.Where(x => x.User1Id == user.Id ||
                                                             x.User2Id == user.Id);
+            _dbContext.ChatRooms.RemoveRange(chatRooms);
             
-            foreach (var chatRoom in chatRooms)
-            {
-                _dbContext.ChatRooms.Remove(chatRoom);
-            }
+            var userReactions = _dbContext.Reactions.Where(x => x.UserId == user.Id);
+            _dbContext.Reactions.RemoveRange(userReactions);
 
             _dbContext.Users.Remove(user);
 
@@ -50,6 +49,14 @@ public class UpdateDeleteJob
                 {
                     worker.Role = _dbContext.Roles.First(x => x.RoleName == Roles.User.ToString());
                     worker.ShelterId = Guid.Empty;
+                }
+                
+                var shelterAnimals = _dbContext.Animals.Where(x => x.ShelterId == user.ShelterId).ToList();
+
+                foreach (var animal in shelterAnimals)
+                {
+                    await _blobService.DeleteFilesByParentId(animal.Id);
+                    _dbContext.Animals.Remove(animal);
                 }
 
                 _dbContext.Shelters.Remove(_dbContext.Shelters.FirstAsync(x => x.Id == user.ShelterId).Result);
