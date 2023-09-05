@@ -42,4 +42,5 @@
       <ProjectReference Include="..\LapkaBackend.Domain\LapkaBackend.Domain.csproj" />
     </ItemGroup>
 
+
 </Project>

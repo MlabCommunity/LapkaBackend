@@ -6,6 +6,8 @@ using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Json;
+using LapkaBackend.Application.Dtos.Responses;
 using LapkaBackend.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -17,6 +19,7 @@ public class ExternalAuthService : IExternalAuthService
     private readonly IDataContext _dbContext;
     private readonly IAuthService _authService;
     private readonly IConfiguration _configuration;
+    private readonly HttpClient _httpClient = new ();
     
     public ExternalAuthService(IDataContext dbContext, IAuthService authService, IConfiguration configuration)
     {
@@ -27,17 +30,21 @@ public class ExternalAuthService : IExternalAuthService
     public async Task<LoginResultWithRoleDto> LoginUserByGoogle(string? tokenId)
     {
         // Check if token exists
-        if (tokenId == null)
-        {
-            throw new BadRequestException("invalid_google_id_token", "Google token is invalid.");
-        }
+        // if (tokenId == null)
+        // {
+        //     throw new BadRequestException("invalid_google_id_token", "Google token is invalid.");
+        // }
         try
         {
-            // Validate token if token not valid exception will be thrown
-            var payload = GoogleJsonWebSignature.ValidateAsync(tokenId, new GoogleJsonWebSignature.ValidationSettings())
-                .Result;
+            var googleUser = await _httpClient.GetFromJsonAsync<GoogleUserResponseDto>($"https://oauth2.googleapis.com/tokeninfo?id_token={tokenId}");
+            
+            if (googleUser is null)
+            {
+                throw new BadRequestException("invalid_google_id_token", "Google token is invalid.");
+            }
+            
             // Check if user exists
-            var user = _dbContext.Users.FirstOrDefault(u => u.Email == payload.Email);
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == googleUser.Email);
             if (user != null)
             {
                 user.RefreshToken = _authService.CreateRefreshToken();
@@ -53,9 +60,10 @@ public class ExternalAuthService : IExternalAuthService
             // If user not exists create new user
             var newGoogleUser = new User
             {
-                FirstName = payload.GivenName,
-                LastName = payload.FamilyName,
-                Email = payload.Email,
+                FirstName = googleUser.FirstName,
+                LastName = googleUser.LastName,
+                Email = googleUser.Email,
+                Password = "temporary_password",
                 CreatedAt = DateTime.UtcNow,
                 RefreshToken = _authService.CreateRefreshToken(),
                 Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == Roles.User.ToString())!
