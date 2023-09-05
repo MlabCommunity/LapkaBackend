@@ -125,7 +125,8 @@ internal class Program
             {
                 builder.AllowAnyMethod()
                     .AllowAnyHeader()
-                    .SetIsOriginAllowed((host) => true)
+                    .SetIsOriginAllowed(host => true)
+                    .AllowAnyOrigin()
                     .AllowCredentials();
             });
         });
