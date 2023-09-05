@@ -25,8 +25,8 @@ public class ExternalAuth : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> GoogleLogin(string? tokenId)
     {
-        await _externalAuthService.LoginUserByGoogle(tokenId);
-        return Ok();
+      
+        return Ok(await _externalAuthService.LoginUserByGoogle(tokenId));
     }
     
     /// <summary>

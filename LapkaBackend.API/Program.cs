@@ -119,10 +119,23 @@ internal class Program
                 opt.SuppressMapClientErrors = true;
             });
         
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("CorsPolicy", builder =>
+            {
+                builder.WithOrigins("https://lapka-api-dev.azurewebsites.net")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            });
+        });
+        
         builder.Services.AddHealthChecks();
 
         var app = builder.Build();
-    
+
+        app.UseCors("CorsPolicy");
+        
         using (var scope = app.Services.CreateScope())
         {
             var options = new DbContextOptionsBuilder<DataContext>()
@@ -161,7 +174,11 @@ internal class Program
         
         app.UseAuthorization();
 
-        app.MapHub<ChatHub>("/chathub");
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapHub<ChatHub>("/chathub");
+        });
+        
 
         app.MapControllers();
 
