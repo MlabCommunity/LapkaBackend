@@ -119,23 +119,9 @@ internal class Program
                 opt.SuppressMapClientErrors = true;
             });
         
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("CorsPolicy", builder =>
-            {
-                builder.AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .SetIsOriginAllowed(host => true)
-                    .AllowAnyOrigin()
-                    .AllowCredentials();
-            });
-        });
-        
         builder.Services.AddHealthChecks();
 
         var app = builder.Build();
-
-        app.UseCors("CorsPolicy");
         
         using (var scope = app.Services.CreateScope())
         {
