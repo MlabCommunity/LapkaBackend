@@ -123,9 +123,9 @@ internal class Program
         {
             options.AddPolicy("CorsPolicy", builder =>
             {
-                builder.WithOrigins("https://lapka-api-dev.azurewebsites.net")
-                    .AllowAnyMethod()
+                builder.AllowAnyMethod()
                     .AllowAnyHeader()
+                    .SetIsOriginAllowed((host) => true)
                     .AllowCredentials();
             });
         });

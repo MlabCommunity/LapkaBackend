@@ -29,11 +29,11 @@ public class ExternalAuthService : IExternalAuthService
     }
     public async Task<LoginResultWithRoleDto> LoginUserByGoogle(string? tokenId)
     {
-        // Check if token exists
-        // if (tokenId == null)
-        // {
-        //     throw new BadRequestException("invalid_google_id_token", "Google token is invalid.");
-        // }
+        if (tokenId == null)
+        {
+            throw new BadRequestException("invalid_google_id_token", "Google token is invalid.");
+        }
+        
         try
         {
             var googleUser = await _httpClient.GetFromJsonAsync<GoogleUserResponseDto>($"https://oauth2.googleapis.com/tokeninfo?id_token={tokenId}");
