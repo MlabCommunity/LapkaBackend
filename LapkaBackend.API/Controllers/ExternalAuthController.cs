@@ -25,9 +25,9 @@ public class ExternalAuth : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> GoogleLogin([FromBody]string? tokenId)
+    public async Task<ActionResult> GoogleLogin([FromBody]GoogleRequest request)
     {
-        return Ok(await _externalAuthService.LoginUserByGoogle(tokenId));
+        return Ok(await _externalAuthService.LoginUserByGoogle(request.TokenId));
     }
     
     /// <summary>

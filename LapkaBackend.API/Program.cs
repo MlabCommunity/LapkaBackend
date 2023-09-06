@@ -114,13 +114,6 @@ internal class Program
                 };
             });
         
-        builder.Services.AddCors(option => 
-            option.AddPolicy("CorsPolicy", policyBuilder =>
-                policyBuilder.AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .SetIsOriginAllowed(origin => true)
-                    .AllowCredentials()));
-        
         builder.Services.AddControllers()
             .ConfigureApiBehaviorOptions(opt =>
             {
@@ -167,14 +160,12 @@ internal class Program
         });
 
         app.UseRouting();
-
-        app.UseCors();
         
         app.UseAuthorization();
         
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapHub<ChatHub>("/chathub").RequireCors("CorsPolicy");
+            endpoints.MapHub<ChatHub>("/chathub");
         });
         
         app.MapControllers();

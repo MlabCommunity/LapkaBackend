@@ -2,6 +2,6 @@
 
 public class FacebookRequest
 {
-    public string? userFbId { get; set; }
-    public string? fbAccessToken { get; set; }
+    public string? UserFbId { get; set; }
+    public string? FbAccessToken { get; set; }
 }
