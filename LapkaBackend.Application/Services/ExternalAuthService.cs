@@ -36,7 +36,8 @@ public class ExternalAuthService : IExternalAuthService
         
         try
         {
-            var googleUser = await _httpClient.GetFromJsonAsync<GoogleUserResponseDto>($"https://oauth2.googleapis.com/tokeninfo?id_token={tokenId}");
+            var googleUser = await _httpClient
+                .GetFromJsonAsync<GoogleUserResponseDto>($"https://oauth2.googleapis.com/tokeninfo?id_token={tokenId}");
             
             if (googleUser is null)
             {
@@ -63,6 +64,7 @@ public class ExternalAuthService : IExternalAuthService
                 FirstName = googleUser.FirstName,
                 LastName = googleUser.LastName,
                 Email = googleUser.Email,
+                VerifiedAt = googleUser.EmailVerified ? DateTime.UtcNow : null,
                 Password = "temporary_password",
                 CreatedAt = DateTime.UtcNow,
                 RefreshToken = _authService.CreateRefreshToken(),
@@ -87,14 +89,19 @@ public class ExternalAuthService : IExternalAuthService
     
     public async Task<LoginResultWithRoleDto> LoginUserByFacebook(string? userFbId, string? fbAccessToken)
     {
-        bool isTokenValid = await ValidateFacebookAccessToken(userFbId!, fbAccessToken!);
+        var isTokenValid = await ValidateFacebookAccessToken(userFbId!, fbAccessToken!);
+        
         if (!isTokenValid)
         {
             throw new BadRequestException("invalid_facebook_access_token", "Facebook access token is invalid.");
         }
-        JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-        JwtSecurityToken jwtToken = tokenHandler.ReadJwtToken(fbAccessToken);
-        var user = _dbContext.Users.FirstOrDefault(u => u.Email == jwtToken.Claims.FirstOrDefault(x => x.Type == "email")!.Value);
+        
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var jwtToken = tokenHandler.ReadJwtToken(fbAccessToken);
+        
+        var user = _dbContext.Users.FirstOrDefault(u => 
+            u.Email == jwtToken.Claims.FirstOrDefault(x => x.Type == "email")!.Value);
+        
         if (user != null)
         {
             user.RefreshToken = _authService.CreateRefreshToken();
@@ -107,6 +114,7 @@ public class ExternalAuthService : IExternalAuthService
                 Role = user.Role.RoleName
             };
         }
+        
         var newFacebookUser = new User
         {
             FirstName = jwtToken.Claims.FirstOrDefault(x => x.Type == "first_name")!.Value,
@@ -116,8 +124,10 @@ public class ExternalAuthService : IExternalAuthService
             RefreshToken = _authService.CreateRefreshToken(),
             Role = _dbContext.Roles.FirstOrDefault(r => r.RoleName == Roles.User.ToString())!
         };
+        
         _dbContext.Users.Add(newFacebookUser);
         await _dbContext.SaveChangesAsync();
+        
         return new LoginResultWithRoleDto
         {
             AccessToken = _authService.CreateAccessToken(newFacebookUser),
@@ -180,18 +190,15 @@ public class ExternalAuthService : IExternalAuthService
         // Make an API call to Facebook to validate the access token
         var httpClient = new HttpClient();
         var appId = _configuration["Facebook:AppId"];
-        string appSecret = _configuration["Facebook:AppSecret"]!;
-        string debugTokenUrl = $"https://graph.facebook.com/v15.0/debug_token?input_token={accessToken}&access_token={appId}|{appSecret}";
+        var appSecret = _configuration["Facebook:AppSecret"]!;
+        var debugTokenUrl = $"https://graph.facebook.com/v15.0/debug_token?input_token={accessToken}&access_token={appId}|{appSecret}";
 
-        HttpResponseMessage response = await httpClient.GetAsync(debugTokenUrl);
-        if (response.IsSuccessStatusCode)
-        {
-            string responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<FacebookTokenValidationResult>(responseContent);
-            return result?.Data.IsValid == true && result.Data.UserId == userId;
-        }
+        var response = await httpClient.GetAsync(debugTokenUrl);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode) return false;
+        var result = JsonConvert.DeserializeObject<FacebookTokenValidationResult>(responseContent);
+        return result?.Data.IsValid == true && result.Data.UserId == userId;
 
-        return false;
     }
 }
 

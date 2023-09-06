@@ -113,6 +113,14 @@ internal class Program
                     ValidateAudience = false
                 };
             });
+        
+        builder.Services.AddCors(option => 
+            option.AddPolicy("CorsPolicy", policyBuilder =>
+                policyBuilder.AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .SetIsOriginAllowed(origin => true)
+                    .AllowCredentials()));
+        
         builder.Services.AddControllers()
             .ConfigureApiBehaviorOptions(opt =>
             {
@@ -121,15 +129,8 @@ internal class Program
         
         builder.Services.AddHealthChecks();
         
-        builder.Services.AddCors();
         
         var app = builder.Build();
-        
-        app.UseCors(x => x
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .SetIsOriginAllowed(origin => true)
-            .AllowCredentials());
         
         using (var scope = app.Services.CreateScope())
         {
@@ -166,15 +167,16 @@ internal class Program
         });
 
         app.UseRouting();
+
+        app.UseCors();
         
         app.UseAuthorization();
-
+        
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapHub<ChatHub>("/chathub");
+            endpoints.MapHub<ChatHub>("/chathub").RequireCors("CorsPolicy");
         });
         
-
         app.MapControllers();
 
         app.Run();
