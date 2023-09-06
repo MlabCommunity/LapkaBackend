@@ -92,7 +92,7 @@ public class ExternalAuthService : IExternalAuthService
         {
             var facebookUser = await _httpClient
                 .GetFromJsonAsync<FacebookUserResponseDto>
-                    ($"https://graph.facebook.com/{request.userFbId}?fields=id,email,first_name,last_name,name,picture&access_token={request.fbAccessToken}&version=v15.0");
+                    ($"https://graph.facebook.com/{request.UserFbId}?fields=id,email,first_name,last_name,name,picture&access_token={request.FbAccessToken}&version=v15.0");
 
             if (facebookUser is null)
             {
