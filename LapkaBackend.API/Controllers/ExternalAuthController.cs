@@ -1,5 +1,6 @@
 ﻿using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Interfaces;
+using LapkaBackend.Application.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
@@ -38,24 +39,8 @@ public class ExternalAuth : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> FacebookLogin([FromBody] string? userFbId, [FromBody] string? fbAccessToken)
+    public async Task<ActionResult> FacebookLogin([FromBody] FacebookRequest request)
     {
-        return Ok(await _externalAuthService.LoginUserByFacebook(userFbId, fbAccessToken));
-    }
-    
-    /// <summary>
-    ///     Obsługa rejestracji/logowania usera (shelter nie może) przez apple.
-    /// </summary>
-    /// <response code="403">Available only for user with Apple login provider.</response>
-    [HttpPost("apple")]
-    [ProducesResponseType(typeof(LoginResultWithRoleDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> AppleLogin(string appleAccessToken, string firstName, string lastName)
-    {
-        var result = await _externalAuthService.LoginUserByApple(appleAccessToken, firstName, lastName);
-
-        return Ok(result);
+        return Ok(await _externalAuthService.LoginUserByFacebook(request));
     }
 }
