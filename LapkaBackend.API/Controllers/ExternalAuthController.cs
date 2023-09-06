@@ -1,6 +1,7 @@
 ﻿using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace LapkaBackend.API.Controllers;
 
@@ -23,9 +24,8 @@ public class ExternalAuth : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> GoogleLogin(string? tokenId)
+    public async Task<ActionResult> GoogleLogin([FromBody]string? tokenId)
     {
-      
         return Ok(await _externalAuthService.LoginUserByGoogle(tokenId));
     }
     
@@ -38,10 +38,9 @@ public class ExternalAuth : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> FacebookLogin(string? userFbId, string? fbAccessToken)
+    public async Task<ActionResult> FacebookLogin([FromBody] string? userFbId, [FromBody] string? fbAccessToken)
     {
-        await _externalAuthService.LoginUserByFacebook(userFbId, fbAccessToken);
-        return Ok();
+        return Ok(await _externalAuthService.LoginUserByFacebook(userFbId, fbAccessToken));
     }
     
     /// <summary>
