@@ -33,7 +33,6 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
         var builder = WebApplication.CreateBuilder(args);
         var log = new LoggerConfiguration()
             .MinimumLevel.Information()
@@ -141,7 +140,7 @@ internal class Program
         app.MapHealthChecks("/healthcheck");
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
+        if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
