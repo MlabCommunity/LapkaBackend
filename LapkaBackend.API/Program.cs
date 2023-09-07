@@ -122,8 +122,7 @@ internal class Program
             });
         
         builder.Services.AddHealthChecks();
-        
-        
+
         var app = builder.Build();
         
         using (var scope = app.Services.CreateScope())
