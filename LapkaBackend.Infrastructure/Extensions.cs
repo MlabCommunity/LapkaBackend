@@ -5,7 +5,6 @@ using LapkaBackend.Infrastructure.Data;
 using LapkaBackend.Infrastructure.Email;
 using LapkaBackend.Infrastructure.FileStorage;
 using LapkaBackend.Infrastructure.Hangfire;
-using LapkaBackend.Infrastructure.Hubs;
 using LapkaBackend.Infrastructure.ModelBuilders;
 using LapkaBackend.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
