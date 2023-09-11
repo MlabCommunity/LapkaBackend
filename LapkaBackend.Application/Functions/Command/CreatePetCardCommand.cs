@@ -99,15 +99,15 @@ namespace LapkaBackend.Application.Functions.Command
     public class CreatePetCardRequest
     {
         public string Name { get; set; } = null!;
+        public string Species { get; set; } = null!;
         public Genders Gender { get; set; }
+        public string Marking { get; set; } = null!;
+        public decimal Weight { get; set; }
         public string Description { get; set; } = null!;
+        public AnimalCategories AnimalCategory { get; set; }
+        public bool IsSterilized { get; set; }
         public bool IsVisible { get; set; }
         public int Months { get; set; }
-        public bool IsSterilized { get; set; }
-        public decimal Weight { get; set; }
-        public string Marking { get; set; } = null!;
-        public AnimalCategories AnimalCategory { get; set; }
-        public string Species { get; set; } = null!;
         public string? ProfilePhoto { get; set; }
         public List<string>? Photos { get; set; }
     }

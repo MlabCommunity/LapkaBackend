@@ -41,17 +41,17 @@ namespace LapkaBackend.Application.Functions.Queries
             {
                 Id = FoundAnimal.Id,
                 Name = FoundAnimal.Name,
-                Type = FoundAnimal.AnimalCategory.CategoryName,
+                AnimalCategory = FoundAnimal.AnimalCategory.CategoryName,
                 Gender = FoundAnimal.Gender,
-                Breed = FoundAnimal.Species,
-                Color = FoundAnimal.Marking,
+                Species = FoundAnimal.Species,
+                Marking = FoundAnimal.Marking,
                 Weight = (float)FoundAnimal.Weight,
                 ProfilePhoto = FoundAnimal.ProfilePhoto,
                 Photos = await _dbContext.Blobs
-                            .Where(x => x.ParentEntityId == FoundAnimal.Id && x.Id.ToString() != FoundAnimal.ProfilePhoto)
+                            .Where(x => x.ParentEntityId == FoundAnimal.Id)
                             .Select(blob => blob.Id.ToString())
                             .ToArrayAsync(),
-                Age = FoundAnimal.Months,
+                Months = FoundAnimal.Months,
                 CreatedAt = FoundAnimal.CreatedAt,
                 IsSterilized = FoundAnimal.IsSterilized,
                 IsVisible = FoundAnimal.IsVisible,
@@ -70,19 +70,18 @@ namespace LapkaBackend.Application.Functions.Queries
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;
-        public string Type { get; set; } = null!;
+        public string Species { get; set; } = null!;
         public string Gender { get; set; } = null!;
-        public string Breed { get; set; } = null!;
-        public string Color { get; set; } = null!;
+        public string Marking { get; set; } = null!;
         public float Weight { get; set; }
-        public string? ProfilePhoto { get; set; }
-        public string[]? Photos { get; set; }
-        public int Age { get; set; }
+        public string Description { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public bool IsSterilized { get; set; }
         public bool IsVisible { get; set; }
-        public string Description { get; set; } = null!;
-
+        public int Months { get; set; }
+        public string AnimalCategory { get; set; } = null!;
+        public string? ProfilePhoto { get; set; }
+        public string[]? Photos { get; set; }
     }
 
 

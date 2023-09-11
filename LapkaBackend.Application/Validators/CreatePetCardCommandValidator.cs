@@ -48,7 +48,6 @@ namespace LapkaBackend.Application.Validators;
                 .WithErrorCode("invalid_animal_category");
 
             RuleFor(x => x.Species)
-                .NotEmpty()
                 .MaximumLength(50)
                 .WithMessage("Invalid animal Species")
                 .WithErrorCode("invalid_species");
