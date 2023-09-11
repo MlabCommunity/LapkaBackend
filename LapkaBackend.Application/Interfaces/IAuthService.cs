@@ -14,7 +14,7 @@ namespace LapkaBackend.Application.Interfaces
          Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request);
          string CreateRefreshToken();
          bool IsTokenValid(string token);
-         Task RevokeToken(TokenRequest request);
+         Task RevokeToken(TokenRequest request, Guid userId);
          Task ResetPassword(UserEmailRequest request);
          Task SetNewPassword(ResetPasswordRequest resetPasswordRequest, string token);
          Task ConfirmEmail(string token);

@@ -13,6 +13,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Serilog;
@@ -195,8 +196,11 @@ namespace LapkaBackend.Application.Services
             {
                 throw new BadRequestException("invalid_token", "Invalid token");
             }
-
-            if (!IsTokenValid(request.RefreshToken))
+            
+            var tokenExist = await _dbContext.Users
+                .AnyAsync(x => x.RefreshToken == request.RefreshToken);
+            
+            if (!IsTokenValid(request.RefreshToken) && !tokenExist)
             {
                 throw new BadRequestException("invalid_token", "Invalid token");
             }
@@ -316,11 +320,11 @@ namespace LapkaBackend.Application.Services
             return true;
         }
 
-        public async Task RevokeToken(TokenRequest request)
+        public async Task RevokeToken(TokenRequest request, Guid userId)
         {
-            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.RefreshToken == request.RefreshToken);
+            var result = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
 
-            if (result is null)
+            if (result is null || result.RefreshToken != request.RefreshToken)
             {
                 throw new BadRequestException("invalid_token", "Refresh Token is invalid");
             }
