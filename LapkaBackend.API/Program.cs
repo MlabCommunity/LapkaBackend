@@ -113,6 +113,7 @@ internal class Program
                     ValidateAudience = false
                 };
             });
+        
         builder.Services.AddControllers()
             .ConfigureApiBehaviorOptions(opt =>
             {
@@ -120,9 +121,10 @@ internal class Program
             });
         
         builder.Services.AddHealthChecks();
-
+        
+        
         var app = builder.Build();
-    
+        
         using (var scope = app.Services.CreateScope())
         {
             var options = new DbContextOptionsBuilder<DataContext>()
@@ -133,14 +135,14 @@ internal class Program
             db.Database.Migrate();
             Extensions.Seed(options);
             var job = scope.ServiceProvider.GetRequiredService<UpdateDeleteJob>();
-            RecurringJob.AddOrUpdate("deleteJob",() => job.PermDelete(), Cron.Daily);
+            RecurringJob.AddOrUpdate("deleteJob", () => job.PermDelete(), Cron.Daily);
             RecurringJob.TriggerJob("deleteJob");
         }
 
         app.MapHealthChecks("/healthcheck");
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
+        if(app.Environment.IsDevelopment() || app.Environment.IsStaging())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
@@ -161,9 +163,9 @@ internal class Program
         
         app.UseAuthorization();
         
-        app.UseEndpoints(e =>
+        app.UseEndpoints(endpoints =>
         {
-            e.MapHub<ChatHub>("/chathub");
+            endpoints.MapHub<ChatHub>("/chathub");
         });
         
         app.MapControllers();

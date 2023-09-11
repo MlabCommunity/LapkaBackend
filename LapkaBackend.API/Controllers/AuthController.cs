@@ -1,4 +1,5 @@
-﻿using LapkaBackend.Application.Dtos.Result;
+﻿using System.Security.Claims;
+using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Requests;
 using Microsoft.AspNetCore.Authorization;
@@ -122,7 +123,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> RevokeToken([FromBody] TokenRequest request)
         {
-            await _authService.RevokeToken(request);
+            await _authService.RevokeToken(request, new Guid(HttpContext.User.FindFirstValue("userId")!));
             return NoContent();
         }
 
