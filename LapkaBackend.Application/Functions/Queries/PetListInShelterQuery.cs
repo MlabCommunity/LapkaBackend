@@ -24,7 +24,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
             var query = _dbContext.Animals
                 .Include(a => a.AnimalCategory)
-                .Where(a => a.IsVisible)
+                .Include( a=> a.AnimalViews)
                 .Where(a => a.ShelterId == request.ShelterId);
 
             if (!string.IsNullOrEmpty(request.SortParam))
@@ -105,17 +105,23 @@ namespace LapkaBackend.Application.Functions.Queries
             {
                 Id = p.Id,
                 Name = p.Name,
-                Type = p.AnimalCategory.CategoryName,
+                AnimalCategory = p.AnimalCategory.CategoryName,
                 Gender = p.Gender,
-                Breed = p.Species,
-                Color = p.Marking,
+                Species = p.Species,
+                Marking = p.Marking,
                 Weight = (float)p.Weight,
                 ProfilePhoto = p.ProfilePhoto,
-                Photos = _dbContext.Blobs.Where(x => x.ParentEntityId == p.Id).Select(blob => blob.Id.ToString()).ToArray(),
+                Photos = _dbContext.Blobs
+                            .Where(x => x.ParentEntityId == p.Id)
+                            .Select(blob => blob.Id.ToString())
+                            .ToArray(),
                 Months = p.Months,
                 CreatedAt = p.CreatedAt,
                 IsSterilized = p.IsSterilized,
                 Description = p.Description,
+                Views = p.AnimalViews.Count,
+                IsVisible = p.IsVisible
+
             })
             .ToList();
 
@@ -137,17 +143,19 @@ namespace LapkaBackend.Application.Functions.Queries
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;
-        public string Type { get; set; } = null!;
+        public string Species { get; set; } = null!;
         public string Gender { get; set; } = null!;
-        public string Breed { get; set; } = null!;
-        public string Color { get; set; } = null!;
+        public string Marking { get; set; } = null!;
         public float Weight { get; set; }
-        public string? ProfilePhoto { get; set; }
-        public string[]? Photos { get; set; }
-        public int Months { get; set; }
+        public string Description { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public bool IsSterilized { get; set; }
-        public string Description { get; set; } = null!;
+        public bool IsVisible { get; set; }
+        public int Months { get; set; }
+        public string AnimalCategory { get; set; } = null!;    
+        public string? ProfilePhoto { get; set; }
+        public string[]? Photos { get; set; }       
+        public int Views { get; set; }
     }
 
     public class PetListInShelterResponse

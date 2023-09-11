@@ -31,7 +31,7 @@ namespace LapkaBackend.Application.Functions.Command
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
             }
 
-            var Photos = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.ParentEntityId.ToString()).ToListAsync();
+            var Photos = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.Id.ToString()).ToListAsync();
             await _blobService.DeleteListOfFiles(Photos);
 
             _dbContext.Animals.Remove(result);

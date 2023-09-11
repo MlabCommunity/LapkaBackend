@@ -6,11 +6,13 @@ using LapkaBackend.Domain.Entities;
 using LapkaBackend.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Collections;
+using System.Collections.Generic;
 
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record UpdatePetCommand(Guid PetId, string Description, string Name, Genders Gender, bool IsSterilized, decimal Weight, int Months, string ProfilePhoto, List<string> Photos, bool IsVisible, AnimalCategories AnimalCategory, string Species, string Marking):IRequest;
+    public record UpdatePetCommand(Guid PetId, string Name, string Species, Genders Gender, string Marking, decimal Weight, string Description,   bool IsSterilized, bool IsVisible, int Months, AnimalCategories AnimalCategory, string ProfilePhoto, List<string> Photos):IRequest;
 
 
     public class UpdatePetCommandHandler : IRequestHandler<UpdatePetCommand>
@@ -33,11 +35,7 @@ namespace LapkaBackend.Application.Functions.Command
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
             }
 
-            var PhotosIds = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.Id.ToString()).ToListAsync();
-            await _blobService.DeleteListOfFiles(PhotosIds);
-
             
-
 
             var animalCategory = await _dbContext.AnimalCategories.FirstOrDefaultAsync(r => r.CategoryName == request.AnimalCategory.ToString());
             if (animalCategory is null)
@@ -56,13 +54,23 @@ namespace LapkaBackend.Application.Functions.Command
                 catch (Exception)
                 {
                     throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
-                }             
+                }
             }
 
 
+            if (request.Photos.Count > 5)
+            {
+                throw new BadRequestException("invalid_number_of_photos", "The number of photos must be less or equal to 5");
+            }
+
+            var OldPhotosIds = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.Id.ToString()).ToListAsync();           
+            var OldPhotosToRemove = OldPhotosIds.Except(request.Photos).ToList();
+            await _blobService.DeleteListOfFiles(OldPhotosToRemove);
+
+            
             for (int i = 0; i < request.Photos.Count; i++)
             {
-                if (!string.IsNullOrEmpty(request.Photos[i]))
+                if (!string.IsNullOrEmpty(request.Photos[i]) && !OldPhotosIds.Contains(request.Photos[i]))
                 {
                     try
                     {

@@ -183,7 +183,7 @@ namespace LapkaBackend.API.Controllers
         [ProducesResponseType(typeof(PetListInShelterResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PetListInShelter(
-            [FromQuery] int pageNumber = 1, int pageSize = 10,string sortParam="", bool asc=false)
+            [FromQuery] int pageNumber = 1, int pageSize = 10, string sortParam="", bool asc=false)
         {
             var query = new PetListInShelterQuery(await GetShelterIdByLoggedUser(), pageNumber, pageSize, sortParam,asc);
             return Ok(await _mediator.Send(query));
