@@ -103,7 +103,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
             var petsList =  FoundAnimals.Select( p => new PetInListInShelterDto()
             {
-                Id = p.Id,
+                PetId = p.Id,
                 Name = p.Name,
                 AnimalCategory = p.AnimalCategory.CategoryName,
                 Gender = p.Gender,
@@ -141,7 +141,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
     public class PetInListInShelterDto
     {
-        public Guid Id { get; set; }
+        public Guid PetId { get; set; }
         public string Name { get; set; } = null!;
         public string Species { get; set; } = null!;
         public string Gender { get; set; } = null!;

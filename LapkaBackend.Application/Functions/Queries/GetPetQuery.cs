@@ -21,7 +21,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
         public async Task<PetDto> Handle(GetPetQuery request, CancellationToken cancellationToken)
         {
-            var FoundAnimal = await _dbContext.Animals.Include(a => a.AnimalCategory).FirstOrDefaultAsync(x => x.Id == request.PetId && x.IsVisible);
+            var FoundAnimal = await _dbContext.Animals.Include(a => a.AnimalCategory).FirstOrDefaultAsync(x => x.Id == request.PetId);
             if (FoundAnimal is null)
             {
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
@@ -39,7 +39,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
             var petDto = new PetDto()
             {
-                Id = FoundAnimal.Id,
+                PetId = FoundAnimal.Id,
                 Name = FoundAnimal.Name,
                 AnimalCategory = FoundAnimal.AnimalCategory.CategoryName,
                 Gender = FoundAnimal.Gender,
@@ -68,7 +68,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
     public class PetDto
     {
-        public Guid Id { get; set; }
+        public Guid PetId { get; set; }
         public string Name { get; set; } = null!;
         public string Species { get; set; } = null!;
         public string Gender { get; set; } = null!;

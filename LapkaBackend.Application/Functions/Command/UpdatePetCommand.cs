@@ -43,6 +43,9 @@ namespace LapkaBackend.Application.Functions.Command
                 throw new BadRequestException("invalid_AnimalCategory", "Animal category doesn't exists");
             }
 
+            var OldPhotosIds = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.Id.ToString()).ToListAsync();
+            await _blobService.DeleteListOfFiles(OldPhotosIds);
+
             if (!string.IsNullOrEmpty(request.ProfilePhoto))
             {                              
                 try
@@ -56,21 +59,10 @@ namespace LapkaBackend.Application.Functions.Command
                     throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
                 }
             }
-
-
-            if (request.Photos.Count > 5)
-            {
-                throw new BadRequestException("invalid_number_of_photos", "The number of photos must be less or equal to 5");
-            }
-
-            var OldPhotosIds = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.Id.ToString()).ToListAsync();           
-            var OldPhotosToRemove = OldPhotosIds.Except(request.Photos).ToList();
-            await _blobService.DeleteListOfFiles(OldPhotosToRemove);
-
-            
+           
             for (int i = 0; i < request.Photos.Count; i++)
             {
-                if (!string.IsNullOrEmpty(request.Photos[i]) && !OldPhotosIds.Contains(request.Photos[i]))
+                if (!string.IsNullOrEmpty(request.Photos[i]))
                 {
                     try
                     {

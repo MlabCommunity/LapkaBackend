@@ -129,6 +129,38 @@ namespace LapkaBackend.Application.Services
             await _dbContext.SaveChangesAsync();
 
         }
+
+        public async Task RemoveWorkerByShelter(Guid userId, Guid shelterId)
+        {
+            var userResult = await _dbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(x => x.Id == userId && x.ShelterId==shelterId);
+
+            if (userResult is null)
+            {
+                throw new BadRequestException("invalid_user", "User not found!");
+            }
+
+            if (userResult.Role.RoleName != "Worker")
+            {
+                throw new BadRequestException("invalid_user", "You can not remove anyone other than worker");
+            }
+
+            _dbContext.Users.Remove(userResult);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<GetUsersByRoleQueryResult> ListOfWorkersInShelter(Guid shelterId)
+        {
+            var users = await _dbContext.Users
+            .Where(u => u.Role.RoleName == Roles.Worker.ToString() && u.ShelterId == shelterId && u.SoftDeleteAt == null)
+            .ToListAsync();
+
+            var result = new GetUsersByRoleQueryResult
+            {
+                Users = _mapper.Map<List<UserDto>>(users)
+            };
+
+            return result;
+        }
     }
 }
 
