@@ -189,9 +189,12 @@ namespace LapkaBackend.Application.Services
 
         public async Task<UseRefreshTokenResultDto> RefreshAccessToken(UseRefreshTokenRequest request)
         {
-            var jwtAccessToken = new JwtSecurityToken(request.AccessToken);
-
-            if (jwtAccessToken == null)
+            JwtSecurityToken jwtAccessToken;
+            try
+            {
+                jwtAccessToken = new JwtSecurityToken(request.AccessToken);   
+            }
+            catch (Exception)
             {
                 throw new BadRequestException("invalid_token", "Invalid token");
             }

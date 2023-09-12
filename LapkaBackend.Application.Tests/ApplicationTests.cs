@@ -55,7 +55,6 @@ public class Tests
         _userService = new UserService(_dbContext.Object, _emailService.Object, null!, _httpContextAccessor.Object);
     }
 
-    //TODO: Validation when access token is just a string, not a JWT token in RefreshAccessToken method
     [Test]
     public void Test_VerifyEmail_WithCorrectToken_ResultSetVerifiedAtInDataBaseOnCurrentDate()
     {
