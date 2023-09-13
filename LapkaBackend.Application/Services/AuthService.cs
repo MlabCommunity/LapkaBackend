@@ -382,7 +382,7 @@ namespace LapkaBackend.Application.Services
                 IsDailyHelpActive = false,
                 IsDonationActive = false,
                 IsTakingDogsOutActive = false,
-                TakingDogsOutDesctiption = null,
+                TakingDogsOutDescription = null,
             };
 
             await _dbContext.SheltersVolunteering.AddAsync(newShelterVolunteering);

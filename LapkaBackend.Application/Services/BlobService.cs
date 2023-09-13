@@ -155,8 +155,15 @@ public class BlobService : IBlobService
             throw new BadRequestException("invalid_image", "Format of image is invalid");
         }
         
-        await DeleteFileAsync(pictureId);
-        await UploadFileAsync(file, oldFile.ParentEntityId, "lappka-img", pictureId);
+        await _storageContext.DeleteFileAsync(oldFile);
+        
+        oldFile.UploadName = file.FileName;
+        oldFile.BlobName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+        oldFile.FileType = file.ContentType;
+        _dbContext.Blobs.Update(oldFile);
+        await _dbContext.SaveChangesAsync();
+        
+        await _storageContext.UploadFileAsync(file, "lappka-img", oldFile.BlobName);
     }
 
     public async Task UpdateFileAsShelterAsync(IFormFile file, Guid id)
@@ -173,9 +180,22 @@ public class BlobService : IBlobService
             throw new NotFoundException("invalid_id", "File does not exists");
         }
 
-        await DeleteFileAsync(id);
-
-        await UploadFileAsync(file, oldFile.ParentEntityId, "lappka-others", id);
+        await _storageContext.DeleteFileAsync(oldFile);
+        
+        oldFile.UploadName = file.FileName;
+        oldFile.BlobName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+        oldFile.FileType = file.ContentType;
+        _dbContext.Blobs.Update(oldFile);
+        await _dbContext.SaveChangesAsync();
+        
+        if (!_pictureTypes.Contains(file.ContentType))
+        {
+            await _storageContext.UploadFileAsync(file, "lappka-others", oldFile.BlobName);
+        }
+        else
+        {
+            await _storageContext.UploadFileAsync(file, "lappka-img", oldFile.BlobName);
+        }
     }
 
     public async Task UpdateFileName(Guid id, string newName, Guid userId)
