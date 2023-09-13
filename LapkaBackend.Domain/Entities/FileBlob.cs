@@ -7,5 +7,6 @@
         public string BlobName { get; set; } = string.Empty;
         public string FileType { get; set; } = string.Empty;
         public Guid ParentEntityId { get; set; }
+        public int? Index { get; set; }
     }
 }

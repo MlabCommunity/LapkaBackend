@@ -61,11 +61,6 @@ namespace LapkaBackend.Application.Validators;
                     .WithMessage("Invalid Species. Species must be up to 50 characters")
                     .WithErrorCode("invalid_species");
 
-            RuleFor(x => x.ProfilePhoto)
-                    .MaximumLength(50)
-                    .WithMessage("Invalid Photo")
-                    .WithErrorCode("invalid_photo");
-
             RuleFor(x => x.Photos)
                 .Must(photos => photos.Count <= 5)
                 .WithMessage("Photos array can have a maximum of 5 elements.")
