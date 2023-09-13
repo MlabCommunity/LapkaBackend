@@ -23,4 +23,5 @@
       <ProjectReference Include="..\LapkaBackend.Application\LapkaBackend.Application.csproj" />
     </ItemGroup>
 
+
 </Project>
