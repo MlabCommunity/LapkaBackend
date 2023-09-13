@@ -11,6 +11,6 @@
         public bool IsDailyHelpActive { get; set; }
         public string? DailyHelpDescription { get; set; }
         public bool IsTakingDogsOutActive { get; set; }
-        public string? TakingDogsOutDesctiption { get; set; }
+        public string? TakingDogsOutDescription { get; set; }
     }
 }
