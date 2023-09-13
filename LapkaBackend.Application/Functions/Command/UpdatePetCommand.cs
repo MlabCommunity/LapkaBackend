@@ -12,7 +12,7 @@ using System.Collections.Generic;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record UpdatePetCommand(Guid PetId, string Name, string Species, Genders Gender, string Marking, decimal Weight, string Description,   bool IsSterilized, bool IsVisible, int Months, AnimalCategories AnimalCategory, string ProfilePhoto, List<string> Photos):IRequest;
+    public record UpdatePetCommand(Guid PetId, string Name, string Species, Genders Gender, string Marking, decimal Weight, string Description,   bool IsSterilized, bool IsVisible, int Months, AnimalCategories AnimalCategory, List<string> Photos):IRequest;
 
 
     public class UpdatePetCommandHandler : IRequestHandler<UpdatePetCommand>
@@ -28,14 +28,11 @@ namespace LapkaBackend.Application.Functions.Command
 
         public async Task Handle(UpdatePetCommand request, CancellationToken cancellationToken)
         {
-            var result = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == request.PetId);
-
-            if (result is null)
+            var foundAnimal = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == request.PetId);
+            if (foundAnimal is null)
             {
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
             }
-
-            
 
             var animalCategory = await _dbContext.AnimalCategories.FirstOrDefaultAsync(r => r.CategoryName == request.AnimalCategory.ToString());
             if (animalCategory is null)
@@ -43,23 +40,7 @@ namespace LapkaBackend.Application.Functions.Command
                 throw new BadRequestException("invalid_AnimalCategory", "Animal category doesn't exists");
             }
 
-            var OldPhotosIds = await _dbContext.Blobs.Where(x => x.ParentEntityId == request.PetId).Select(blob => blob.Id.ToString()).ToListAsync();
-            await _blobService.DeleteListOfFiles(OldPhotosIds);
 
-            if (!string.IsNullOrEmpty(request.ProfilePhoto))
-            {                              
-                try
-                {                  
-                    var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
-                    fileProfile.ParentEntityId = result.Id;
-                    result.ProfilePhoto = request.ProfilePhoto;
-                }
-                catch (Exception)
-                {
-                    throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
-                }
-            }
-           
             for (int i = 0; i < request.Photos.Count; i++)
             {
                 if (!string.IsNullOrEmpty(request.Photos[i]))
@@ -67,7 +48,12 @@ namespace LapkaBackend.Application.Functions.Command
                     try
                     {
                         var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
-                        file.ParentEntityId = result.Id;
+                        file.ParentEntityId = foundAnimal.Id;
+                        file.Index = i;
+                        if (i == 0)
+                        {
+                            foundAnimal.ProfilePhoto = request.Photos[i];
+                        }
                     }
                     catch (Exception)
                     {
@@ -77,18 +63,19 @@ namespace LapkaBackend.Application.Functions.Command
                 }
             }
 
-            result.AnimalCategory = animalCategory;
-            result.Description = request.Description;
-            result.Gender = request.Gender.ToString();
-            result.IsSterilized = request.IsSterilized;
-            result.IsVisible = request.IsVisible;
-            result.Marking = request.Marking;
-            result.Months = request.Months;
-            result.Name = request.Name;
-            result.Species = request.Species;
-            result.Weight = request.Weight;
 
-            _dbContext.Animals.Update(result);
+            foundAnimal.AnimalCategory = animalCategory;
+            foundAnimal.Description = request.Description;
+            foundAnimal.Gender = request.Gender.ToString();
+            foundAnimal.IsSterilized = request.IsSterilized;
+            foundAnimal.IsVisible = request.IsVisible;
+            foundAnimal.Marking = request.Marking;
+            foundAnimal.Months = request.Months;
+            foundAnimal.Name = request.Name;
+            foundAnimal.Species = request.Species;
+            foundAnimal.Weight = request.Weight;
+
+            _dbContext.Animals.Update(foundAnimal);
             await _dbContext.SaveChangesAsync();
         }
     }

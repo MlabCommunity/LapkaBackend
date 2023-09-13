@@ -46,9 +46,9 @@ namespace LapkaBackend.Application.Functions.Queries
                 Species = FoundAnimal.Species,
                 Marking = FoundAnimal.Marking,
                 Weight = (float)FoundAnimal.Weight,
-                ProfilePhoto = FoundAnimal.ProfilePhoto,
                 Photos = await _dbContext.Blobs
                             .Where(x => x.ParentEntityId == FoundAnimal.Id)
+                            .OrderBy(blob => blob.Index)
                             .Select(blob => blob.Id.ToString())
                             .ToArrayAsync(),
                 Months = FoundAnimal.Months,
@@ -80,7 +80,6 @@ namespace LapkaBackend.Application.Functions.Queries
         public bool IsVisible { get; set; }
         public int Months { get; set; }
         public string AnimalCategory { get; set; } = null!;
-        public string? ProfilePhoto { get; set; }
         public string[]? Photos { get; set; }
     }
 

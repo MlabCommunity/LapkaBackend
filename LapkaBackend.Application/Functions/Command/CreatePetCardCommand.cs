@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Marking, AnimalCategories AnimalCategory, string Species, string ProfilePhoto, List<string> Photos, Guid ShelterId) : IRequest;
+    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Marking, AnimalCategories AnimalCategory, string Species, List<string> Photos, Guid ShelterId) : IRequest;
 
 
     public class CreateCatCardCommandHandler : IRequestHandler<CreatePetCardCommand>
@@ -58,21 +58,6 @@ namespace LapkaBackend.Application.Functions.Command
             await _dbContext.Animals.AddAsync(newAnimal);
             await _dbContext.SaveChangesAsync();
 
-
-            
-            if (!string.IsNullOrEmpty(request.ProfilePhoto))
-            {                              
-                try
-                {                  
-                    var fileProfile = _dbContext.Blobs.First(x => x.Id == new Guid(request.ProfilePhoto));
-                    fileProfile.ParentEntityId = newAnimal.Id;
-                    newAnimal.ProfilePhoto = request.ProfilePhoto;
-                }
-                catch (Exception)
-                {
-                    throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
-                }             
-            }
             
 
             for (int i = 0; i < request.Photos.Count; i++)
@@ -83,6 +68,11 @@ namespace LapkaBackend.Application.Functions.Command
                     {
                         var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
                         file.ParentEntityId = newAnimal.Id;
+                        file.Index = i;
+                        if (i == 0)
+                        {
+                            newAnimal.ProfilePhoto = request.Photos[i];
+                        }
                     }
                     catch (Exception)
                     {
