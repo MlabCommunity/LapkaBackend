@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.EntityFrameworkCore;
 
-namespace LapkaBackend.Application.Tests;
+namespace LapkaBackend.Application.Tests.Helper;
 
 public abstract class Mocker
 {

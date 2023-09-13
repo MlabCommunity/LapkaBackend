@@ -1,5 +1,6 @@
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Interfaces;
+using LapkaBackend.Application.Tests.Helper;
 using LapkaBackend.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Serilog;
@@ -21,13 +22,15 @@ public class Tests
     [SetUp]
     public void Setup()
     {
-        var userMock = _proxyGenerator.CreateClassProxy<User>();
-        userMock.FirstName = "John";
-        userMock.LastName = "Doe";
-        userMock.Email = "john@example.com";
-        userMock.Password = BCrypt.Net.BCrypt.HashPassword("zaq1@WSX");
-        userMock.VerificationToken = "token";
-        userMock.Role = new Role { RoleName = Roles.User.ToString() };
+        //TODO Move it to individual tests and use only what is needed
+        var userMock = new UserMockBuilder()
+            .WithFirstName("John")
+            .WithLastName("Doe")
+            .WithEmail("john@example.com")
+            .WithPassword("zaq1@WSX")
+            .WithVerificationToken("token")
+            .WithRole(new Role { RoleName = Roles.User.ToString() })
+            .Build();
 
         var usersMock = Mocker.MockDbSet(userMock);
 
@@ -56,20 +59,20 @@ public class Tests
     }
 
     [Test]
-    public void Test_VerifyEmail_WithCorrectToken_ResultSetVerifiedAtInDataBaseOnCurrentDate()
+    public void VerifyEmail_WithCorrectToken_SetsVerifiedAtInDatabaseToCurrentDate()
     {
         _userService.VerifyEmail("token").Wait();
         Assert.That(_dbContext.Object.Users.First().VerifiedAt, Is.Not.Null);
     }
 
     [Test]
-    public void Test_VerifyEmail_WithIncorrectToken_ResultBadRequestException()
+    public void VerifyEmail_WithIncorrectToken_ThrowsBadRequestException()
     {
         Assert.ThrowsAsync<BadRequestException>(async () => await _userService.VerifyEmail("wrong_token"));
     }
 
     [Test]
-    public void Test_LoginUser_WithWrongEmail_ResultBadRequestException()
+    public void LoginUser_WithWrongEmail_ThrowsBadRequestException()
     {
         _userService.VerifyEmail("token").Wait();
         var credentials = new LoginMobileRequest
@@ -82,7 +85,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginUser_WithNotVerifiedMail_ResultForbiddenException()
+    public void LoginUser_WithNotVerifiedMail_ThrowsForbiddenException()
     {
         var credentials = new LoginMobileRequest
         {
@@ -94,7 +97,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginUser_WithWrongPassword_ResultBadRequestException()
+    public void LoginUser_WithWrongPassword_ThrowsBadRequestException()
     {
         _userService.VerifyEmail("token").Wait();
         var credentials = new LoginMobileRequest
@@ -107,7 +110,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginUser_WithShelterRole_ResultBadRequestException()
+    public void LoginUser_WithShelterRole_ThrowsBadRequestException()
     {
         _userService.VerifyEmail("token").Wait();
         _dbContext.Object.Users.First().Role = new Role { RoleName = Roles.Shelter.ToString() };
@@ -122,7 +125,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginUser_WithUndefinedRole_ResultBadRequestException()
+    public void LoginUser_WithUndefinedRole_ThrowsBadRequestException()
     {
         _userService.VerifyEmail("token").Wait();
         _dbContext.Object.Users.First().Role = new Role { RoleName = Roles.Undefined.ToString() };
@@ -137,7 +140,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginUser_WithCorrectData_ResultLoginResultDto()
+    public void LoginUser_WithCorrectData_ReturnsLoginResultDto()
     {
         _userService.VerifyEmail("token").Wait();
         _dbContext.Object.Users.First().RefreshToken = _authService.CreateRefreshToken();
@@ -159,7 +162,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_RegisterUser_WithExistingEmail_ResultBadRequestException()
+    public void RegisterUser_WithExistingEmail_ThrowsBadRequestException()
     {
         var credentials = new UserRegistrationRequest
         {
@@ -174,7 +177,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginShelter_WithWrongEmail_ResultBadRequestException()
+    public void LoginShelter_WithWrongEmail_ThrowsBadRequestException()
     {
         _userService.VerifyEmail("token").Wait();
         var credentials = new LoginMobileRequest
@@ -187,7 +190,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginShelter_WithNotVerifiedMail_ResultForbiddenException()
+    public void LoginShelter_WithNotVerifiedMail_ThrowsForbiddenException()
     {
         var credentials = new LoginMobileRequest
         {
@@ -199,7 +202,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginShelter_WithWrongPassword_ResultBadRequestException()
+    public void LoginShelter_WithWrongPassword_ThrowsBadRequestException()
     {
         _userService.VerifyEmail("token").Wait();
         var credentials = new LoginMobileRequest
@@ -212,7 +215,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginShelter_WithUserRole_ResultBadRequestException()
+    public void LoginShelter_WithUserRole_ThrowsBadRequestException()
     {
         _userService.VerifyEmail("token").Wait();
 
@@ -226,7 +229,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginShelter_WithUndefinedRole_ResultBadRequestException()
+    public void LoginShelter_WithUndefinedRole_ThrowsBadRequestException()
     {
         _userService.VerifyEmail("token").Wait();
         _dbContext.Object.Users.First().Role = new Role { RoleName = Roles.Undefined.ToString() };
@@ -241,7 +244,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_LoginShelter_WithCorrectData_ResultLoginResultDto()
+    public void LoginShelter_WithCorrectData_ReturnsLoginResultDto()
     {
         _userService.VerifyEmail("token").Wait();
         _dbContext.Object.Users.First().RefreshToken = _authService.CreateRefreshToken();
@@ -264,7 +267,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_RefreshAccessToken_WithInvalidAccessToken_ResultBadRequestException()
+    public void RefreshAccessToken_WithInvalidAccessToken_ThrowsBadRequestException()
     {
         var credentials = new UseRefreshTokenRequest
         {
@@ -276,7 +279,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_RefreshAccessToken_WithInvalidRefreshToken_ResultBadRequestException()
+    public void RefreshAccessToken_WithInvalidRefreshToken_ThrowsBadRequestException()
     {
         var credentials = new UseRefreshTokenRequest
         {
@@ -288,7 +291,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_RefreshAccessToken_WithCorrectData_ResultUserRefreshTokenDtoIsNotNull()
+    public void RefreshAccessToken_WithCorrectData_ReturnsUserRefreshTokenDtoIsNotNull()
     {
         var credentials = new UseRefreshTokenRequest
         {
@@ -306,7 +309,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_CreateAccessToken_WithCorrectAccessToken_ResultStringIsNotNull()
+    public void CreateAccessToken_WithCorrectAccessToken_ReturnsStringIsNotNull()
     {
         var expected = _authService.CreateAccessToken(_dbContext.Object.Users.First());
 
@@ -314,7 +317,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_CreateRefreshToken_WithCorrectRefreshToken_ResultStringIsNotNull()
+    public void CreateRefreshToken_WithCorrectRefreshToken_ReturnsStringIsNotNull()
     {
         var expected = _authService.CreateRefreshToken();
 
@@ -322,7 +325,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_IsTokenValid_WithWrongToken_ResultFalse()
+    public void IsTokenValid_WithWrongToken_ReturnsFalse()
     {
         var expected = _authService.IsTokenValid("wrong_token");
 
@@ -330,7 +333,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_IsTokenValid_WithCorrectRefreshToken_ResultTrue()
+    public void IsTokenValid_WithCorrectRefreshToken_ReturnsTrue()
     {
         var expected = _authService.IsTokenValid(_authService.CreateRefreshToken());
 
@@ -338,7 +341,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_IsTokenValid_WithCorrectAccessToken_ResultTrue()
+    public void IsTokenValid_WithCorrectAccessToken_ReturnsTrue()
     {
         var expected = _authService.IsTokenValid(_authService.CreateAccessToken(_dbContext.Object.Users.First()));
 
@@ -346,7 +349,7 @@ public class Tests
     }
 
     [Test]
-    public void Test_RevokeToken_WithIncorrectRefreshToken_ResultBadRequestException()
+    public void RevokeToken_WithIncorrectRefreshToken_ThrowsBadRequestException()
     {
         var credentials = new TokenRequest
         {
@@ -357,25 +360,26 @@ public class Tests
     }
 
     [Test]
-    public void Test_ResetPassword_WithIncorrectEmail_ResultBadRequestException()
+    public void ResetPassword_WithIncorrectEmail_ThrowsBadRequestException()
     {
         var credentials = new UserEmailRequest
         {
             Email = "wrong_email@example.com"
         };
-        
+
         Assert.ThrowsAsync<BadRequestException>(async () => await _authService.ResetPassword(credentials));
     }
-    
+
     [Test]
-    public void Test_SetNewPassword_WithIncorrectToken_ResultBadRequestException()
+    public void SetNewPassword_WithIncorrectToken_ThrowsBadRequestException()
     {
         var credentials = new ResetPasswordRequest
         {
             Password = "zaq1@WSX",
             ConfirmPassword = "zaq1@WSX"
         };
-        
-        Assert.ThrowsAsync<BadRequestException>(async () => await _authService.SetNewPassword(credentials, "wrong_token"));
+
+        Assert.ThrowsAsync<BadRequestException>(async () =>
+            await _authService.SetNewPassword(credentials, "wrong_token"));
     }
 }
