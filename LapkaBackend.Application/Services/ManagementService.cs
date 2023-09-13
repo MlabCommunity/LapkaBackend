@@ -130,9 +130,9 @@ namespace LapkaBackend.Application.Services
 
         }
 
-        public async Task RemoveWorkerByShelter(Guid userId, Guid shelterId)
+        public async Task RemoveWorkerByShelter(string email, Guid shelterId)
         {
-            var userResult = await _dbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(x => x.Id == userId && x.ShelterId==shelterId);
+            var userResult = await _dbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(x => x.Email == email && x.ShelterId==shelterId);
 
             if (userResult is null)
             {

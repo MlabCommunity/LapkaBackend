@@ -33,7 +33,7 @@ namespace LapkaBackend.Application.Functions.Command
                 shelterVolunteering.IsDailyHelpActive = request.IsDailyHelpActive;
                 shelterVolunteering.IsDonationActive = request.IsDonationActive;
                 shelterVolunteering.IsTakingDogsOutActive = request.IsTakingDogsOutActive;
-                shelterVolunteering.TakingDogsOutDesctiption = request.TakingDogsOutDescription;
+                shelterVolunteering.TakingDogsOutDescription = request.TakingDogsOutDescription;
 
                 _dbContext.SheltersVolunteering.Update(shelterVolunteering);
                 await _dbContext.SaveChangesAsync();
