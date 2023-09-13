@@ -10,7 +10,7 @@ namespace LapkaBackend.Application.Interfaces
         public Task<GetUsersByRoleQueryResult> ListOfUsersWithTheSpecifiedRole(Roles role);
         public Task AddWorkerByAdmin(string userId);
         public Task RemoveWorkerByAdmin(string userId);
-        public Task RemoveWorkerByShelter(Guid userId, Guid shelterId);
+        public Task RemoveWorkerByShelter(string email, Guid shelterId);
         public Task<GetUsersByRoleQueryResult> ListOfWorkersInShelter(Guid shelterId);
     }
 }

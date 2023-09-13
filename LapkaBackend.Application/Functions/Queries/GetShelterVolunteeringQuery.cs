@@ -33,7 +33,7 @@ namespace LapkaBackend.Application.Functions.Queries
                 IsDailyHelpActive = shelterVolunteering.IsDailyHelpActive,
                 DailyHelpDescription = shelterVolunteering.DailyHelpDescription,
                 IsTakingDogsOutActive = shelterVolunteering.IsTakingDogsOutActive,
-                TakingDogsOutDesctiption = shelterVolunteering.TakingDogsOutDesctiption
+                TakingDogsOutDescription = shelterVolunteering.TakingDogsOutDesctiption
             };
 
             return shelterVolunteeringDto;
@@ -48,7 +48,7 @@ namespace LapkaBackend.Application.Functions.Queries
         public bool IsDailyHelpActive { get; set; }
         public string? DailyHelpDescription { get; set; }
         public bool IsTakingDogsOutActive { get; set; }
-        public string? TakingDogsOutDesctiption { get; set; }
+        public string? TakingDogsOutDescription { get; set; }
     }
 
 }
