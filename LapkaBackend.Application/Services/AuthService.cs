@@ -200,9 +200,9 @@ namespace LapkaBackend.Application.Services
             var tokenExist = await _dbContext.Users
                 .AnyAsync(x => x.RefreshToken == request.RefreshToken);
             
-            if (!IsTokenValid(request.RefreshToken) && !tokenExist)
+            if (!IsTokenValid(request.RefreshToken) || !tokenExist)
             {
-                throw new BadRequestException("invalid_token", "Invalid token");
+                throw new BadRequestException("invalid_refresh_token", "Invalid token");
             }
             
             var emailClaim = jwtAccessToken.Claims.ToList().FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
@@ -326,7 +326,7 @@ namespace LapkaBackend.Application.Services
 
             if (result is null || result.RefreshToken != request.RefreshToken)
             {
-                throw new BadRequestException("invalid_token", "Refresh Token is invalid");
+                throw new BadRequestException("invalid_refresh_token", "Refresh Token is invalid you need to log in");
             }
             result.RefreshToken = "";
             _dbContext.Users.Update(result);
