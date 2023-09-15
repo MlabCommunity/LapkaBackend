@@ -41,23 +41,6 @@ namespace LapkaBackend.Application.Functions.Command
                 throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
             }
 
-            List<FileBlob> files = new List<FileBlob>();
-            for (int i = 0; i < request.Photos.Count; i++)
-            {
-                if (!string.IsNullOrEmpty(request.Photos[i]))
-                {
-                    try
-                    {
-                        files[i] = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
-                    }
-                    catch (Exception)
-                    {
-
-                        throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
-                    }
-                }
-            }
-
             var newAnimal = new Animal
             {
                 Name = request.Name,
@@ -77,22 +60,31 @@ namespace LapkaBackend.Application.Functions.Command
             await _dbContext.Animals.AddAsync(newAnimal);
             await _dbContext.SaveChangesAsync();
 
-            
+
 
             for (int i = 0; i < request.Photos.Count; i++)
             {
                 if (!string.IsNullOrEmpty(request.Photos[i]))
                 {
-                    files[i].ParentEntityId = newAnimal.Id;
-                    files[i].Index = i;
-                    if (i == 0)
+                    try
                     {
-                        newAnimal.ProfilePhoto = request.Photos[i];
-                    }                   
-                }                           
+                        var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
+                        file.ParentEntityId = newAnimal.Id;
+                        file.Index = i;
+                        if (i == 0)
+                        {
+                            newAnimal.ProfilePhoto = request.Photos[i];
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
+                    }
+                }
             }
             _dbContext.Animals.Update(newAnimal);
             await _dbContext.SaveChangesAsync();
+
         }
     }
 
