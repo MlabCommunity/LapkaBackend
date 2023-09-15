@@ -110,7 +110,6 @@ namespace LapkaBackend.Application.Functions.Queries
                 Species = p.Species,
                 Marking = p.Marking,
                 Weight = (float)p.Weight,
-                ProfilePhoto = p.ProfilePhoto,
                 Photos = _dbContext.Blobs
                             .Where(x => x.ParentEntityId == p.Id)
                             .Select(blob => blob.Id.ToString())
@@ -153,7 +152,6 @@ namespace LapkaBackend.Application.Functions.Queries
         public bool IsVisible { get; set; }
         public int Months { get; set; }
         public string AnimalCategory { get; set; } = null!;    
-        public string? ProfilePhoto { get; set; }
         public string[]? Photos { get; set; }       
         public int Views { get; set; }
     }
