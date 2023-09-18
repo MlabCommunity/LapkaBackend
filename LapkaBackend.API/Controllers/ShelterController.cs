@@ -202,18 +202,18 @@ namespace LapkaBackend.API.Controllers
             return Ok(await _mediator.Send(petListQuery));
         }
 
-    /// <summary>
-    ///     Usunięcie karty zwierzęcia
-    /// </summary>
-    [HttpDelete("cards/delete/{petId}")]
-    [Authorize(Roles = "Shelter")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> DeletePet([FromRoute] Guid petId)
-    {
-        var query = new DeletePetCommand(petId);
-        await _mediator.Send(query);
-        return NoContent();
-    }
+        /// <summary>
+        ///     Usunięcie karty zwierzęcia
+        /// </summary>
+        [HttpDelete("cards/delete/{petId}")]
+        [Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DeletePet([FromRoute] Guid petId)
+        {
+            var query = new DeletePetCommand(petId);
+            await _mediator.Send(query);
+            return NoContent();
+        }
 
 
         /// <summary>
@@ -228,33 +228,33 @@ namespace LapkaBackend.API.Controllers
             return Ok(await _mediator.Send(query));
         }
 
-    /// <summary>
-    ///     Publikacja zwierzęcia
-    /// </summary>
-    [HttpPut("cards/publish/{petId}")]
-    [Authorize(Roles = "Shelter")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> PublishPet([FromRoute] Guid petId)
-    {
-        var command = new PublishPetCommand(petId);
-        await _mediator.Send(command);
-        return NoContent();
-    }
+        /// <summary>
+        ///     Publikacja zwierzęcia
+        /// </summary>
+        [HttpPut("cards/publish/{petId}")]
+        [Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PublishPet([FromRoute] Guid petId)
+        {
+            var command = new PublishPetCommand(petId);
+            await _mediator.Send(command);
+            return NoContent();
+        }
 
-    /// <summary>
-    ///     Schowanie zwierzęcia
-    /// </summary>
-    [HttpPut("cards/hide/{petId}")]
-    [Authorize(Roles = "Shelter")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> HidePet([FromRoute] Guid petId)
-    {
-        var command = new HidePetCommand(petId);
-        await _mediator.Send(command);
-        return NoContent();
-    }
+        /// <summary>
+        ///     Schowanie zwierzęcia
+        /// </summary>
+        [HttpPut("cards/hide/{petId}")]
+        [Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> HidePet([FromRoute] Guid petId)
+        {
+            var command = new HidePetCommand(petId);
+            await _mediator.Send(command);
+            return NoContent();
+        }
 
         /// <summary>
         ///     Update danych dot. wolontariatu schroniska
