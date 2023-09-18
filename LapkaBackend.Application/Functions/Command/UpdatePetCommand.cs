@@ -8,7 +8,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Collections.Generic;
-
+using Serilog;
 
 namespace LapkaBackend.Application.Functions.Command
 {
@@ -19,11 +19,13 @@ namespace LapkaBackend.Application.Functions.Command
     {
         private readonly IDataContext _dbContext;
         private readonly IBlobService _blobService;
+        private readonly ILogger _logger;
 
-        public UpdatePetCommandHandler(IDataContext dbContext, IBlobService blobService)
+        public UpdatePetCommandHandler(IDataContext dbContext, IBlobService blobService, ILogger logger)
         {
             _dbContext = dbContext;
             _blobService = blobService;
+            _logger = logger;
         }
 
         public async Task Handle(UpdatePetCommand request, CancellationToken cancellationToken)
@@ -55,10 +57,9 @@ namespace LapkaBackend.Application.Functions.Command
                             foundAnimal.ProfilePhoto = request.Photos[i];
                         }
                     }
-                    catch (Exception)
+                    catch
                     {
-
-                        throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
+                        _logger.Warning("Photo with ID {0} does not exist", request.Photos[i]);
                     }
                 }
             }

@@ -7,7 +7,9 @@ using LapkaBackend.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Security;
+using Serilog.Core;
 using System.Data;
+using Serilog;
 
 namespace LapkaBackend.Application.Functions.Command
 {
@@ -19,13 +21,14 @@ namespace LapkaBackend.Application.Functions.Command
         private readonly IDataContext _dbContext;
         private readonly IBlobService _blobService;
         private readonly IUserService _userService;
+        private readonly ILogger _logger;
 
-        public CreateCatCardCommandHandler(IDataContext dbContext, IBlobService blobService, IUserService userService)
+        public CreateCatCardCommandHandler(IDataContext dbContext, IBlobService blobService, IUserService userService, ILogger logger)
         {
-
             _dbContext = dbContext;
             _blobService = blobService;
             _userService = userService;
+            _logger = logger;
         }
 
         public async Task Handle(CreatePetCardCommand request, CancellationToken cancellationToken)
@@ -76,9 +79,9 @@ namespace LapkaBackend.Application.Functions.Command
                             newAnimal.ProfilePhoto = request.Photos[i];
                         }
                     }
-                    catch (Exception)
+                    catch
                     {
-                        throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
+                        _logger.Warning("Photo with ID {0} does not exist", request.Photos[i]);
                     }
                 }
             }
