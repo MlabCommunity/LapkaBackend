@@ -28,11 +28,12 @@ public class AdvertisementController : Controller
     [HttpGet ("{longitude:double}/{latitude:double}")]
     [ProducesResponseType(typeof(ShelterPetAdvertisementDtoPagedResult), StatusCodes.Status200OK)]
     [Authorize (Roles = "User, Admin, SuperAdmin")]
-    public async Task<ActionResult> GetAllShelterAdvertisements(double longitude, double latitude, [FromQuery] GetAllShelterAdvertisementsRequest request)
+    public async Task<ActionResult> GetAllShelterAdvertisements(
+        double longitude, double latitude, [FromQuery] GetAllShelterAdvertisementsRequest request, [FromQuery]PaginationDto pagination)
     {
         var userId = new Guid(HttpContext.User.FindFirstValue("userId")!); 
         var items = 
-            await _mediator.Send(new GetAllShelterAdvertisementsQuery(longitude, latitude, request, userId));
+            await _mediator.Send(new GetAllShelterAdvertisementsQuery(longitude, latitude, request, pagination, userId));
             
         return Ok(items);
     }
@@ -44,11 +45,12 @@ public class AdvertisementController : Controller
     [HttpGet ("like/{longitude:double}/{latitude:double}")]
     [ProducesResponseType(typeof(ShelterPetAdvertisementDtoPagedResult), StatusCodes.Status200OK)]
     [Authorize (Roles = "User, Admin, SuperAdmin")]
-    public async Task<ActionResult> GetAllLikedShelterLikedAdvertisements(double longitude, double latitude, [FromQuery] GetAllShelterAdvertisementsRequest request)
+    public async Task<ActionResult> GetAllLikedShelterLikedAdvertisements(
+        double longitude, double latitude, [FromQuery] GetAllShelterAdvertisementsRequest request, [FromQuery]PaginationDto pagination)
     {
         var userId = new Guid(HttpContext.User.FindFirstValue("userId")!); 
         var items = 
-            await _mediator.Send(new GetAllLikedShelterAdvertisementsQuery(longitude, latitude, request, userId));
+            await _mediator.Send(new GetAllLikedShelterAdvertisementsQuery(longitude, latitude, request, pagination, userId));
             
         return Ok(items);
     }

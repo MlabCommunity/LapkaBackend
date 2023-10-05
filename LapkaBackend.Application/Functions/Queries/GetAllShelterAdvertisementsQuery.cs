@@ -9,7 +9,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Queries;
-public record GetAllShelterAdvertisementsQuery(double Longitude, double Latitude, GetAllShelterAdvertisementsRequest Request, Guid UserId) : IRequest<ShelterPetAdvertisementDtoPagedResult>;
+public record GetAllShelterAdvertisementsQuery(double Longitude, double Latitude, GetAllShelterAdvertisementsRequest Request,PaginationDto Pagination, Guid UserId) : IRequest<ShelterPetAdvertisementDtoPagedResult>;
 
 public class GetAllShelterAdvertisementQueryHandler : IRequestHandler<GetAllShelterAdvertisementsQuery, ShelterPetAdvertisementDtoPagedResult>
     {
@@ -44,12 +44,10 @@ public class GetAllShelterAdvertisementQueryHandler : IRequestHandler<GetAllShel
                 }
                 
                 petsFromShelter = petsFromShelter.Where(pet => 
-                    pet.Name.Contains(query.Request.SearchText) 
-                    || shelter.OrganizationName.Contains(query.Request.SearchText) 
-                    || shelter.City.Contains(query.Request.SearchText)).ToList();
+                    pet.Name.Contains(query.Pagination.SearchText)).ToList();
                 
-                petsFromShelter = petsFromShelter.Skip((query.Request.PageNumber - 1) * query.Request.PageSize)
-                    .Take(query.Request.PageSize).ToList();
+                petsFromShelter = petsFromShelter.Skip((query.Pagination.PageNumber - 1) * query.Pagination.PageSize)
+                    .Take(query.Pagination.PageSize).ToList();
                 
                 var userShelter = await _dbContext.Users.FirstOrDefaultAsync(x => x.ShelterId == shelter.Id 
                     && x.RoleId == (int)Roles.Shelter, cancellationToken: cancellationToken);
@@ -81,15 +79,15 @@ public class GetAllShelterAdvertisementQueryHandler : IRequestHandler<GetAllShel
             }
             
             petsAdvertisementsFromShelters = Sorter.SortAdvertisements(petsAdvertisementsFromShelters, query.Request.SortOption, 
-                query.Request.AscendingSort);
+                query.Pagination.AscendingSort);
             
             return new ShelterPetAdvertisementDtoPagedResult
             {
                 Items = petsAdvertisementsFromShelters,
-                ItemsFrom = (query.Request.PageNumber - 1) * query.Request.PageSize + 1,
-                ItemsTo = query.Request.PageNumber * query.Request.PageSize,
+                ItemsFrom = (query.Pagination.PageNumber - 1) * query.Pagination.PageSize + 1,
+                ItemsTo = query.Pagination.PageNumber * query.Pagination.PageSize,
                 TotalItemsCount = petsAdvertisementsFromShelters.Count,
-                TotalPages = (int)Math.Ceiling((double)petsAdvertisementsFromShelters.Count / query.Request.PageSize)
+                TotalPages = (int)Math.Ceiling((double)petsAdvertisementsFromShelters.Count / query.Pagination.PageSize)
             };
         }
     }

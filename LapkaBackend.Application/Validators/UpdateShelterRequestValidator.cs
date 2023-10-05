@@ -1,11 +1,12 @@
 ﻿using FluentValidation;
-using LapkaBackend.Application.Functions.Command;
+using LapkaBackend.Application.Requests;
+
 
 namespace LapkaBackend.Application.Validators;
 
-    public class UpdateShelterValidator : AbstractValidator<UpdateShelterCommand>
+    public class UpdateShelterRequestValidator : AbstractValidator<UpdateShelterRequest>
     {
-        public UpdateShelterValidator()
+        public UpdateShelterRequestValidator()
         {
             RuleFor(x => x.OrganizationName)
             .NotEmpty()

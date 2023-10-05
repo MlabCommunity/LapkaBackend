@@ -57,6 +57,10 @@ namespace LapkaBackend.Infrastructure.ModelBuilders
                  .IsRequired();
 
             modelBuilder.Entity<Shelter>()
+                .Property(u => u.BankAccount)
+                .HasMaxLength(30);
+
+            modelBuilder.Entity<Shelter>()
                 .HasMany(e => e.Animals)
                 .WithOne(e => e.Shelter)
                 .HasForeignKey(e => e.ShelterId)

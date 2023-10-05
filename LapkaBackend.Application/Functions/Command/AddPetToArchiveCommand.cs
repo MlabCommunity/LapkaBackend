@@ -13,22 +13,23 @@ namespace LapkaBackend.Application.Functions.Command
 
         public AddPetToArchiveCommandHandler(IDataContext dbContext)
         {
-
             _dbContext = dbContext;
         }
 
         public async Task Handle(AddPetToArchiveCommand request, CancellationToken cancellationToken)
         {
-            var animal = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == request.PetId);
+            var animal = await _dbContext.Animals
+                .FirstOrDefaultAsync(x => x.Id == request.PetId, cancellationToken: cancellationToken);
 
             if (animal == null)
             {
-                throw new BadRequestException("invalid_pet", "Pet doesn't exists");
+                throw new BadRequestException("invalid_petId", "Pet doesn't exists");
             }
+            
             animal.IsArchival = true;
 
             _dbContext.Animals.Update(animal);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 }

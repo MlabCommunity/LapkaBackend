@@ -1,22 +1,21 @@
 ﻿using LapkaBackend.Application.Common;
-using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Functions.Command;
 using LapkaBackend.Application.Functions.Queries;
-using LapkaBackend.Application.Interfaces;
-using LapkaBackend.Application.Requests;
-using LapkaBackend.Domain.Entities;
-using LapkaBackend.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Dtos.Result;
+using LapkaBackend.Application.Requests;
+using LapkaBackend.Domain.Enums;
 
 namespace LapkaBackend.API.Controllers
 {
-    [Route("[controller]")]
     [ApiController]
+    [Route("shelters")]
     public class ShelterController : Controller
     {
         private readonly ISender _mediator;
@@ -30,231 +29,194 @@ namespace LapkaBackend.API.Controllers
 
 
         /// <summary>
-        ///     update shelter
+        ///     Updates shelter
         /// </summary>
-        [HttpPut("/shelters")]
+        [HttpPut]
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateShelter(UpdateShelterRequest request)
         {
-            var command = new UpdateShelterCommand(await GetShelterIdByLoggedUser(), request.OrganizationName, request.Longitude, request.Latitude, request.City, request.Street, request.ZipCode, request.Nip, request.Krs, request.PhoneNumber);
-            await _mediator.Send(command);
+            await _mediator.Send(new UpdateShelterCommand(await GetShelterIdByLoggedUser(), request));
+            
             return NoContent();
         }
 
         /// <summary>
-        ///     Zwrócenie listy schronisk
+        ///     Get shelter data
         /// </summary>
-        [HttpGet("/shelters")]
-        [Authorize(Roles = "Shelter")]
-        [ProducesResponseType(typeof(List<ShelterInListDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetListOfShelters()
-        {
-            return Ok(await _mediator.Send(new GetListOfSheltersQuery()));
-        }
-
-        /// <summary>
-        ///     Pobranie danych schroniska mobile
-        /// </summary>
-        [HttpGet("/shelters/details/{shelterId}")]
-        [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
-        [ProducesResponseType(typeof(ShelterDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetShelterMoblile([FromRoute] Guid shelterId)
-        {
-            var query = new GetShelterQuery(shelterId);
-            return Ok(await _mediator.Send(query));
-        }
-
-        /// <summary>
-        ///     Pobranie danych schroniska
-        /// </summary>
-        [HttpGet("/shelters/details")]
+        [HttpGet]
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(typeof(ShelterDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetShelter()
         {
-            var query = new GetShelterQuery(await GetShelterIdByLoggedUser());
-            return Ok(await _mediator.Send(query));
+            return Ok(await _mediator.Send(new GetShelterQuery(await GetShelterIdByLoggedUser())));
         }
 
         /// <summary>
-        ///     Utworzenie karty zwierzaka do shroniska
+        ///     Get shelter data
         /// </summary>
-        [HttpPost("/shelters/cards/CreatePet")]
+        [HttpGet("details/{shelterId}")]
+        [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
+        [ProducesResponseType(typeof(ShelterDetailsDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetShelterWithId(Guid shelterId)
+        {
+            return Ok(await _mediator.Send(new GetShelterQuery(shelterId)));
+        }
+
+        /// <summary>
+        ///     Create pet card in shelter
+        /// </summary>
+        [HttpPost("cards/CreatePet")]
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CreatePet(CreatePetCardRequest request)
         {
-
-            var command = new CreatePetCardCommand(request.Name, request.Gender, request.Description, request.IsVisible, request.Months, request.IsSterilized, request.Weight, request.Marking, request.AnimalCategory, request.Species, request.Photos, await GetShelterIdByLoggedUser());
-            await _mediator.Send(command);
+            await _mediator.Send(new CreatePetCardCommand(request, await GetShelterIdByLoggedUser()));
             return NoContent();
         }
 
         /// <summary>
-        ///     Dodanie karty zwierzaka do archiwum
+        ///     Add pet card to archive
         /// </summary>
-        [HttpPost("cards/archive")]
+        [HttpPost("cards/archive/{petId}")]
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AddPetToArchive(AddPetToArchiveCommand petId)
+        public async Task<IActionResult> AddPetToArchive(string petId)
         {
-            await _mediator.Send(petId);
+            await _mediator.Send(new AddPetToArchiveCommand(new Guid(petId)));
             return NoContent();
         }
 
-        // Endpointy do zwracania wyświetleń zwierząt w danym shronisku, wyświetlenia będą się dodawać w endpoincie /shelters/cards/{petId}
+        // Endpointy do zwracania wyświetleń zwierząt w danym shronisku, wyświetlenia będą się dodawać w endpoincie /shelters/cards/Get/{petId}
         /// <summary>
-        ///     liczba wyświetleneń kart zwierząt pogrupowana według miesięcy w roku
+        ///     Gets shelter's stats grouped by months in current year
         /// </summary>
-        [HttpGet("/shelters/cards/chart/year")]
+        [HttpGet("/shelters/cards/archive/chart/year")]
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(typeof(List<int>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ShelterPetsViewsGroupByMonths()
-        {
-
-            var query = new ShelterPetsViewsGroupByMonthsQuery(await GetShelterIdByLoggedUser());
-
-            return Ok(await _mediator.Send(query));
+        { 
+            return Ok(await _mediator.Send(new ShelterPetsViewsGroupByMonthsQuery(await GetShelterIdByLoggedUser())));
         }
 
         /// <summary>
-        ///     liczba wyświetleneń kart zwierząt pogrupowana według dni tygodnia w miesiącu
+        ///     Gets shelter's stats grouped by days in current month
         /// </summary>
-        [HttpGet("/shelters/cards/chart/month")]
+        [HttpGet("cards/archive/chart/month")]
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(typeof(List<int>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ShelterPetsViewsGroupBydaysInMonth()
+        public async Task<IActionResult> ShelterPetsViewsGroupByDaysInMonth()
         {
-            var query = new ShelterPetsViewsGroupByWeeksQuery(await GetShelterIdByLoggedUser());
-            return Ok(await _mediator.Send(query));
+            return Ok(await _mediator.Send(new ShelterPetsViewsGroupByWeeksQuery(await GetShelterIdByLoggedUser())));
         }
 
         /// <summary>
-        ///     liczba wyświetleneń kart zwierząt pogrupowana według dni obecnego tygodnia w w tygodniu
+        ///     Gets shelter's stats grouped by days in current week
         /// </summary>
-        [HttpGet("/shelters/cards/chart/week")]
+        [HttpGet("cards/archive/chart/week")]
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(typeof(List<int>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ShelterPetsViewsGroupByDaysInWeek()
         {
-            var query = new ShelterPetsViewsGroupByDaysInWeekQuery(await GetShelterIdByLoggedUser());
-            return Ok(await _mediator.Send(query));
+            return Ok(await _mediator.Send(new ShelterPetsViewsGroupByDaysInWeekQuery(await GetShelterIdByLoggedUser())));
         }
 
         /// <summary>
-        ///     Update karty zwierzęcia
+        ///     Update shelter's card
         /// </summary>
-        [HttpPut("cards/Update")]
+        [HttpPut("cards")]
         [Authorize(Roles = "Shelter")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdatePet(UpdatePetCommand petToUpdateRequest)
+        public async Task<IActionResult> UpdatePet(UpdateShelterPetRequest request )
         {
-            await _mediator.Send(petToUpdateRequest);
+            await _mediator.Send(new UpdatePetCommand(request));
             return NoContent();
         }
 
         /// <summary>
-        ///     Wyświetlenie kart zwierząt z danego schroniska z paginacją mobile
+        ///     Gets shelter's pets
         /// </summary>
-        [HttpGet("/shelters/cards/petListInShelterMobile")]
+        [HttpGet("/shelters/cards")]
         [Authorize(Roles = "Shelter")]
-        [ProducesResponseType(typeof(PetListInShelterResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShelterPetDetailsDtoPagedResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PetListInShelterMoblie([FromQuery] PetListInShelterQuery petListInShelterQuery)
+        public async Task<IActionResult> PetListInShelter([FromQuery]PaginationDto request, SortAnimalOptions options = SortAnimalOptions.Name)
         {
-            return Ok(await _mediator.Send(petListInShelterQuery));
+            return Ok(await _mediator.Send(new PetListInShelterQuery(request, await GetShelterIdByLoggedUser(), options)));
         }
 
         /// <summary>
-        ///     Wyświetlenie kart zwierząt z zalogowanego schroniska z paginacją
+        ///     Deletes pet from shelter
         /// </summary>
-        [HttpGet("/shelters/cards/petListInShelter")]
+        [HttpDelete("cards/{petId}")]
         [Authorize(Roles = "Shelter")]
-        [ProducesResponseType(typeof(PetListInShelterResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PetListInShelter(
-            [FromQuery] int pageNumber = 1, int pageSize = 10, string sortParam="", bool asc=false)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DeletePet([FromRoute] string petId)
         {
-            var query = new PetListInShelterQuery(await GetShelterIdByLoggedUser(), pageNumber, pageSize, sortParam,asc);
-            return Ok(await _mediator.Send(query));
+            await _mediator.Send(new DeletePetCommand(new Guid(petId)));
+            return NoContent();
         }
-
-        /// <summary>
-        ///     Wyświetlenie kart zwierząt z wszystkich schronisk z paginacją
-        /// </summary>
-        [HttpGet("/shelters/cards/petList")]
-        [Authorize(Roles = "Shelter")]
-        [ProducesResponseType(typeof(PetListResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PetList([FromQuery] PetListQuery petListQuery)
-        {
-            return Ok(await _mediator.Send(petListQuery));
-        }
-
-    /// <summary>
-    ///     Usunięcie karty zwierzęcia
-    /// </summary>
-    [HttpDelete("cards/delete/{petId}")]
-    [Authorize(Roles = "Shelter")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> DeletePet([FromRoute] Guid petId)
-    {
-        var query = new DeletePetCommand(petId);
-        await _mediator.Send(query);
-        return NoContent();
-    }
 
 
         /// <summary>
-        ///     Wyświetlenie zwierzęcia
+        ///     Gets shelter's pet by id
         /// </summary>
-        [HttpGet("/shelters/cards/Get/{petId}")]
+        [HttpGet("/shelters/cards/{petId}")]
         [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
-        [ProducesResponseType(typeof(PetDto), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPet([FromRoute] Guid petId)
+        [ProducesResponseType(typeof(ShelterPetDetailsDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPet([FromRoute] string petId)
         {
-            var query = new GetPetQuery(petId, new Guid(HttpContext.User.FindFirstValue("userId")!));
-            return Ok(await _mediator.Send(query));
+            return Ok(await _mediator.Send(
+                new GetPetQuery(new Guid(petId), new Guid(HttpContext.User.FindFirstValue("userId")!))));
+        }
+        
+        /// <summary>
+        ///     Gets liked shelter's pet
+        /// </summary>
+        [HttpGet("/shelters/cards/liked")]
+        [Authorize(Roles = "User,Worker,Admin,SuperAdmin,Shelter")]
+        [ProducesResponseType(typeof(ShelterPetDetailsDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPet(
+            [FromQuery] PaginationDto pagination, [FromQuery] SortLikedAnimalOption options = SortLikedAnimalOption.Name)
+        {
+            return Ok(await _mediator.Send(
+                new GetLikedPetsQuery(pagination, await GetShelterIdByLoggedUser(), options)));
+        }
+        
+        /// <summary>
+        ///     Publikacja zwierzęcia
+        /// </summary>
+        [HttpPut("cards/publish/{petId}")]
+        [Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PublishPet([FromRoute] string petId)
+        {
+            await _mediator.Send(new PublishPetCommand(new Guid(petId)));
+            return NoContent();
         }
 
-    /// <summary>
-    ///     Publikacja zwierzęcia
-    /// </summary>
-    [HttpPut("cards/publish/{petId}")]
-    [Authorize(Roles = "Shelter")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> PublishPet([FromRoute] Guid petId)
-    {
-        var command = new PublishPetCommand(petId);
-        await _mediator.Send(command);
-        return NoContent();
-    }
-
-    /// <summary>
-    ///     Schowanie zwierzęcia
-    /// </summary>
-    [HttpPut("cards/hide/{petId}")]
-    [Authorize(Roles = "Shelter")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> HidePet([FromRoute] Guid petId)
-    {
-        var command = new HidePetCommand(petId);
-        await _mediator.Send(command);
-        return NoContent();
-    }
+        /// <summary>
+        ///     Schowanie zwierzęcia
+        /// </summary>
+        [HttpPut("cards/hide/{petId}")]
+        [Authorize(Roles = "Shelter")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> HidePet([FromRoute] string petId)
+        {
+            await _mediator.Send(new HidePetCommand(new Guid(petId)));
+            return NoContent();
+        }
 
         /// <summary>
         ///     Update danych dot. wolontariatu schroniska
@@ -311,6 +273,7 @@ namespace LapkaBackend.API.Controllers
         private async Task<Guid> GetShelterIdByLoggedUser()
         {
             Guid? userId = new Guid(HttpContext.User.FindFirstValue("userId")!);
+            
             if (userId is null)
             {
                 throw new BadRequestException("invalid_user", "User doesn't exists");
@@ -320,6 +283,7 @@ namespace LapkaBackend.API.Controllers
                 .Where(u => u.Id == userId)
                 .Select(u => u.ShelterId)
                 .FirstOrDefaultAsync();
+            
             if (shelterId is null)
             {
                 throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");

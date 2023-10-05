@@ -1,6 +1,5 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
-using LapkaBackend.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,12 +1,13 @@
 ﻿using FluentValidation;
 using LapkaBackend.Application.Functions.Command;
+using LapkaBackend.Application.Requests;
 
 
 namespace LapkaBackend.Application.Validators;
 
-    public class CreatePetCardCommandValidator : AbstractValidator<CreatePetCardRequest>
+    public class CreatePetCardRequestValidator : AbstractValidator<CreatePetCardRequest>
     {
-        public CreatePetCardCommandValidator()
+        public CreatePetCardRequestValidator()
         {
             RuleFor(x => x.Name)
                 .NotEmpty()
@@ -27,19 +28,13 @@ namespace LapkaBackend.Application.Validators;
 
             RuleFor(x => x.Months)
                 .Must(m => m > 0)
-                .WithMessage("Invalid Value. Number of nonths must be greater than 0")
+                .WithMessage("Invalid Value. Number of months must be greater than 0")
                 .WithErrorCode("invalid_number_of_months");
 
             RuleFor(x => x.Weight)
                 .Must(m => m > 0)
                 .WithMessage("Invalid Value. Weight must be greater than 0")
                 .WithErrorCode("invalid_weight");
-
-            RuleFor(x => x.Marking)
-                .NotEmpty()
-                .MaximumLength(50)
-                .WithMessage("Invalid marking. Marking must have less then 50 chars")
-                .WithErrorCode("invalid_marking");
 
             RuleFor(x => x.AnimalCategory)
                 .NotEmpty()

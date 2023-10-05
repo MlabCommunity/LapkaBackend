@@ -1,41 +1,37 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace LapkaBackend.Application.Functions.Queries
 {
     
-    public record ShelterPetsViewsGroupByMonthsQuery(Guid Shelter):IRequest<List<int>>;
+    public record ShelterPetsViewsGroupByMonthsQuery(Guid ShelterId) : IRequest<List<int>>;
 
     public class ShelterPetsViewsGroupByMonthsQueryHandler : IRequestHandler<ShelterPetsViewsGroupByMonthsQuery, List<int>>
     {
         private readonly IDataContext _dbContext;
 
-        public ShelterPetsViewsGroupByMonthsQueryHandler(IDataContext dbContext, IMapper mapper)
+        public ShelterPetsViewsGroupByMonthsQueryHandler(IDataContext dbContext)
         {
             _dbContext = dbContext;
         }
 
         public async Task<List<int>> Handle(ShelterPetsViewsGroupByMonthsQuery request, CancellationToken cancellationToken)
         {
-            var currentYear = DateTime.Now.Year;
-
-
-            var animalViewsForShelter = await  _dbContext.AnimalViews
-                .Where(av => av.Animal.ShelterId == request.Shelter && av.ViewDate.Year == currentYear && av.Animal.IsVisible == true)
-                .Select(av => new
-                {
-                    Month = av.ViewDate.Month,
-                    ViewDate = av.ViewDate,
-                    AnimalId = av.Animal.Id
-                })
-                .ToListAsync();
-
-            var numberOfMonths = 12;
+            const int numberOfMonths = 12;
             var result = new List<int>();
-
-            for (int i = 1; i <= numberOfMonths; i++)
+            
+            var animalViewsForShelter = await  _dbContext.AnimalViews
+                .Where(av => av.Animal.ShelterId == request.ShelterId && 
+                             av.ViewDate.Year == DateTime.UtcNow.Year && 
+                             av.Animal.IsVisible == true)
+                .Select(av => new
+                { 
+                    av.ViewDate.Month
+                })
+                .ToListAsync(cancellationToken: cancellationToken);
+            
+            for (var i = 1; i <= numberOfMonths; i++)
             {
                 var viewsCount = animalViewsForShelter.Count(x => x.Month == i);
                 result.Add(viewsCount);

@@ -19,16 +19,6 @@ namespace LapkaBackend.Application.Mappers
         {
             CreateMap<Shelter, ShelterDto>().ReverseMap();
         }
-
-    }
-
-    public class ShelterInListMappingProfile : Profile
-    {
-        public ShelterInListMappingProfile()
-        {
-            CreateMap<Shelter, ShelterInListDto>().ReverseMap();
-        }
-
     }
 
 
