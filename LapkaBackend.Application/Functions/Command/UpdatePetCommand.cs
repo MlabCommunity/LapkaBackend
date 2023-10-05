@@ -1,82 +1,57 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
-using LapkaBackend.Application.Interfaces;
-using LapkaBackend.Application.Services;
-using LapkaBackend.Domain.Entities;
-using LapkaBackend.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Collections;
-using System.Collections.Generic;
+using LapkaBackend.Application.Requests;
 
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record UpdatePetCommand(Guid PetId, string Name, string Species, Genders Gender, string Marking, decimal Weight, string Description,   bool IsSterilized, bool IsVisible, int Months, AnimalCategories AnimalCategory, List<string> Photos):IRequest;
-
-
+    public record UpdatePetCommand(UpdateShelterPetRequest Request):IRequest;
+    
     public class UpdatePetCommandHandler : IRequestHandler<UpdatePetCommand>
     {
         private readonly IDataContext _dbContext;
-        private readonly IBlobService _blobService;
 
-        public UpdatePetCommandHandler(IDataContext dbContext, IBlobService blobService)
+        public UpdatePetCommandHandler(IDataContext dbContext)
         {
             _dbContext = dbContext;
-            _blobService = blobService;
         }
 
-        public async Task Handle(UpdatePetCommand request, CancellationToken cancellationToken)
+        public async Task Handle(UpdatePetCommand command, CancellationToken cancellationToken)
         {
-            var foundAnimal = await _dbContext.Animals.FirstOrDefaultAsync(x => x.Id == request.PetId);
+            var foundAnimal = await _dbContext.Animals
+                .FirstOrDefaultAsync(x => x.Id == command.Request.PetId, cancellationToken: cancellationToken);
+            
             if (foundAnimal is null)
             {
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
             }
 
-            var animalCategory = await _dbContext.AnimalCategories.FirstOrDefaultAsync(r => r.CategoryName == request.AnimalCategory.ToString());
-            if (animalCategory is null)
+            
+            foreach (var file in command.Request.Photos.Select(photo => 
+                         _dbContext.Blobs.FirstOrDefault(x => x.Id == new Guid(photo))))
             {
-                throw new BadRequestException("invalid_AnimalCategory", "Animal category doesn't exists");
-            }
-
-
-            for (int i = 0; i < request.Photos.Count; i++)
-            {
-                if (!string.IsNullOrEmpty(request.Photos[i]))
+                if (file is null || file.ParentEntityId == foundAnimal.Id)
                 {
-                    try
-                    {
-                        var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
-                        file.ParentEntityId = foundAnimal.Id;
-                        file.Index = i;
-                        if (i == 0)
-                        {
-                            foundAnimal.ProfilePhoto = request.Photos[i];
-                        }
-                    }
-                    catch (Exception)
-                    {
-
-                        throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
-                    }
+                    continue;
                 }
+                
+                file.ParentEntityId = foundAnimal.Id;
+                _dbContext.Blobs.Update(file);
             }
-
-
-            foundAnimal.AnimalCategory = animalCategory;
-            foundAnimal.Description = request.Description;
-            foundAnimal.Gender = request.Gender.ToString();
-            foundAnimal.IsSterilized = request.IsSterilized;
-            foundAnimal.IsVisible = request.IsVisible;
-            foundAnimal.Marking = request.Marking;
-            foundAnimal.Months = request.Months;
-            foundAnimal.Name = request.Name;
-            foundAnimal.Species = request.Species;
-            foundAnimal.Weight = request.Weight;
+            
+            foundAnimal.Description = command.Request.Description;
+            foundAnimal.Gender = command.Request.Gender.ToString();
+            foundAnimal.ProfilePhoto = command.Request.Photos.First() == null ? null : command.Request.Photos.First();
+            foundAnimal.IsSterilized = command.Request.IsSterilized;
+            foundAnimal.IsVisible = command.Request.IsVisible;
+            foundAnimal.Months = command.Request.Months;
+            foundAnimal.Name = command.Request.Name;
+            foundAnimal.Weight = command.Request.Weight;
 
             _dbContext.Animals.Update(foundAnimal);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
         

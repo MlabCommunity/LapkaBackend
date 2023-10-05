@@ -18,26 +18,27 @@ namespace LapkaBackend.Application.Functions.Queries
 
         public async Task<List<int>> Handle(ShelterPetsViewsGroupByWeeksQuery request, CancellationToken cancellationToken)
         {
-            var currentMonth = DateTime.Now.Month;
+            var result = new List<int>();
+            var startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1); // Start of the current month
+            var lastDayOfMonth = startDate.AddMonths(1).AddDays(-1); // End of the current month
+
             
             var animalViewsForShelter = await _dbContext.AnimalViews
-                .Where(av => av.Animal.ShelterId == request.Shelter && av.ViewDate.Month == currentMonth && av.Animal.IsVisible == true)
+                .Where(av => av.Animal.ShelterId == request.Shelter && 
+                             av.ViewDate.Month == DateTime.UtcNow.Month && 
+                             av.Animal.IsVisible == true)
                 .Select(av => new
-                {
-                    DayOfWeek = av.ViewDate.DayOfWeek,
-                    AnimalId = av.Animal.Id
+                { 
+                    av.ViewDate.Day
                 })
-                .ToListAsync(); 
+                .ToListAsync(cancellationToken: cancellationToken); 
             
-
-            var numberOfdays = 7;
-            var result = new List<int>();
-
-            for (int i = 1; i <= numberOfdays; i++)
-            {
-                var value = animalViewsForShelter.Count(x => (int)x.DayOfWeek == i);
-                result.Add(value);
-            }
+                while(startDate <= lastDayOfMonth)
+                {
+                    var value = animalViewsForShelter.Count(x => x.Day == startDate.Day);
+                    result.Add(value);
+                    startDate = startDate.AddDays(1);
+                }
 
             return result;
         }

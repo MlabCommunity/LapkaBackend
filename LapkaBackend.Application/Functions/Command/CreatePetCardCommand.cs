@@ -1,106 +1,77 @@
 ﻿using LapkaBackend.Application.Common;
 using LapkaBackend.Application.Exceptions;
-using LapkaBackend.Application.Interfaces;
-using LapkaBackend.Application.Services;
+using LapkaBackend.Application.Requests;
 using LapkaBackend.Domain.Entities;
-using LapkaBackend.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Security;
-using System.Data;
 
 namespace LapkaBackend.Application.Functions.Command
 {
-    public record CreatePetCardCommand(string Name, Genders Gender, string Description, bool IsVisible, int Months, bool IsSterilized, decimal Weight, string Marking, AnimalCategories AnimalCategory, string Species, List<string> Photos, Guid ShelterId) : IRequest;
+    public record CreatePetCardCommand(CreatePetCardRequest Request, Guid ShelterId) : IRequest;
 
 
     public class CreateCatCardCommandHandler : IRequestHandler<CreatePetCardCommand>
     {
         private readonly IDataContext _dbContext;
-        private readonly IBlobService _blobService;
-        private readonly IUserService _userService;
 
-        public CreateCatCardCommandHandler(IDataContext dbContext, IBlobService blobService, IUserService userService)
+        public CreateCatCardCommandHandler(IDataContext dbContext)
         {
-
             _dbContext = dbContext;
-            _blobService = blobService;
-            _userService = userService;
         }
 
-        public async Task Handle(CreatePetCardCommand request, CancellationToken cancellationToken)
+        public async Task Handle(CreatePetCardCommand command, CancellationToken cancellationToken)
         {
-            var animalCategory =await _dbContext.AnimalCategories.FirstOrDefaultAsync(r => r.CategoryName == request.AnimalCategory.ToString());
+            var animalCategory = await _dbContext.AnimalCategories
+                .FirstOrDefaultAsync(r => r.CategoryName == command.Request.AnimalCategory.ToString(), 
+                    cancellationToken: cancellationToken);
+            
             if (animalCategory == null)
             {
                 throw new BadRequestException("invalid_animal_category", "That animal category does not exists");
             }
-            var Shelter = await _dbContext.Shelters.FirstOrDefaultAsync(r => r.Id == request.ShelterId);
-            if (Shelter == null)
+            
+            var shelter = await _dbContext.Shelters
+                .FirstOrDefaultAsync(r => r.Id == command.ShelterId, cancellationToken: cancellationToken);
+            
+            if (shelter == null)
             {
                 throw new BadRequestException("invalid_shelter", "Shelter doesn't exists");
             }
 
             var newAnimal = new Animal
             {
-                Name = request.Name,
-                Species = request.Species,
-                Gender = request.Gender.ToString(),
-                Marking = request.Marking,
-                Weight = request.Weight,
-                Description = request.Description,
-                IsSterilized = request.IsSterilized,
-                IsVisible = request.IsVisible,
-                Months = request.Months,
+                Id = new Guid(),
+                Name = command.Request.Name,
+                Species = command.Request.Species,
+                Gender = command.Request.Gender.ToString(),
+                Weight = command.Request.Weight,
+                Description = command.Request.Description,
+                IsSterilized = command.Request.IsSterilized,
+                IsVisible = command.Request.IsVisible,
+                Months = command.Request.Months,
+                ProfilePhoto = command.Request.Photos.First() == null ? null : command.Request.Photos.First(),
                 AnimalCategory = animalCategory,
-                Shelter = Shelter,
+                Shelter = shelter,
                 CreatedAt = DateTime.Now
             };
-
-            await _dbContext.Animals.AddAsync(newAnimal);
-            await _dbContext.SaveChangesAsync();
-
-
-
-            for (int i = 0; i < request.Photos.Count; i++)
+            
+            await _dbContext.Animals.AddAsync(newAnimal, cancellationToken);
+            
+            foreach (var file in command.Request.Photos.Select(photo => 
+                         _dbContext.Blobs.FirstOrDefault(x => x.Id == new Guid(photo))))
             {
-                if (!string.IsNullOrEmpty(request.Photos[i]))
+                if (file is null)
                 {
-                    try
-                    {
-                        var file = _dbContext.Blobs.First(x => x.Id == new Guid(request.Photos[i]));
-                        file.ParentEntityId = newAnimal.Id;
-                        file.Index = i;
-                        if (i == 0)
-                        {
-                            newAnimal.ProfilePhoto = request.Photos[i];
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        throw new BadRequestException("invalid_photoId", "Photo doesn't exists");
-                    }
+                    continue;
                 }
+                
+                file.ParentEntityId = newAnimal.Id;
+                _dbContext.Blobs.Update(file);
             }
-            _dbContext.Animals.Update(newAnimal);
-            await _dbContext.SaveChangesAsync();
+            
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
         }
-    }
-
-    public class CreatePetCardRequest
-    {
-        public string Name { get; set; } = null!;
-        public string Species { get; set; } = null!;
-        public Genders Gender { get; set; }
-        public string Marking { get; set; } = null!;
-        public decimal Weight { get; set; }
-        public string Description { get; set; } = null!;
-        public AnimalCategories AnimalCategory { get; set; }
-        public bool IsSterilized { get; set; }
-        public bool IsVisible { get; set; }
-        public int Months { get; set; }
-        public List<string>? Photos { get; set; }
     }
 }
 

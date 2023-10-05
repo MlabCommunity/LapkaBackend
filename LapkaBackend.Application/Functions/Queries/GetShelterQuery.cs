@@ -1,5 +1,6 @@
-﻿using AutoMapper;
-using LapkaBackend.Application.Common;
+﻿using LapkaBackend.Application.Common;
+using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,37 +11,36 @@ namespace LapkaBackend.Application.Functions.Queries
     public class GetShelterQueryHandler : IRequestHandler<GetShelterQuery, ShelterDto>
     {
         private readonly IDataContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public GetShelterQueryHandler(IDataContext dbContext, IMapper mapper)
+        public GetShelterQueryHandler(IDataContext dbContext)
         {
-
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
 
         public async Task<ShelterDto> Handle(GetShelterQuery request, CancellationToken cancellationToken)
         {
-            var FoundShelter = await _dbContext.Shelters.FirstOrDefaultAsync(x => x.Id == request.ShelterId);
+            var result = await _dbContext.Users
+                .Include(x => x.Shelter)
+                .FirstOrDefaultAsync(x => x.ShelterId == request.ShelterId, cancellationToken: cancellationToken);
 
-            var result = _mapper.Map<ShelterDto>(FoundShelter);
-
-            return result;
+            if (result is null)
+            {
+                throw new NotFoundException("invalid_shelterId", "Shelter does not found");
+            }
+            
+            return new ShelterDto
+            {
+                Id = result.Id,
+                OrganizationName = result.Shelter.OrganizationName,
+                Email = result.Email,
+                FirstName = result.FirstName,
+                LastName = result.LastName,
+                ProfilePhoto = result.ProfilePicture,
+                PhoneNumber = result.Shelter.PhoneNumber,
+                City = result.Shelter.City,
+                Street = result.Shelter.Street
+            };
         }
-    }
-
-    public class ShelterDto
-    {
-        public Guid Id { get; set; }
-        public string OrganizationName { get; set; } = null!;
-        public float Longitude { get; set; }
-        public float Latitude { get; set; }
-        public string City { get; set; } = null!;
-        public string Street { get; set; } = null!;
-        public string ZipCode { get; set; } = null!;
-        public string Nip { get; set; } = null!;
-        public string Krs { get; set; } = null!;
-        public string PhoneNumber { get; set; } = null!;
     }
 }

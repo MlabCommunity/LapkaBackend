@@ -1,16 +1,16 @@
 ﻿using LapkaBackend.Application.Common;
+using LapkaBackend.Application.Dtos;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Domain.Entities;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace LapkaBackend.Application.Functions.Queries
 {
-    public record GetPetQuery(Guid PetId, Guid UserId) : IRequest<PetDto>;
+    public record GetPetQuery(Guid PetId, Guid UserId) : IRequest<ShelterPetDetailsDto>;
 
-    public class GetPetQueryHandler : IRequestHandler<GetPetQuery, PetDto>
+    public class GetPetQueryHandler : IRequestHandler<GetPetQuery, ShelterPetDetailsDto>
     {
         private readonly IDataContext _dbContext;
 
@@ -19,69 +19,48 @@ namespace LapkaBackend.Application.Functions.Queries
             _dbContext = dbContext;
         }
 
-        public async Task<PetDto> Handle(GetPetQuery request, CancellationToken cancellationToken)
+        public async Task<ShelterPetDetailsDto> Handle(GetPetQuery request, CancellationToken cancellationToken)
         {
-            var FoundAnimal = await _dbContext.Animals.Include(a => a.AnimalCategory).FirstOrDefaultAsync(x => x.Id == request.PetId);
-            if (FoundAnimal is null)
+            var foundedAnimal = await _dbContext.Animals
+                .Include(a => a.AnimalCategory)
+                .FirstOrDefaultAsync(x => x.Id == request.PetId, cancellationToken: cancellationToken);
+
+            if (foundedAnimal is null)
             {
                 throw new BadRequestException("invalid_Pet", "Pet doesn't exists");
             }
 
             var newAnimalView = new AnimalView()
             {
-                Animal = FoundAnimal,
+                Animal = foundedAnimal,
                 UserId = request.UserId,
                 ViewDate = DateTime.Now
             };
 
-            await _dbContext.AnimalViews.AddAsync(newAnimalView); 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.AnimalViews.AddAsync(newAnimalView, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
-            var petDto = new PetDto()
+            var petDto = new ShelterPetDetailsDto()
             {
-                PetId = FoundAnimal.Id,
-                Name = FoundAnimal.Name,
-                AnimalCategory = FoundAnimal.AnimalCategory.CategoryName,
-                Gender = FoundAnimal.Gender,
-                Species = FoundAnimal.Species,
-                Marking = FoundAnimal.Marking,
-                Weight = (float)FoundAnimal.Weight,
-                Photos = await _dbContext.Blobs
-                            .Where(x => x.ParentEntityId == FoundAnimal.Id)
-                            .OrderBy(blob => blob.Index)
-                            .Select(blob => blob.Id.ToString())
-                            .ToArrayAsync(),
-                Months = FoundAnimal.Months,
-                CreatedAt = FoundAnimal.CreatedAt,
-                IsSterilized = FoundAnimal.IsSterilized,
-                IsVisible = FoundAnimal.IsVisible,
-                Description = FoundAnimal.Description
+                Id = foundedAnimal.Id,
+                Name = foundedAnimal.Name,
+                AnimalCategory = foundedAnimal.AnimalCategory.CategoryName,
+                Gender = foundedAnimal.Gender,
+                Species = foundedAnimal.Species,
+                Weight = foundedAnimal.Weight,
+                Photos = _dbContext.Blobs
+                    .Where(x => x.ParentEntityId == foundedAnimal.Id)
+                    .OrderBy(blob => blob.Index)
+                    .Select(blob => blob.Id.ToString())
+                    .ToList(),
+                Months = foundedAnimal.Months,
+                CreatedAt = foundedAnimal.CreatedAt,
+                IsSterilized = foundedAnimal.IsSterilized,
+                IsVisible = foundedAnimal.IsVisible,
+                Description = foundedAnimal.Description
             };
 
             return petDto;
         }
-
-
-
     }
-
-
-    public class PetDto
-    {
-        public Guid PetId { get; set; }
-        public string Name { get; set; } = null!;
-        public string Species { get; set; } = null!;
-        public string Gender { get; set; } = null!;
-        public string Marking { get; set; } = null!;
-        public float Weight { get; set; }
-        public string Description { get; set; } = null!;
-        public DateTime CreatedAt { get; set; }
-        public bool IsSterilized { get; set; }
-        public bool IsVisible { get; set; }
-        public int Months { get; set; }
-        public string AnimalCategory { get; set; } = null!;
-        public string[]? Photos { get; set; }
-    }
-
-
 }
