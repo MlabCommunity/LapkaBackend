@@ -6,6 +6,7 @@ using LapkaBackend.Application.Dtos.Result;
 using LapkaBackend.Application.Exceptions;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Domain.Enums;
+using Microsoft.IdentityModel.Tokens;
 
 
 namespace LapkaBackend.Application.Functions.Queries
@@ -27,7 +28,7 @@ namespace LapkaBackend.Application.Functions.Queries
 
             if (shelter == null)
             {
-                throw new BadRequestException("invalid shelter", "Invalid shelter");
+                throw new NotFoundException("invalid shelter", "Invalid shelter");
             }
             
             var petsFromShelter = _dbContext.Animals.Where(x => x.ShelterId == query.ShelterId)
@@ -47,7 +48,10 @@ namespace LapkaBackend.Application.Functions.Queries
                     ProfilePhoto = pet.ProfilePhoto,
                     Photos = _dbContext.Blobs.Where(x => x.ParentEntityId == pet.Id)
                         .Select(x => x.Id.ToString())
-                        .ToList(),
+                        .ToList()
+                        .IsNullOrEmpty()? _dbContext.Blobs.Where(x => x.ParentEntityId == pet.Id)
+                        .Select(x => x.Id.ToString())
+                        .ToList() : new List<string>(),
                     Months = pet.Months,
                     CreatedAt = pet.CreatedAt,
                     IsSterilized = pet.IsSterilized,

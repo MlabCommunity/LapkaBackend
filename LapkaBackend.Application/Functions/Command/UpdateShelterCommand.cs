@@ -15,6 +15,8 @@ namespace LapkaBackend.Application.Functions.Command
 
         public UpdateShelterCommandHandler(IDataContext dbContext)
         {
+            
+            
             _dbContext = dbContext;
         }
 

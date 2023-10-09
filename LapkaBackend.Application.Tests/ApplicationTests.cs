@@ -1,8 +1,12 @@
+using LapkaBackend.Application.Dtos;
+using LapkaBackend.Application.Functions.Command;
+using LapkaBackend.Application.Functions.Queries;
 using LapkaBackend.Application.Helper;
 using LapkaBackend.Application.Interfaces;
 using LapkaBackend.Application.Tests.Helper;
 using LapkaBackend.Domain.Enums;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Azure;
 using Serilog;
 
 namespace LapkaBackend.Application.Tests;
@@ -17,12 +21,22 @@ public class Tests
     private AuthService _authService;
     private UserService _userService;
 
-    private readonly ProxyGenerator _proxyGenerator = new();
-
     [SetUp]
     public void Setup()
     {
         //TODO Move it to individual tests and use only what is needed
+        var shelterMock = new ShelterMockBuilder()
+            .WithOrganizationName("Shelter")
+            .WithPhoneNumber("123456789")
+            .WithCity("City")
+            .WithStreet("Street")
+            .WithKrs("1234567890")
+            .WithNip("1234567890")
+            .WithZipCode("00-000")
+            .WithLatitude(52.32323)
+            .WithLongitude(15)
+            .Build();
+        
         var userMock = new UserMockBuilder()
             .WithFirstName("John")
             .WithLastName("Doe")
@@ -31,11 +45,34 @@ public class Tests
             .WithVerificationToken("token")
             .WithRole(new Role { RoleName = Roles.User.ToString() })
             .Build();
-
-        var usersMock = Mocker.MockDbSet(userMock);
+        
+        
+        var animalMock = new AnimalMockBuilder()
+            .WithName("testAnimal")
+            .WithSpecies("testSpecies")
+            .WithGender("Male")
+            .WithWeight((decimal)10.223232)
+            .WithDescription("testDescription")
+            .WithCreatedAt(DateTime.Now)
+            .WithIsSterilized(true)
+            .WithIsVisible(true)
+            .WithMonths(10)
+            .WithIsArchival(false)
+            .Build();
+            
+            
+        var shelters = new List<Shelter> { shelterMock };
+        var users = new List<User> { userMock };
+        var animals = new List<Animal> { animalMock };
+        
+        var sheltersMock = Mocker.MockDbSet(shelters);
+        var usersMock = Mocker.MockDbSet(users);
+        var animalsMock = Mocker.MockDbSet(animals);
 
         _dbContext = new Mock<IDataContext>();
         _dbContext.Setup(dc => dc.Users).Returns(usersMock.Object);
+        _dbContext.Setup(dc => dc.Shelters).Returns(sheltersMock.Object);
+        _dbContext.Setup(dc => dc.Animals).Returns(animalsMock.Object);
 
         var tokenMock = new Mock<IConfigurationSection>();
         tokenMock.SetupGet(t => t.Value).Returns("ulpgOBFxsvUAT4jYHYPyzAyfphyivEDB");
@@ -281,6 +318,7 @@ public class Tests
     [Test]
     public void RefreshAccessToken_WithInvalidRefreshToken_ThrowsBadRequestException()
     {
+        
         var credentials = new UseRefreshTokenRequest
         {
             AccessToken = _authService.CreateAccessToken(_dbContext.Object.Users.First()),
@@ -293,10 +331,11 @@ public class Tests
     [Test]
     public void RefreshAccessToken_WithCorrectData_ReturnsUserRefreshTokenDtoIsNotNull()
     {
+        _dbContext.Object.Users.First().RefreshToken = _authService.CreateRefreshToken();
         var credentials = new UseRefreshTokenRequest
         {
             AccessToken = _authService.CreateAccessToken(_dbContext.Object.Users.First()),
-            RefreshToken = _authService.CreateRefreshToken()
+            RefreshToken = _dbContext.Object.Users.First().RefreshToken
         };
 
         var expected = _authService.RefreshAccessToken(credentials).Result;
@@ -356,7 +395,7 @@ public class Tests
             RefreshToken = "wrong_token"
         };
 
-        Assert.ThrowsAsync<BadRequestException>(async () => await _authService.RevokeToken(credentials));
+        Assert.ThrowsAsync<BadRequestException>(async () => await _authService.RevokeToken(credentials, _dbContext.Object.Users.First().Id));
     }
 
     [Test]
@@ -381,5 +420,64 @@ public class Tests
 
         Assert.ThrowsAsync<BadRequestException>(async () =>
             await _authService.SetNewPassword(credentials, "wrong_token"));
+    }
+    
+    [Test]
+    public void GetShelterQuery_WithCorrectShelterId_ReturnsShelterDto()
+    {
+        // Arrange
+        var shelter = _dbContext.Object.Shelters.First();
+        _dbContext.Object.Users.First().ShelterId = shelter.Id;
+        _dbContext.Object.Users.First().Shelter = shelter;
+        var query = new GetShelterQuery(shelter.Id);
+        var handler = new GetShelterQueryHandler(_dbContext.Object);
+        
+        // Act
+        var result = handler.Handle(query, CancellationToken.None).Result;
+        
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Id, Is.EqualTo(shelter.Id));
+            // Should i in assert check all fields from DTO return?
+        });
+    }
+    
+    [Test]
+    public void GetShelterQuery_WithIncorrectShelterId_ThrowsBadRequestException()
+    {
+        // Arrange
+        var query = new GetShelterQuery(Guid.NewGuid());
+        var handler = new GetShelterQueryHandler(_dbContext.Object);
+        
+        // Act & Assert
+        Assert.ThrowsAsync<NotFoundException>(async () => await handler.Handle(query, CancellationToken.None));
+    }
+    
+    [Test]
+    public void AddPetToArchiveCommand_WithCorrectPetId_SetsIsArchivalToTrue()
+    {
+        // Arrange
+        var animal = _dbContext.Object.Animals.First();
+        var command = new AddPetToArchiveCommand(animal.Id);
+        var handler = new AddPetToArchiveCommandHandler(_dbContext.Object);
+        
+        // Act
+        handler.Handle(command, CancellationToken.None).Wait();
+        
+        // Assert
+        Assert.That(animal.IsArchival, Is.True);
+    }
+    
+    [Test]
+    public void AddPetToArchiveCommand_WithIncorrectPetId_ThrowsBadRequestException()
+    {
+        // Arrange
+        var command = new AddPetToArchiveCommand(Guid.NewGuid());
+        var handler = new AddPetToArchiveCommandHandler(_dbContext.Object);
+        
+        // Act & Assert
+        Assert.ThrowsAsync<BadRequestException>(async () => await handler.Handle(command, CancellationToken.None));
     }
 }

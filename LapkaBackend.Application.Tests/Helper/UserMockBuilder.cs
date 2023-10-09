@@ -24,7 +24,7 @@ public class UserMockBuilder
 
     public UserMockBuilder WithPassword(string password)
     {
-        _user.Password = password;
+        _user.Password = BCrypt.Net.BCrypt.HashPassword(password);
         return this;
     }
 

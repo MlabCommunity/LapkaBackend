@@ -43,7 +43,7 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        ///     Get shelter data
+        ///     Get actually logged shelter data
         /// </summary>
         [HttpGet]
         [Authorize(Roles = "Shelter")]
@@ -193,7 +193,7 @@ namespace LapkaBackend.API.Controllers
         }
         
         /// <summary>
-        ///     Publikacja zwierzęcia
+        ///     Publishes pet
         /// </summary>
         [HttpPut("cards/publish/{petId}")]
         [Authorize(Roles = "Shelter")]
@@ -206,7 +206,7 @@ namespace LapkaBackend.API.Controllers
         }
 
         /// <summary>
-        ///     Schowanie zwierzęcia
+        ///     Hides pet
         /// </summary>
         [HttpPut("cards/hide/{petId}")]
         [Authorize(Roles = "Shelter")]
